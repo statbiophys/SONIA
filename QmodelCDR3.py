@@ -312,8 +312,8 @@ class QmodelCDR3(object):
                 
         """
         
-        self.data_seqs += add_data_seqs
-        self.gen_seqs += add_gen_seqs
+        self.data_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs] #add_data_seqs
+        self.gen_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs] #add_gen_seqs
         self.constant_features += add_constant_features
         
         if len(remove_features) > 0:
