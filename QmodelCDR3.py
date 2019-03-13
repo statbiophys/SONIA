@@ -14,16 +14,91 @@ Ln_AAp
 import numpy as np
 import os
 
-import matplotlib
-matplotlib.use('Agg')
-
-import matplotlib.pyplot as plt
-
-#Load OLGA for seq generation
-import olga.load_model as load_model
-import olga.sequence_generation as seq_gen
-
 class QmodelCDR3(object):
+    """Class used to infer a Q selection model.
+
+
+    Attributes
+    ----------
+    features : ndarray
+        Array of feature strings.
+    constant_features : list
+        List of feature strings to not update parameters during learning. These
+        features are still used to compute energies
+    model_params : ndarray
+        Array of energies corresponding to each feature in features
+    data_seqs : list
+        Data sequences used to infer selection model. Note, each 'sequence'
+        is a list where the first element is the CDR3 sequence which is 
+        followed by any V or J genes.
+    gen_seqs : list
+        Sequences from generative distribution used to infer selection model.
+        Note, each 'sequence' is a list where the first element is the CDR3 
+        sequence which is followed by any V or J genes.
+    data_seq_features : list
+        Lists of features that data_seqs project onto
+    gen_seq_features : list
+        Lists of features that gen_seqs project onto
+    data_marginals : ndarray
+        Array of the marginals of each feature over data_seqs
+    gen_marginals : ndarray
+        Array of the marginals of each feature over gen_seqs
+    model_marginals : ndarray
+        Array of the marginals of each feature over the model weighted gen_seqs
+    L1_converge_history : list
+        L1 distance between data_marginals and model_marginals at each
+        iteration.
+    chain_type : str
+        Type of receptor. This specification is used to determine gene names
+        and allow integrated OLGA sequence generation. Options: 'humanTRA',
+        'humanTRB' (default), 'humanIGH', and 'mouseTRB'. 
+    max_iterations : int
+        Maximum number of iterations per learning epoch
+    step_size : float
+        Step size for the update of the model energies at each iteration.
+    converge_threshold : float
+        Terminates learning epoch if the L1 distance is below the threshold
+    l2_reg : float or None
+        L2 regularization. If None (default) then no regularization.
+    v : ndarray
+        'Velocity' of a inference iteration. Gives the changes to each energy in
+        model_params for the current iteration.
+    drag : float
+        Drag coefficient for the inference iterations.
+
+    Methods
+    ----------
+    proj_feature_str_seq(feature_str, seq)
+        Determines if a feature matches/is found in a sequence.
+        
+    find_seq_features(seq, features = None)
+        Determines all model features of a sequence.
+        
+    compute_seq_energy(seq_features = None, seq = None)
+        Computes the energy, as determined by the model, of a sequence.
+        
+    compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False)
+        Computes the marginals of features over a set of sequences.
+    
+    infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, l2_reg = None, record_history = False)
+        Infers model parameters (energies for each feature).
+    
+    update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False)
+        Updates model by adding/removing model features or data/generated seqs.
+    
+    add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True)  
+        Generates synthetic sequences using OLGA and adds them to gen_seqs.
+        
+    plot_model_learning(self, save_name = None)
+        Plots current marginal scatter plot as well as L1 convergence history.
+    
+    save_model(self, save_dir, attributes_to_save = None)
+        Saves the model.
+    
+    load_model(self, load_dir, load_seqs = True)
+        Loads a model.
+    
+    """
     
     def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None):
         self.features = np.array(features)
@@ -58,17 +133,17 @@ class QmodelCDR3(object):
         self.l2_reg = None
         
         self.v = np.zeros(len(self.features))
-        self.speed_reg = 0.95
+        self.drag = 0.95
         
         self.model_params_history = []
         
     def proj_feature_str_seq(self, feature_str, seq):
-        """Checks if a sequence matches feature_str
+        """Checks if a sequence matches the feature of feature_str
         
         Parameters
         ----------
         feature_str : str
-            Feature string to match. Looks like: Ln_AAp or gGENE
+            Feature string to match. Looks like: Ln_AAp or [vj]GENE
         seq : list
             CDR3 sequence and any associated genes
     
@@ -106,8 +181,8 @@ class QmodelCDR3(object):
                 
         return True
         
-    def find_relevant_features(self, seq, features = None):
-        """Checks if a sequence matches feature_str
+    def find_seq_features(self, seq, features = None):
+        """Finds which features match seq
         
         
         Parameters
@@ -119,18 +194,18 @@ class QmodelCDR3(object):
     
         Returns
         -------
-        relevant_features : list
+        seq_features : list
             Indices of features seq projects onto.
-                
+        
         """
         if features is None:
             features = self.features
-        relevant_features = []
+        seq_features = []
         for feature_index,feature_str in enumerate(features):
             if self.proj_feature_str_seq(feature_str, seq):
-                relevant_features += [feature_index]
+                seq_features += [feature_index]
                 
-        return relevant_features
+        return seq_features
     
     def compute_seq_energy(self, seq_features = None, seq = None):
         """Computes the energy of a sequence according to the model.
@@ -152,19 +227,36 @@ class QmodelCDR3(object):
         if seq_features is not None:
             return np.sum(self.model_params[seq_features])
         elif seq is not None:
-            return np.sum(self.model_params[self.find_relevant_features(seq)])
+            return np.sum(self.model_params[self.find_seq_features(seq)])
         return 0
     
-    def compute_marginals(self, seq_features_all, use_flat_distribution = False):
-        """Computes the marginals of model features over sequences.
+    def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False):
+        """Computes the marginals of each feature over sequences.
         
         Computes marginals either with a flat distribution over the sequences
-        or weighted by the model energies.
+        or weighted by the model energies. Note, finding the features of each
+        sequence takes time and should be avoided if it has already been done. 
+        If computing marginals of model features use the default setting to 
+        prevent searching for the model features a second time. Similarly, if
+        seq_model_features has already been determined use this to avoid
+        recalculating it.
         
         Parameters
         ----------
+        features : list or None
+            List of feature strings. This does not need to match the model
+            features. If None (default) the model features will be used.
         seq_features_all : list
-            Indices of features seqs project onto.
+            Indices of model features seqs project onto.
+        seqs : list
+            List of sequences to compute the feature marginals over. Note, each
+            'sequence' is a list where the first element is the CDR3 sequence 
+            which is followed by any V or J genes.
+        use_flat_distribution : bool
+            Marginals will be computed using a flat distribution (each seq is 
+            weighted as 1) if True. If False, the marginals are computed using
+            model weights (each sequence is weighted as exp(-E) = Q). Default
+            is False.
         
         Returns
         -------
@@ -172,65 +264,63 @@ class QmodelCDR3(object):
             Marginals of model features over seqs.
                 
         """
-        marginals = np.zeros(len(self.features)) #initialize marginals
-        if len(seq_features_all) == 0:
-            return marginals
-        if use_flat_distribution:
-            for seq_features in seq_features_all:
-                marginals[seq_features] += 1.
-            return marginals/len(seq_features_all)
+        if features is None:
+            marginals = np.zeros(len(self.features)) #initialize marginals
+            if seq_model_features is not None:
+                pass
+            elif seqs is not None:
+                seq_model_features = [self.find_seq_features(seq) for seq in seqs]
+            else:
+                return marginals
+            if len(seq_model_features) == 0:
+                return marginals
+            if use_flat_distribution:
+                for seq_features in seq_model_features:
+                    marginals[seq_features] += 1.
+                return marginals/len(seq_model_features)
+            else:
+                energies = np.zeros(len(seq_model_features))
+                for i, seq_features in enumerate(seq_model_features):
+                    energies[i] = self.compute_seq_energy(seq_features = seq_features)
+                    marginals[seq_features] += np.exp(-energies[i])
+                return marginals/np.sum(np.exp(-energies))
+            
         else:
-            energies = np.zeros(len(seq_features_all))
-            for i, seq_features in enumerate(seq_features_all):
-                energies[i] = self.compute_seq_energy(seq_features = seq_features)
-                marginals[seq_features] += np.exp(-energies[i])
-            return marginals/np.sum(np.exp(-energies))
+            marginals = np.zeros(len(features))
+            if seqs is None or len(seqs) == 0:
+                return marginals
+            seq_cross_features_all = [self.find_seq_features(seq, features = features) for seq in seqs]
+            if use_flat_distribution:
+                for seq_cross_features in seq_cross_features_all:
+                    marginals[seq_cross_features] += 1.
+                return marginals/len(seqs)
+            else:
+                if seq_model_features is None or len(seq_model_features) != len(seqs):
+                    seq_model_features = [self.find_seq_features(seq) for seq in seqs]
+                energies = np.zeros(len(seqs))
+                for i, seq_cross_features in enumerate(seq_cross_features_all):
+                    energies[i] = self.compute_seq_energy(seq_features= seq_model_features[i])
+                    marginals[seq_cross_features] += np.exp(-energies[i])
+                return marginals/np.sum(np.exp(-energies))
     
-    def compute_cross_marginals(self, cross_features, seqs, use_flat_distribution = False):
-        """Computes the marginals of model features over sequences.
-        
-        Computes marginals either with a flat distribution over the sequences
-        or weighted by the model energies.
-        
-        Parameters
-        ----------
-        seq_features_all : list
-            Indices of features seqs project onto.
-        
-        Returns
-        -------
-        marginals : ndarray
-            Marginals of model features over seqs.
-                
-        """
-        cross_marginals = np.zeros(len(cross_features)) #initialize marginals
-        if len(seqs) == 0:
-            return cross_marginals
-        seq_cross_features_all = [self.find_relevant_features(seq, features = cross_features) for seq in seqs]
-        if use_flat_distribution:
-            for seq_cross_features in seq_cross_features_all:
-                cross_marginals[seq_cross_features] += 1.
-            return cross_marginals/len(seqs)
-        else:
-            energies = np.zeros(len(seqs))
-            for i, seq_cross_features in enumerate(seq_cross_features_all):
-                energies[i] = self.compute_seq_energy(seq = seqs[i])
-                cross_marginals[seq_cross_features] += np.exp(-energies[i])
-            return cross_marginals/np.sum(np.exp(-energies))
-        
-    def infer_selection(self, max_iterations = None, step_size = None, speed_reg = None, initialize = False, l2_reg = None, record_history = False):
-        """Infer model parameters (model_params)
+
+    def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, l2_reg = None):
+        """Infer model parameters, i.e. energies for each model feature.
         
         
         Parameters
         ----------
-        max_iterations : int or None
-            Maximum number of iterations
-        step_size : float or None
-            Step size for gradient descent.
+        max_iterations : int
+            Maximum number of iterations per learning epoch
+        step_size : float
+            Step size for the update of the model energies at each iteration.
+        drag : float
+            Drag coefficient for the inference iterations.
         intialize : bool
             Resets model before inferring model_params
-    
+        l2_reg : float or None
+            L2 regularization. If None (default) then no regularization.
+        
         Attributes set
         --------------
         model_params : array
@@ -243,42 +333,41 @@ class QmodelCDR3(object):
             iteration.
                 
         """
+        
         if max_iterations is not None:
             self.max_iterations = max_iterations
         if step_size is not None:
             self.step_size = step_size
-        if speed_reg is not None:
-            self.speed_reg = speed_reg
+        if drag is not None:
+            self.drag = drag
         self.l2_reg = l2_reg
             
         if initialize:
-            #self.update_model(remove_features=[feature for i, feature in enumerate(self.features) if self.data_marginals[i] == 0 and self.gen_marginals[i] == 0])
-            #self.model_params = -np.log(self.data_marginals/self.gen_marginals)
-            #self.model_params = -np.log([self.data_marginals[i]/x if x > 0 else 1. for i, x in enumerate(self.gen_marginals)])
             self.model_params = np.array([-np.log10(self.data_marginals[i]/x) if x > 0 and self.data_marginals[i] > 0 else 0. for i, x in enumerate(self.gen_marginals)])
             self.update_model(auto_update_marginals=True) #make sure all attributes are updated
             self.L1_converge_history = [sum(abs(self.data_marginals - self.model_marginals))]
             self.model_params_history = []
             self.v = np.zeros(len(self.features))
         for _ in range(self.max_iterations):
-            
-            self.v = self.speed_reg*self.v + self.data_marginals - self.model_marginals
-            if self.l2_reg is not None:
+            #Set the 'velocity' for this iteration
+            self.v = self.drag*self.v + self.data_marginals - self.model_marginals
+            if self.l2_reg is not None: #Step with l2 reg
                 self.model_params[self.floating_features] = (1-self.step_size*self.l2_reg)*self.model_params[self.floating_features] - self.step_size * self.v[self.floating_features] #new parameters
-            else:
+            else: #Step without l2 reg
                 self.model_params[self.floating_features] = self.model_params[self.floating_features] - self.step_size * self.v[self.floating_features] #new parameters
             
             self.model_marginals = self.compute_marginals(self.gen_seq_features)
             self.L1_converge_history.append(sum(abs(self.data_marginals - self.model_marginals)))
-            if record_history:
-                self.model_params_history.append(self.model_params)
             if self.L1_converge_history[-1] < self.converge_threshold:
                 break
 
-
-        
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False):
-        """Adds or removes model features to self.features
+        """Updates the model attributes
+        
+        This method is used to add/remove model features or data/generated
+        sequences. These changes will be propagated through the class to update
+        any other attributes that need to match (e.g. the marginals or 
+        seq_features).
         
         
         Parameters
@@ -302,11 +391,11 @@ class QmodelCDR3(object):
             Features data_seqs have been projected onto.
         gen_seq_features : list
             Features gen_seqs have been projected onto.
-        data_marginals : dict
+        data_marginals : ndarray
             Marginals over the data sequences for each model feature.
-        gen_marginals : dict
+        gen_marginals : ndarray
             Marginals over the generated sequences for each model feature.
-        model_marginals : dict
+        model_marginals : ndarray
             Marginals over the generated sequences, reweighted by the model, 
             for each model feature.
                 
@@ -329,12 +418,12 @@ class QmodelCDR3(object):
             self.floating_features = np.isin(self.features, self.constant_features, invert = True)
             
         if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals:
-            self.data_seq_features = [self.find_relevant_features(seq) for seq in self.data_seqs]
+            self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
             self.data_marginals = self.compute_marginals(self.data_seq_features, use_flat_distribution = True)
             #self.inv_I = np.linalg.inv(self.compute_data_fisher_info())
         
         if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals:
-            self.gen_seq_features = [self.find_relevant_features(seq) for seq in self.gen_seqs]
+            self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
             self.gen_marginals = self.compute_marginals(self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(self.gen_seq_features)
         
@@ -362,6 +451,7 @@ class QmodelCDR3(object):
                     features.append('L' + str(L) + '_' + aa + str(i))
                     
         if include_genes:
+            import olga.load_model as load_model
             main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
         
             params_file_name = os.path.join(main_folder,'model_params.txt')
@@ -395,6 +485,7 @@ class QmodelCDR3(object):
             features += ['_' + aa + str(L) for L in range(-max_depth, 0)]
             
         if include_genes:
+            import olga.load_model as load_model
             main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
         
             params_file_name = os.path.join(main_folder,'model_params.txt')
@@ -436,6 +527,9 @@ class QmodelCDR3(object):
             Features gen_seqs have been projected onto.
                 
         """
+        #Load OLGA for seq generation
+        import olga.load_model as load_model
+        import olga.sequence_generation as seq_gen
         
         #Load generative model
         main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
@@ -468,6 +562,9 @@ class QmodelCDR3(object):
             File name to save output figure. If None (default) does not save.
                 
         """
+        
+        import matplotlib.pyplot as plt
+        
         min_for_plot = 1/(10.*np.power(10, np.ceil(np.log10(len(self.data_seqs)))))
         fig = plt.figure(figsize = (9, 4))
         fig.add_subplot(121)
@@ -501,7 +598,7 @@ class QmodelCDR3(object):
             fig.savefig(save_name)
             
     def save_model(self, save_dir, attributes_to_save = None):
-        """Saves model (energy_dict) to save_file as a tsv.
+        """Saves model parameters and sequences
         
         Parameters
         ----------
@@ -541,7 +638,7 @@ class QmodelCDR3(object):
         
         return None
     
-    def load_model(self, load_dir):
+    def load_model(self, load_dir, load_seqs = True):
         """Loads model from directory.
         
         Parameters
@@ -575,13 +672,13 @@ class QmodelCDR3(object):
         else:
             print 'Cannot find model.tsv  --  no features or model parameters loaded.'
         
-        if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')):
+        if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
                 self.data_seqs = [seq.split('\t') for seq in data_seqs_file.read().strip().split('\n')]
         else:
             print 'Cannot find data_seqs.tsv  --  no data seqs loaded.'
             
-        if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')):
+        if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'gen_seqs.tsv'), 'r') as gen_seqs_file:
                 self.gen_seqs = [seq.split('\t') for seq in gen_seqs_file.read().strip().split('\n')]
         else:
@@ -593,7 +690,7 @@ class QmodelCDR3(object):
             with open(os.path.join(load_dir, 'L1_converge_history.tsv'), 'r') as L1_file:
                 self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
         else:
-            self.L1_converge_history = [sum([abs(self.data_marginals[p] - self.model_marginals[p]) for p in self.features])]
+            self.L1_converge_history = []
             print 'Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.'
 
         return None
