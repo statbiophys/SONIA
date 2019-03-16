@@ -21,7 +21,8 @@ from QmodelCDR3 import QmodelCDR3
 class QmodelCDR3_LPosLenAA(QmodelCDR3):
     
     def add_features(self, min_L = 4, max_L = 22, include_genes = True):
-        """Generates a list of feature_strs to implement the orig min Q model
+        """Generates a list of feature_strs for a model that parametrize every amino acid
+        by the CDR3 length and position from the left (Cys)
         
         
         Parameters
@@ -30,16 +31,20 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
             Minimum length CDR3 sequence
         max_L : int
             Maximum length CDR3 sequence
+        include_genes : bool
+            If true, features for gene selection are also generated
                 
         """
-        self.amino_acids = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']#'ACDEFGHIKLMNPQRSTVWY'
+        self.min_L = min_L
+        self.max_L = max_L
+        self.amino_acids =  'ARNDCQEGHILKMFPSTWYV'
         features = []
-        L_features = ['L' + str(L) for L in range(min_L, max_L + 1)]
+        L_features = [['l' + str(L)] for L in range(min_L, max_L + 1)]
         features += L_features
         for L in range(min_L, max_L + 1):
             for i in range(L):
                 for aa in self.amino_acids:
-                    features.append('L' + str(L) + '_' + aa + str(i))
+                     features.append(['l' + str(L), 'a' + aa + str(i)])
                     
         if include_genes:
             main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
@@ -51,29 +56,75 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
             genomic_data = load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             
-            features += list(set(['v' + gen[0].split('*')[0].split('V')[-1] for gen in genomic_data.genV]))
-            features += list(set(['j' + gen[0].split('*')[0].split('J')[-1] for gen in genomic_data.genJ]))
+            features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
             
         self.update_model(add_features=features, add_constant_features=L_features)
         
-        self.feature_dict = {x:i for i,x in enumerate(self.features)}
+        self.feature_dict = {tuple(x):i for i,x in enumerate(self.features)}
         
-    def set_guage(self):
-
-        L_min = min([int(x.split('_')[0][1:]) for x in self.features])
-        L_max = max([int(x.split('_')[0][1:]) for x in self.features])
+    def set_guage(self, min_L = None, max_L = None):
+        """ multiply all paramaters of the same position and length (all amino acids) by a common factor
+        so sum_aa(gen_marginal(aa) * model_paramaters(aa)) = 1
         
-        for l in range(L_min, L_max + 1):
+        
+        Parameters
+        ----------
+        min_L : int
+            Minimum length CDR3 sequence, if not given taken from class attribute
+        max_L : int
+            Maximum length CDR3 sequence, if not given taken from class attribute
+                
+        """
+        if min_L == None:
+            min_L = self.min_L
+        if max_L == None:
+            max_L = self.max_L
+        
+        #min_L = min([int(x.split('_')[0][1:]) for x in self.features if x[0]=='L'])
+        #max_L = max([int(x.split('_')[0][1:]) for x in self.features if x[0]=='L'])
+        
+        for l in range(min_L, max_L + 1):
             for i in range(l):
-                G = sum([self.gen_marginals[self.feature_dict['L' + str(l) + '_' + aa + str(i)]]
-                                /self.gen_marginals[self.feature_dict['L' + str(l)]] * 
-                                np.exp(self.model_params[self.feature_dict['L' + str(l) + '_' + aa + str(i)]]) 
+                G = sum([self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
+                                /self.gen_marginals[self.feature_dict[('l' + str(l),)]] * 
+                                np.exp(self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
                                 for aa in self.amino_acids])
                 for aa in self.amino_acids:
-                    self.model_params[self.feature_dict['L' + str(l) + '_' + aa + str(i)]] -= np.log(G)   
+                    self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] -= np.log(G)   
                     
-    def plot_onepoint_values(self, onepoint , L_min, L_max, min_val, max_value, 
+    def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
+        """ plot a function of aa, length and position from left, one heatplot per aa
+        
+        
+        Parameters
+        ----------
+        onepoint : ndarray
+            array containting one-point values to plot, in the same shape as self.features, 
+            expected unless onepoint_dict is given
+        onepoint_dict : dict
+            dict of the one-point values to plot, keyed by the feature tuples such as (l12,aA8)
+        min_L : int
+            Minimum length CDR3 sequence
+        max_L : int
+            Maximum length CDR3 sequence
+        min_val : float
+            minimum value to plot
+        max_val : float
+            maximum value to plot
+        title : string
+            title of plot to display
+        cmap : colormap 
+            colormap to use for the heatplots
+        bad_color : string
+            color to use for nan values - used primarly for cells where position is larger than length
+        aa_color : string
+            color to use for amino acid names for each heatplot displayed on the bad_color background
+        marginals : bool
+            if true, indicates marginals are to be plotted and this sets cmap, bad_color and aa_color
+        
+        """
+        
         from mpl_toolkits.axes_grid1 import AxesGrid
         
         if marginals: #style for plotting marginals
@@ -101,12 +152,15 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
         
         for a,aa in enumerate(self.amino_acids):
         
-            M = np.empty((L_max - L_min + 1, L_max))
+            M = np.empty((max_L - min_L + 1, max_L))
             M[:] = np.nan
         
-            for l in range(L_min, L_max + 1):
+            for l in range(min_L, max_L + 1):
                 for i in range(l):
-                    M[l-L_min,i] = onepoint[self.feature_dict['L' + str(l) + '_' + aa + str(i)]]
+                    if onepoint_dict == None:
+                        M[l-min_L,i] = onepoint[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
+                    else:
+                        M[l-min_L,i] = onepoint_dict.get(('l' + str(l), 'a' + aa + str(i)), np.nan)
             
             im = grid[a].imshow(M, cmap = current_cmap, vmin = min_val, vmax = max_value)
             grid[a].text(0.75,0.7,amino_acids_dict[aa],transform=grid[a].transAxes, color = aa_color, fontsize = 'large', fontweight = 'bold')
@@ -115,35 +169,83 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
 
 
         
-        grid.axes_llc.set_xticks(range(0, L_max, 2))
-        grid.axes_llc.set_xticklabels(range(1, L_max + 1, 2))
-        grid.axes_llc.set_yticks(range(0, L_max - L_min + 1 ))
-        grid.axes_llc.set_yticklabels(range(L_min, L_max + 1))
+        grid.axes_llc.set_xticks(range(0, max_L, 2))
+        grid.axes_llc.set_xticklabels(range(1, max_L + 1, 2))
+        grid.axes_llc.set_yticks(range(0, max_L - min_L + 1 ))
+        grid.axes_llc.set_yticklabels(range(min_L, max_L + 1))
         
         fig.suptitle(title, fontsize=20.00)
 
-    def plot_model_parameters(self):
-        self.plot_onepoint_values(onepoint = np.exp(-self.model_params), L_min = 8, L_max = 16, min_val = 0, max_value = 2, title = 'model parameters q=exp(-E)')
+    def plot_model_parameters(self, low_freq_mask = 0.0):
+        """ plot the model parameters using plot_onepoint_values
         
-    def norm_marginals(self, marg):        
-        length_correction = np.array([(marg[self.feature_dict[f.split('_')[0]]] if ('_' in f) else 1.0) for f in self.features])
-        length_correction[length_correction == 0] = 1 #avoid dividing by zero if there is no seq of this length
-        return marg / length_correction
+        Parameters
+        ----------
+        low_freq_mask : float
+            threshold on the marginals, anything lower would be grayed out
+        
+        """
+        p1 = np.exp(-self.model_params)
+        if low_freq_mask:
+            p1[(self.data_marginals < low_freq_mask) & (self.gen_marginals < low_freq_mask)] = -1
+        self.plot_onepoint_values(onepoint = p1, min_L = 8, max_L = 16, min_val = 0, max_value = 2, title = 'model parameters q=exp(-E)')
+        
+    def norm_marginals(self, marg, min_L = None, max_L = None):
+        """ renormalizing the marginals accourding to length, so the sum of the marginals over all amino acid 
+            for one position/length combination will be 1 (and not the fraction of CDR3s of this length)
+            
+        Parameters
+        ----------
+        marg : ndarray
+            the marginal to renormalize
+        min_L : int
+            Minimum length CDR3 sequence, if not given taken from class attribute
+        max_L : int
+            Maximum length CDR3 sequence, if not given taken from class attribute
+                   
+        
+        """
+        
+        if min_L == None:
+            min_L = self.min_L
+        if max_L == None:
+            max_L = self.max_L
+            
+        for l in range(min_L, max_L + 1):
+            for i in range(l):
+                for aa in self.amino_acids:
+                    marg[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] = marg[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] / marg[self.feature_dict[('l' + str(l),)]]
+        #length_correction = np.array([(marg[self.feature_dict[f.split('_')[0]]] if ('_' in f) else 1.0) for f in self.features])
+        #length_correction[length_correction == 0] = 1 #avoid dividing by zero if there is no seq of this length
+        return marg 
         
 
-    def plot_marginals_length_corrected(self, L_min = 8, L_max = 16, log_scale = True):
+    def plot_marginals_length_corrected(self, min_L = 8, max_L = 16, log_scale = True):
+        
+        """ plot length normalized marginals using plot_onepoint_values
+        
+        Parameters
+        ----------
+        min_L : int
+            Minimum length CDR3 sequence, if not given taken from class attribute
+        max_L : int
+            Maximum length CDR3 sequence, if not given taken from class attribute
+        log_scale : bool
+            if True (default) plots marginals on a log scale
+        """
+        
         if log_scale:
             pc = 1e-10 #pseudo count to add to marginals to avoid log of zero
-            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.data_marginals) + pc), L_min=L_min, L_max=L_max ,
+            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.data_marginals) + pc), min_L=min_L, max_L=max_L ,
                                       min_val = -8, max_value = 0, title = 'log(data marginals)', marginals = True)
-            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.gen_marginals) + pc), L_min=L_min, L_max=L_max, 
+            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.gen_marginals) + pc), min_L=min_L, max_L=max_L, 
                                       min_val = -8, max_value = 0, title = 'log(generated marginals)', marginals = True)
-            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.model_marginals) + pc), L_min=L_min, L_max=L_max, 
+            self.plot_onepoint_values(onepoint = np.log(self.norm_marginals(self.model_marginals) + pc), min_L=min_L, max_L=max_L, 
                                       min_val = -8, max_value = 0, title = 'log(model marginals)', marginals = True)
         else:
-            self.plot_onepoint_values(onepoint = self.norm_marginals(self.data_marginals), L_min=L_min, L_max=L_max, 
+            self.plot_onepoint_values(onepoint = self.norm_marginals(self.data_marginals), min_L=min_L, max_L=max_L, 
                                       min_val = 0, max_value = 1, title = 'data marginals', marginals = True)       
-            self.plot_onepoint_values(onepoint = self.norm_marginals(self.gen_marginals), L_min=L_min, L_max=L_max, 
+            self.plot_onepoint_values(onepoint = self.norm_marginals(self.gen_marginals), min_L=min_L, max_L=max_L, 
                                       min_val = 0, max_value = 1, title = 'generated marginals', marginals = True)
-            self.plot_onepoint_values(onepoint = self.norm_marginals(self.model_marginals), L_min=L_min, L_max=L_max, 
+            self.plot_onepoint_values(onepoint = self.norm_marginals(self.model_marginals), min_L=min_L, max_L=max_L, 
                                       min_val = -8, max_value = 0, title = 'model marginals', marginals = True)
