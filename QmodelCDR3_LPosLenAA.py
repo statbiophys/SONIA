@@ -20,7 +20,14 @@ from QmodelCDR3 import QmodelCDR3
 
 class QmodelCDR3_LPosLenAA(QmodelCDR3):
     
-    def add_features(self, min_L = 4, max_L = 22, include_genes = True):
+    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, include_genes = True):
+        
+        QmodelCDR3.__init__(self, features, constant_features, data_seqs, gen_seqs, chain_type, load_model)
+        self.min_L = min([len(x[0]) for x in (self.gen_seqs + self.data_seqs)])
+        self.max_L = max([len(x[0]) for x in (self.gen_seqs + self.data_seqs)])
+        self.add_features()
+    
+    def add_features(self, min_L = None, max_L = None, include_genes = True):
         """Generates a list of feature_strs for a model that parametrize every amino acid
         by the CDR3 length and position from the left (Cys)
         
@@ -35,8 +42,12 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
             If true, features for gene selection are also generated
                 
         """
-        self.min_L = min_L
-        self.max_L = max_L
+        
+        if min_L == None:
+            min_L = self.min_L
+        if max_L == None:
+            max_L = self.max_L
+        
         self.amino_acids =  'ARNDCQEGHILKMFPSTWYV'
         features = []
         L_features = [['l' + str(L)] for L in range(min_L, max_L + 1)]
@@ -62,7 +73,7 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
         
         self.feature_dict = {tuple(x):i for i,x in enumerate(self.features)}
         
-    def set_guage(self, min_L = None, max_L = None):
+    def set_gauge(self, min_L = None, max_L = None):
         """ multiply all paramaters of the same position and length (all amino acids) by a common factor
         so sum_aa(gen_marginal(aa) * model_paramaters(aa)) = 1
         
@@ -84,14 +95,15 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
         #max_L = max([int(x.split('_')[0][1:]) for x in self.features if x[0]=='L'])
         
         for l in range(min_L, max_L + 1):
-            for i in range(l):
-                G = sum([self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
-                                /self.gen_marginals[self.feature_dict[('l' + str(l),)]] * 
-                                np.exp(self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
-                                for aa in self.amino_acids])
-                for aa in self.amino_acids:
-                    self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] -= np.log(G)   
-                    
+            if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
+                for i in range(l):
+                    G = sum([self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
+                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]] * 
+                                    np.exp(self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
+                                    for aa in self.amino_acids])
+                    for aa in self.amino_acids:
+                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] -= np.log(G)   
+                        
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
         """ plot a function of aa, length and position from left, one heatplot per aa
@@ -214,7 +226,8 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
         for l in range(min_L, max_L + 1):
             for i in range(l):
                 for aa in self.amino_acids:
-                    marg[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] = marg[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] / marg[self.feature_dict[('l' + str(l),)]]
+                    if marg[self.feature_dict[('l' + str(l),)]]>0:
+                        marg[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] /= marg[self.feature_dict[('l' + str(l),)]]
         #length_correction = np.array([(marg[self.feature_dict[f.split('_')[0]]] if ('_' in f) else 1.0) for f in self.features])
         #length_correction[length_correction == 0] = 1 #avoid dividing by zero if there is no seq of this length
         return marg 
