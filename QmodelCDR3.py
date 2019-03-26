@@ -103,16 +103,17 @@ class QmodelCDR3(object):
     
     def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None):
         self.features = np.array(features)
-        self.constant_features =  constant_features
+        #self.constant_features =  constant_features
         self.model_params = np.zeros(len(self.features))
         self.data_seqs = []
         self.gen_seqs = []
         self.data_seq_features = []
         self.gen_seq_features = []
-        self.data_marginals = np.array([])
-        self.gen_marginals = np.array([])
+        self.data_marginals = np.zeros(len(features))
+        self.gen_marginals = np.zeros(len(features))
         self.model_marginals = np.zeros(len(features))
         self.L1_converge_history = []
+        self.pseudo_count = .5
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
             print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
@@ -126,7 +127,8 @@ class QmodelCDR3(object):
             self.L1_converge_history = []
         
         #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-        self.floating_features = np.isin(self.features, self.constant_features, invert = True)
+        #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
+        #self.floating_features = self.data_marginals > 0
         
         self.max_iterations = 100
         self.step_size = 0.1 #step size
@@ -134,7 +136,7 @@ class QmodelCDR3(object):
         self.l2_reg = None
         
         self.v = np.zeros(len(self.features))
-        self.drag = 0.05
+        self.drag = 0.0
         
     def seq_feature_proj(self, feature, seq):
         """Checks if a sequence matches all subfeatures of the feature list
@@ -341,11 +343,15 @@ class QmodelCDR3(object):
             self.v = np.zeros(len(self.features))
         for _ in range(self.max_iterations):
             #Set the 'velocity' for this iteration
+            
+            flipped_indices = self.v * (self.data_marginals - self.model_marginals) > 0
             self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
+            #print sum(flipped_indices)
+            self.v[flipped_indices] = self.data_marginals[flipped_indices] - self.model_marginals[flipped_indices]
             if self.l2_reg is not None: #Step with l2 reg
-                self.model_params[self.floating_features] = (1-self.step_size*self.l2_reg)*self.model_params[self.floating_features] - self.step_size * self.v[self.floating_features] #new parameters
+                self.model_params = (1-self.step_size*self.l2_reg)*self.model_params - self.step_size * self.v #new parameters
             else: #Step without l2 reg
-                self.model_params[self.floating_features] = self.model_params[self.floating_features] - self.step_size * self.v[self.floating_features] #new parameters
+                self.model_params = self.model_params - self.step_size * self.v #new parameters
             
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
             self.L1_converge_history.append(sum(abs(self.data_marginals - self.model_marginals)))
@@ -394,29 +400,32 @@ class QmodelCDR3(object):
         
         self.data_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs] #add_data_seqs
         self.gen_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs] #add_gen_seqs
-        self.constant_features += add_constant_features
+        #self.constant_features += add_constant_features
         
         if len(remove_features) > 0:
             indices_to_keep = [i for i, feature_str in enumerate(self.features) if feature_str not in remove_features and i not in remove_features]
             self.features = self.features[indices_to_keep]
             self.model_params = self.model_params[indices_to_keep]
             #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-            self.floating_features = np.isin(self.features, self.constant_features, invert = True)
+            #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
         if len(add_features) > 0:
             self.features = np.append(self.features, add_features)
             self.model_params = np.append(self.model_params, np.zeros(len(add_features)))
             #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-            self.floating_features = np.isin(self.features, self.constant_features, invert = True)
+            #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
             
         if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals:
             self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
             #self.inv_I = np.linalg.inv(self.compute_data_fisher_info())
+            #self.floating_features = self.data_marginals > 0
         
         if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals:
             self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
+            
+        self.data_marginals[[self.data_marginals[i] == 0 and self.gen_marginals[i] > 0 for i in range(len(self.data_marginals))]] = self.pseudo_count/float(len(self.data_seqs))
     
     def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True):
         """Generates synthetic sequences for gen_seqs
@@ -496,8 +505,6 @@ class QmodelCDR3(object):
         
         fig.add_subplot(122)
         
-#        plt.loglog([self.data_marginals[p] for p in r_features], [self.gen_marginals[p] for p in r_features], 'r.', alpha = 0.2, markersize=1, label = 'Raw marginals')
-#        plt.loglog([self.data_marginals[p] for p in r_features], [self.model_marginals[p] for p in r_features], 'b.', alpha = 0.2, markersize=1, label = 'Model adjusted marginals')
         plt.loglog(self.data_marginals, self.gen_marginals, 'r.', alpha = 0.2, markersize=1)
         plt.loglog(self.data_marginals, self.model_marginals, 'b.', alpha = 0.2, markersize=1)
         plt.loglog([],[], 'r.', label = 'Raw marginals')
@@ -532,8 +539,8 @@ class QmodelCDR3(object):
             if not raw_input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
                 print 'Exiting...'
                 return None
-
-        os.mkdir(save_dir)
+        else:
+            os.mkdir(save_dir)
         
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
