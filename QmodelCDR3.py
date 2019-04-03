@@ -161,7 +161,8 @@ class QmodelCDR3(object):
                         return False
                 elif f[0] == 'v' or f[0] == 'j': #Gene subfeature
                         if not any([[int(x) for x in f[1:].split('-')] == [int(y) for y in gene.lower().split(f[0])[-1].split('-')] for gene in seq[1:] if f[0] in gene.lower()]):
-                            return False
+                            if not any([[int(x) for x in f[1:].split('-')] == [int(gene.lower().split(f[0])[-1].split('-')[0])] for gene in seq[1:] if f[0] in gene.lower()]):
+                                return False
                 elif f[0] == 'l': #CDR3 length subfeature
                     if len(seq[0]) != int(f[1:]):
                         return False    
