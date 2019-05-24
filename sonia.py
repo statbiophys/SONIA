@@ -6,14 +6,11 @@ Created on Wed Jan 30 12:06:58 2019
 @author: zacharysethna
 """
 
-"""
-
-"""
 
 import numpy as np
 import os
 
-class QmodelCDR3(object):
+class Sonia(object):
     """Class used to infer a Q selection model.
 
 
@@ -22,9 +19,12 @@ class QmodelCDR3(object):
     features : ndarray
         Array of feature lists. Each list contains individual subfeatures which
         all must be satisfied.
+    features_dict : dict
+        Dictionary keyed by tuples of the feature lists. Values are the index 
+        of the feature, i.e. self.features[self.features_dict[tuple(f)]] = f.
     constant_features : list
         List of feature strings to not update parameters during learning. These
-        features are still used to compute energies
+        features are still used to compute energies (not currently used)
     model_params : ndarray
         Array of energies corresponding to each feature in features
     data_seqs : list
@@ -81,11 +81,12 @@ class QmodelCDR3(object):
     compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False)
         Computes the marginals of features over a set of sequences.
     
-    infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, l2_reg = None, record_history = False)
+    infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None)
         Infers model parameters (energies for each feature).
     
-    update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False)
+    update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False)
         Updates model by adding/removing model features or data/generated seqs.
+        Marginals and seq_features can also be updated.
     
     add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True)  
         Generates synthetic sequences using OLGA and adds them to gen_seqs.
@@ -103,6 +104,7 @@ class QmodelCDR3(object):
     
     def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None):
         self.features = np.array(features)
+        self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         #self.constant_features =  constant_features
         self.model_params = np.zeros(len(self.features))
         self.data_seqs = []
@@ -134,6 +136,7 @@ class QmodelCDR3(object):
         self.step_size = 0.1 #step size
         self.converge_threshold = 1e-3
         self.l2_reg = None
+        self.amino_acids =  'ARNDCQEGHILKMFPSTWYV'
         
         self.v = np.zeros(len(self.features))
         self.drag = 0.0
@@ -161,7 +164,7 @@ class QmodelCDR3(object):
                         return False
                 elif f[0] == 'v' or f[0] == 'j': #Gene subfeature
                         if not any([[int(x) for x in f[1:].split('-')] == [int(y) for y in gene.lower().split(f[0])[-1].split('-')] for gene in seq[1:] if f[0] in gene.lower()]):
-                            if not any([[int(x) for x in f[1:].split('-')] == [int(gene.lower().split(f[0])[-1].split('-')[0])] for gene in seq[1:] if f[0] in gene.lower()]):
+                            if not any([[int(x) for x in f[1:].split('-')] == [int(gene.lower().split(f[0])[-1].split('-')[0])] for gene in seq[1:] if f[0] in gene.lower()]): #Checks for gene-family match if specified as such
                                 return False
                 elif f[0] == 'l': #CDR3 length subfeature
                     if len(seq[0]) != int(f[1:]):
@@ -192,8 +195,8 @@ class QmodelCDR3(object):
         if features is None:
             features = self.features
         seq_features = []
-        for feature_index,feature_str in enumerate(features):
-            if self.seq_feature_proj(feature_str, seq):
+        for feature_index,feature_lst in enumerate(features):
+            if self.seq_feature_proj(feature_lst, seq):
                 seq_features += [feature_index]
                 
         return seq_features
@@ -221,7 +224,7 @@ class QmodelCDR3(object):
             return np.sum(self.model_params[self.find_seq_features(seq)])
         return 0
     
-    def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False):
+    def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
         """Computes the marginals of each feature over sequences.
         
         Computes marginals either with a flat distribution over the sequences
@@ -248,10 +251,14 @@ class QmodelCDR3(object):
             weighted as 1) if True. If False, the marginals are computed using
             model weights (each sequence is weighted as exp(-E) = Q). Default
             is False.
+        output_dict : bool
+            The marginal output is either formatted as an array or a dictionary.
+            The default output is an ndarray (False). If True, the dictionary
+            is keyed by tuple-formatted features.
         
         Returns
         -------
-        marginals : ndarray
+        marginals : ndarray or dict
             Marginals of model features over seqs.
                 
         """
@@ -295,7 +302,7 @@ class QmodelCDR3(object):
                 return marginals/np.sum(np.exp(-energies))
     
 
-    def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, l2_reg = None, converge_threshold = None):
+    def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None):
         """Infer model parameters, i.e. energies for each model feature.
         
         
@@ -307,11 +314,19 @@ class QmodelCDR3(object):
             Step size for the update of the model energies at each iteration.
         drag : float
             Drag coefficient for the inference iterations. The smaller the drag,
-        the faster the parameter learning, but the convergence is less stable.
+            the faster the parameter learning, but the convergence is less stable.
         intialize : bool
             Resets model before inferring model_params
+        initialize_from_zero : bool
+            Resets model parameters to zeros (instead of matching mean field)
+        zero_flipped_indices : bool
+            Controls whether the velocity in a parameter gets reset to 0 if the
+            direction of the step changes. Default is True.
         l2_reg : float or None
             L2 regularization. If None (default) then no regularization.
+        sub_sample_frac : float
+            Fraction of the gen_seqs to use for stochastic gradient descent.
+            
         
         Attributes set
         --------------
@@ -334,10 +349,15 @@ class QmodelCDR3(object):
             self.drag = drag
         if converge_threshold is not None:
             self.converge_threshold = converge_threshold
+        if sub_sample_frac is not None:
+            sub_sample_size = min([int(np.floor(len(self.gen_seqs)*sub_sample_frac)), len(self.gen_seqs)])
         self.l2_reg = l2_reg
         
-        if initialize:
-            self.model_params = np.array([-np.log10(self.data_marginals[i]/x) if x > 0 and self.data_marginals[i] > 0 else 0. for i, x in enumerate(self.gen_marginals)])
+        if initialize or initialize_from_zero:
+            if initialize_from_zero:
+                self.model_params = np.zeros(len(self.features))
+            else:
+                self.model_params = np.array([-np.log10(self.data_marginals[i]/x) if x > 0 and self.data_marginals[i] > 0 else 0. for i, x in enumerate(self.gen_marginals)])
             self.update_model(auto_update_marginals=True) #make sure all attributes are updated
             self.L1_converge_history = [sum(abs(self.data_marginals - self.model_marginals))]
             self.model_params_history = []
@@ -345,21 +365,42 @@ class QmodelCDR3(object):
         for _ in range(self.max_iterations):
             #Set the 'velocity' for this iteration
             
-            flipped_indices = self.v * (self.data_marginals - self.model_marginals) > 0
-            self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
-            #print sum(flipped_indices)
-            self.v[flipped_indices] = self.data_marginals[flipped_indices] - self.model_marginals[flipped_indices]
+            if zero_flipped_indices:
+                flipped_indices = self.v * (self.data_marginals - self.model_marginals) > 0
+                self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
+                #print sum(flipped_indices)
+                self.v[flipped_indices] = self.data_marginals[flipped_indices] - self.model_marginals[flipped_indices]
+            else:
+                self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
             if self.l2_reg is not None: #Step with l2 reg
                 self.model_params = (1-self.step_size*self.l2_reg)*self.model_params - self.step_size * self.v #new parameters
             else: #Step without l2 reg
                 self.model_params = self.model_params - self.step_size * self.v #new parameters
             
-            self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
+            
+            if sub_sample_frac is None:
+                self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
+            else:
+                self.model_marginals = self.compute_marginals(seq_model_features = np.random.choice(self.gen_seq_features, sub_sample_size, replace = False))
             self.L1_converge_history.append(sum(abs(self.data_marginals - self.model_marginals)))
+            
+            self.gauge_energies()
+            
             if np.sum(np.abs(self.v)) < self.converge_threshold:
                 break
+            
+        if sub_sample_frac is not None:
+            self.update_model(auto_update_marginals=True)
 
-    def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False):
+    def gauge_energies(self):
+        """Gauge energies (i.e. model parameters).
+        
+        Gauging must be done in a model-feature specific fashion, so this is
+        a dummy function.
+        """
+        
+        pass
+    def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
         """Updates the model attributes
         
         This method is used to add/remove model features or data/generated
@@ -377,9 +418,15 @@ class QmodelCDR3(object):
         add_gen_seqs : list
             List of CDR3 sequences to add to data_seq pool.
         add_features : list
-            List of feature_strs to add to self.features
+            List of feature lists to add to self.features
         remove_featurese : list
-            List of feature_strs and/or indices to remove from self.features
+            List of feature lists and/or indices to remove from self.features
+        add_constant_features : list
+            List of feature lists to add to constant features. (Not currently used)
+        auto_update_marginals : bool
+            Specifies to update marginals.
+        auto_update_seq_features : bool
+            Specifies to update seq features.
     
         Attributes set
         --------------
@@ -404,74 +451,97 @@ class QmodelCDR3(object):
         #self.constant_features += add_constant_features
         
         if len(remove_features) > 0:
-            indices_to_keep = [i for i, feature_str in enumerate(self.features) if feature_str not in remove_features and i not in remove_features]
+            indices_to_keep = [i for i, feature_lst in enumerate(self.features) if feature_lst not in remove_features and i not in remove_features]
             self.features = self.features[indices_to_keep]
             self.model_params = self.model_params[indices_to_keep]
+            self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
             #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
         if len(add_features) > 0:
             self.features = np.append(self.features, add_features)
             self.model_params = np.append(self.model_params, np.zeros(len(add_features)))
+            self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
             #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
             
-        if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals:
+        if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features:
             self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
+            
+        if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals > 0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
             #self.inv_I = np.linalg.inv(self.compute_data_fisher_info())
             #self.floating_features = self.data_marginals > 0
         
-        if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals:
+        if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features:
             self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
+            
+        if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals:
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
             
-        self.data_marginals[[self.data_marginals[i] == 0 and self.gen_marginals[i] > 0 for i in range(len(self.data_marginals))]] = self.pseudo_count/float(len(self.data_seqs))
+        if len(self.data_seqs) > 0:
+            self.data_marginals[[self.data_marginals[i] == 0 and self.gen_marginals[i] > 0 for i in range(len(self.data_marginals))]] = self.pseudo_count/float(len(self.data_seqs))
     
-    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True):
-        """Generates synthetic sequences for gen_seqs
+    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None):
+        """Generates MonteCarlo sequences for gen_seqs using OLGA.
         
-        Generates sequences from one of the default OLGA VDJ recombination 
-        models ('human_T_beta', 'human_B_heavy', or 'mouse_T_beta'). These
-        sequences can be added to either the training sequence set or the
-        validation sequence set. Updates t_seqs, v_seqs, t_vecs, and v_vecs.
-        
-        Requires the OLGA package (pip install olga).
+        Only generates seqs from a V(D)J model. Requires the OLGA package 
+        (pip install olga).
         
         Parameters
         ----------
-        num_synth_seqs : int or float
-            Number of synthetic sequences to generate and add to the specified
+        num_gen_seqs : int or float
+            Number of MonteCarlo sequences to generate and add to the specified
             sequence pool.
-        model_type : str
-            Specifies default OLGA model for sequence generation. Options are:
-            'human_T_beta' (default), 'human_B_heavy', or 'mouse_T_beta'.
+        custom_model_folder : str
+            Path to a folder specifying a custom IGoR formatted model to be
+            used as a generative model. Folder must contain 'model_params.txt'
+            and 'model_marginals.txt'
     
         Attributes set
         --------------
         gen_seqs : list
-            Synthetic sequences drawn from V(D)J recomb model
+            MonteCarlo sequences drawn from a VDJ recomb model
         gen_seq_features : list
             Features gen_seqs have been projected onto.
                 
         """
         #Load OLGA for seq generation
-        import olga.load_model as load_model
+        import olga.load_model as olga_load_model
         import olga.sequence_generation as seq_gen
         
         #Load generative model
-        main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
+        if custom_model_folder is None:
+            main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+        else:
+            main_folder = custom_model_folder
         
         params_file_name = os.path.join(main_folder,'model_params.txt')
         marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
         V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
         J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
         
-        genomic_data = load_model.GenomicDataVDJ()
-        genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVDJ()
-        generative_model.load_and_process_igor_model(marginals_file_name)        
-        sg_model = seq_gen.SequenceGenerationVDJ(generative_model, genomic_data)
+        if not os.path.isfile(params_file_name) or not os.path.isfile(marginals_file_name):
+            print 'Cannot find specified custom generative model files: ' + '\n' + params_file_name + '\n' + marginals_file_name
+            print 'Exiting sequence generation...'
+            return None
+        if not os.path.isfile(V_anchor_pos_file):
+            V_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'V_gene_CDR3_anchors.csv')
+        if not os.path.isfile(J_anchor_pos_file):
+            J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
+        
+        if self.chain_type.endswith('TRA'):
+            genomic_data = olga_load_model.GenomicDataVJ()
+            genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+            generative_model = olga_load_model.GenerativeModelVJ()
+            generative_model.load_and_process_igor_model(marginals_file_name)        
+            sg_model = seq_gen.SequenceGenerationVJ(generative_model, genomic_data)
+        else:
+            genomic_data = olga_load_model.GenomicDataVDJ()
+            genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+            generative_model = olga_load_model.GenerativeModelVDJ()
+            generative_model.load_and_process_igor_model(marginals_file_name)        
+            sg_model = seq_gen.SequenceGenerationVDJ(generative_model, genomic_data)
         
         #Generate sequences
         seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3() for _ in range(int(num_gen_seqs))]]
@@ -545,13 +615,13 @@ class QmodelCDR3(object):
         
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
-                data_seqs_file.write('Sequence;Genes\tEnergy\n')
-                data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(self.compute_seq_energy(seq_features=self.data_seq_features[i])) for i, seq in enumerate(self.data_seqs)]))
+                data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
+                data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(self.compute_seq_energy(seq_features=self.data_seq_features[i])) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
         
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
-                gen_seqs_file.write('Sequence;Genes\tEnergy\n')
-                gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(self.compute_seq_energy(seq_features=self.gen_seq_features[i])) for i, seq in enumerate(self.gen_seqs)]))
+                gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
+                gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(self.compute_seq_energy(seq_features=self.gen_seq_features[i])) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
         
         if 'L1_converge_history' in attributes_to_save:
             with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
@@ -596,19 +666,31 @@ class QmodelCDR3(object):
             model_file.close()
             self.features = np.array(features)
             self.model_params = np.array(model_params)
-            
+            self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         else:
             print 'Cannot find model.tsv  --  no features or model parameters loaded.'
         
         if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
-                self.data_seqs = [seq.split('\t')[0].split(';') for seq in data_seqs_file.read().strip().split('\n')[1:]]
+                #self.data_seqs = [seq.split('\t')[0].split(';') for seq in data_seqs_file.read().strip().split('\n')[1:]]
+                self.data_seqs = []
+                self.data_seq_features = []
+                for line in data_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.data_seqs.append(split_line[0].split(';'))
+                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
         else:
             print 'Cannot find data_seqs.tsv  --  no data seqs loaded.'
             
         if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'gen_seqs.tsv'), 'r') as gen_seqs_file:
-                self.gen_seqs = [seq.split('\t')[0].split(';') for seq in gen_seqs_file.read().strip().split('\n')[1:]]
+                #self.gen_seqs = [seq.split('\t')[0].split(';') for seq in gen_seqs_file.read().strip().split('\n')[1:]]
+                self.gen_seqs = []
+                self.gen_seq_features = []
+                for line in gen_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.gen_seqs.append(split_line[0].split(';'))
+                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
         else:
             print 'Cannot find gen_seqs.tsv  --  no generated seqs loaded.'
         

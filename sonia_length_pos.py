@@ -14,22 +14,19 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
-#Load OLGA for seq generation
-import olga.load_model as load_model
-from QmodelCDR3 import QmodelCDR3
+from sonia import Sonia
 
-class QmodelCDR3_LPosLenAA(QmodelCDR3):
+class SoniaLengthPos(Sonia):
     
-    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, include_genes = True):
+    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, min_L = 4, max_L = 30, include_genes = True):
         
-        QmodelCDR3.__init__(self, features, constant_features, data_seqs, gen_seqs, chain_type, load_model)
-        self.min_L = min([len(x[0]) for x in (self.gen_seqs + self.data_seqs)])
-        self.max_L = max([len(x[0]) for x in (self.gen_seqs + self.data_seqs)])
-        self.add_features()
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model)
+        self.min_L = min_L
+        self.max_L = max_L
+        self.add_features(include_genes)
     
-    def add_features(self, min_L = None, max_L = None, include_genes = True):
-        """Generates a list of feature_strs for a model that parametrize every amino acid
-        by the CDR3 length and position from the left (Cys)
+    def add_features(self, include_genes = True):
+        """Generates a list of feature_lsts for a length dependent L pos model.
         
         
         Parameters
@@ -39,43 +36,84 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
         max_L : int
             Maximum length CDR3 sequence
         include_genes : bool
-            If true, features for gene selection are also generated
+            If true, features for gene selection are also generated. Currently
+            joint V/J pairs used.
                 
         """
         
-        if min_L == None:
-            min_L = self.min_L
-        if max_L == None:
-            max_L = self.max_L
-        
-        self.amino_acids =  'ARNDCQEGHILKMFPSTWYV'
         features = []
-        L_features = [['l' + str(L)] for L in range(min_L, max_L + 1)]
+        L_features = [['l' + str(L)] for L in range(self.min_L, self.max_L + 1)]
         features += L_features
-        for L in range(min_L, max_L + 1):
+        for L in range(self.min_L, self.max_L + 1):
             for i in range(L):
                 for aa in self.amino_acids:
                      features.append(['l' + str(L), 'a' + aa + str(i)])
                     
         if include_genes:
-            main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
+            import olga.load_model as olga_load_model
+            main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
         
             params_file_name = os.path.join(main_folder,'model_params.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
             
-            genomic_data = load_model.GenomicDataVDJ()
+            genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             
             features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
             
-        self.update_model(add_features=features, add_constant_features=L_features)
+        self.update_model(add_features=features)
         
-        self.feature_dict = {tuple(x):i for i,x in enumerate(self.features)}
+    def find_seq_features(self, seq, features = None):
+        """Finds which features match seq
         
-    def set_gauge(self, min_L = None, max_L = None):
-        """ multiply all paramaters of the same position and length (all amino acids) by a common factor
-        so sum_aa(gen_marginal(aa) * model_paramaters(aa)) = 1
+        If no features are provided, the length dependent amino acid model
+        features will be assumed.
+        
+        Parameters
+        ----------
+        seq : list
+            CDR3 sequence and any associated genes
+        features : ndarray
+            Array of feature lists. Each list contains individual subfeatures which
+            all must be satisfied.
+    
+        Returns
+        -------
+        seq_features : list
+            Indices of features seq projects onto.
+        
+        """
+        if features is None:
+            seq_feature_lsts = [['l' + str(len(seq[0]))]]
+            seq_feature_lsts += [['l' + str(len(seq[0])), 'a' + aa + str(i)] for i, aa in enumerate(seq[0])]
+            v_genes = [gene for gene in seq[1:] if 'v' in gene.lower()]
+            j_genes = [gene for gene in seq[1:] if 'j' in gene.lower()]
+            
+            try:
+                seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
+                seq_feature_lsts += [['j' + '-'.join([str(int(y)) for y in gene.lower().split('j')[-1].split('-')])] for gene in j_genes]
+                seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in v_gene.lower().split('v')[-1].split('-')]), 'j' + '-'.join([str(int(y)) for y in j_gene.lower().split('j')[-1].split('-')])] for v_gene in v_genes for j_gene in j_genes]
+            except ValueError:
+                pass
+            seq_features = [self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]
+        else:
+            seq_features = []
+            for feature_index,feature_lst in enumerate(features):
+                if self.seq_feature_proj(feature_lst, seq):
+                    seq_features += [feature_index]
+                
+        return seq_features
+
+        
+    def gauge_energies(self):
+        """Gauge energies (i.e. model parameters).
+        
+        
+        For the length dependent position model, the gauge is set so that at a 
+        given position, for a given length, we have: 
+        
+        <q_i,aa;L>_gen|L = 1
         
         
         Parameters
@@ -86,23 +124,16 @@ class QmodelCDR3_LPosLenAA(QmodelCDR3):
             Maximum length CDR3 sequence, if not given taken from class attribute
                 
         """
-        if min_L == None:
-            min_L = self.min_L
-        if max_L == None:
-            max_L = self.max_L
-        
-        #min_L = min([int(x.split('_')[0][1:]) for x in self.features if x[0]=='L'])
-        #max_L = max([int(x.split('_')[0][1:]) for x in self.features if x[0]=='L'])
-        
-        for l in range(min_L, max_L + 1):
+                
+        for l in range(self.min_L, self.max_L + 1):
             if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
                 for i in range(l):
-                    G = sum([self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
-                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]] * 
-                                    np.exp(self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
+                    G = sum([(self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
+                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]]) * 
+                                    np.exp(-self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
                                     for aa in self.amino_acids])
                     for aa in self.amino_acids:
-                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] -= np.log(G)   
+                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)   
                         
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
