@@ -8,13 +8,10 @@ Created on Wed Mar  6 15:12:15 2019
 
 import numpy as np
 import os
-
 import matplotlib
-matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
-
 from sonia import Sonia
+matplotlib.use('Agg')
 
 class SoniaLengthPos(Sonia):
     

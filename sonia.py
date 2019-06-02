@@ -10,6 +10,34 @@ Created on Wed Jan 30 12:06:58 2019
 import numpy as np
 import os
 
+
+def compute_seq_marginal(args):
+    """Computes the energy of a sequence according to the model.
+
+
+    Parameters
+    ----------
+    seq_features : list
+        Features indices seq projects onto.
+
+    Returns
+    -------
+    E : float
+        Energy of seq according to the model.
+
+    """
+
+    seq_features, model_params, number_of_features = args[0], args[1], args[2]
+    marginals = np.zeros(number_of_features)
+    if seq_features is not None:
+        if model_params is not None:
+            marginals[seq_features] = np.exp(-np.sum(model_params[seq_features]))
+        else:
+            marginals[seq_features] = 1
+        return marginals
+    else:
+        return 0
+
 class Sonia(object):
     """Class used to infer a Q selection model.
 
@@ -102,7 +130,7 @@ class Sonia(object):
     
     """
     
-    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None):
+    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, processes = 4):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         #self.constant_features =  constant_features
@@ -121,6 +149,8 @@ class Sonia(object):
             print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
             return None
         self.chain_type = default_chain_types[chain_type]
+
+        self.processes = processes
         
         if load_model is not None:
             self.load_model(load_model)
@@ -195,7 +225,7 @@ class Sonia(object):
         if features is None:
             features = self.features
         seq_features = []
-        for feature_index,feature_lst in enumerate(features):
+        for feature_index, feature_lst in enumerate(features):
             if self.seq_feature_proj(feature_lst, seq):
                 seq_features += [feature_index]
                 
@@ -262,45 +292,35 @@ class Sonia(object):
             Marginals of model features over seqs.
                 
         """
-        if features is None:
-            marginals = np.zeros(len(self.features)) #initialize marginals
-            if seq_model_features is not None:
-                pass
-            elif seqs is not None:
+
+        if seq_model_features is None:  # if model features are not given
+            if seqs is not None:  # if sequences are given, get model features from them
                 seq_model_features = [self.find_seq_features(seq) for seq in seqs]
-            else:
-                return marginals
-            if len(seq_model_features) == 0:
-                return marginals
-            if use_flat_distribution:
-                for seq_features in seq_model_features:
-                    marginals[seq_features] += 1.
-                return marginals/len(seq_model_features)
-            else:
-                energies = np.zeros(len(seq_model_features))
-                for i, seq_features in enumerate(seq_model_features):
-                    energies[i] = self.compute_seq_energy(seq_features = seq_features)
-                    marginals[seq_features] += np.exp(-energies[i])
-                return marginals/np.sum(np.exp(-energies))
-            
+            else:   # if not sequences are given, sequences features is empty
+                seq_model_features = []
+
+        if len(seq_model_features) == 0:  # if no model features are given, return empty array
+            return np.array([])
+
+        if features is not None and seqs is not None:  # if a different set of features for the marginals is given
+            seq_compute_features = [self.find_seq_features(seq, features = features) for seq in seqs]
+        else:  # if no features or no sequences are provided, compute marginals using model features
+            seq_compute_features = seq_model_features
+
+        if self.processes > 1:
+            import multiprocessing as mp
+            pool = mp.Pool(self.processes)
+            marginals_all_seqs = pool.map(compute_seq_marginal,
+                                          [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f
+                                           in seq_compute_features])
+            pool.close()
         else:
-            marginals = np.zeros(len(features))
-            if seqs is None or len(seqs) == 0:
-                return marginals
-            seq_cross_features_all = [self.find_seq_features(seq, features = features) for seq in seqs]
-            if use_flat_distribution:
-                for seq_cross_features in seq_cross_features_all:
-                    marginals[seq_cross_features] += 1.
-                return marginals/len(seqs)
-            else:
-                if seq_model_features is None or len(seq_model_features) != len(seqs):
-                    seq_model_features = [self.find_seq_features(seq) for seq in seqs]
-                energies = np.zeros(len(seqs))
-                for i, seq_cross_features in enumerate(seq_cross_features_all):
-                    energies[i] = self.compute_seq_energy(seq_features= seq_model_features[i])
-                    marginals[seq_cross_features] += np.exp(-energies[i])
-                return marginals/np.sum(np.exp(-energies))
-    
+            marginals_all_seqs = map(compute_seq_marginal,
+                                          [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f
+                                           in seq_compute_features])
+
+        marginals = sum(np.array(marginals_all_seqs)) / sum([max(m) for m in marginals_all_seqs])
+        return marginals
 
     def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None):
         """Infer model parameters, i.e. energies for each model feature.
@@ -400,6 +420,7 @@ class Sonia(object):
         """
         
         pass
+
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
         """Updates the model attributes
         
@@ -464,22 +485,22 @@ class Sonia(object):
             #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
             #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
             
-        if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features:
+        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
             self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
             
-        if len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals > 0:
+        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals > 0) and len(self.features)>0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
             #self.inv_I = np.linalg.inv(self.compute_data_fisher_info())
             #self.floating_features = self.data_marginals > 0
         
-        if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features:
+        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
             self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
             
-        if len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals:
+        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
             
-        if len(self.data_seqs) > 0:
+        if len(self.data_seqs) > 0 and len(self.gen_seqs) > 0:
             self.data_marginals[[self.data_marginals[i] == 0 and self.gen_marginals[i] > 0 for i in range(len(self.data_marginals))]] = self.pseudo_count/float(len(self.data_seqs))
     
     def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None):
