@@ -11,7 +11,7 @@ import numpy as np
 import os
 
 
-def compute_seq_marginal(args):
+def compute_seq_marginal(args):#seqs_features, model_params, number_of_features):
     """Computes the energy of a sequence according to the model.
 
 
@@ -27,16 +27,21 @@ def compute_seq_marginal(args):
 
     """
 
-    seq_features, model_params, number_of_features = args[0], args[1], args[2]
+    seqs_features, model_params, number_of_features = args[0], args[1], args[2]
     marginals = np.zeros(number_of_features)
-    if seq_features is not None:
-        if model_params is not None:
-            marginals[seq_features] = np.exp(-np.sum(model_params[seq_features]))
-        else:
-            marginals[seq_features] = 1
-        return marginals
+    energy_sum = 0
+    if model_params is not None:
+        for seq_features in seqs_features:
+            t = np.exp(-np.sum(model_params[seq_features]))
+            marginals[seq_features] += t
+            energy_sum += t
+            return marginals, energy_sum
     else:
-        return 0
+        for seq_features in seqs_features:
+            marginals[seq_features] += 1
+            energy_sum += 1
+    return marginals, energy_sum
+
 
 class Sonia(object):
     """Class used to infer a Q selection model.
@@ -309,17 +314,33 @@ class Sonia(object):
 
         if self.processes > 1:
             import multiprocessing as mp
-            pool = mp.Pool(self.processes)
-            marginals_all_seqs = pool.map(compute_seq_marginal,
-                                          [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f
-                                           in seq_compute_features])
-            pool.close()
-        else:
-            marginals_all_seqs = map(compute_seq_marginal,
-                                          [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f
-                                           in seq_compute_features])
+            import math
 
-        marginals = sum(np.array(marginals_all_seqs)) / sum([max(m) for m in marginals_all_seqs])
+            chunk_size = int(math.ceil(float(len(seq_compute_features))/self.processes))
+
+            chunked = [seq_compute_features[i:i+chunk_size] for i in range(0, len(seq_compute_features), chunk_size)]
+
+            pool = mp.Pool(self.processes)
+            chunked_marginals = pool.map(compute_seq_marginal,
+                                    [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f in chunked])
+            marginals_not_normed = np.zeros(len(self.features))
+            energies_sum = 0
+            for x in chunked_marginals:
+                marginals_not_normed += x[0]
+                energies_sum += x[1]
+            #jobs = []
+            #q = mp.Queue()
+
+            # for s in chunked:
+            #     j = mp.Process(target=compute_seq_marginal, args=(s, self.model_params if not use_flat_distribution else None, len(self.features), q))
+            #     jobs.append(j)
+            # for j in jobs:
+            #     j.start()
+
+        else:
+            marginals_not_normed, energies_sum = compute_seq_marginal((seq_compute_features, self.model_params if not use_flat_distribution else None, len(self.features)))
+
+        marginals = marginals_not_normed / energies_sum
         return marginals
 
     def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None):
