@@ -323,7 +323,11 @@ class Sonia(object):
             pool = mp.Pool(self.processes)
             chunked_marginals = pool.map(compute_seq_marginal,
                                     [(seq_f, self.model_params if not use_flat_distribution else None, len(self.features)) for seq_f in chunked])
-            marginals_not_normed = np.zeros(len(self.features))
+            
+            pool.close()
+            pool.join()
+
+	    marginals_not_normed = np.zeros(len(self.features))
             energies_sum = 0
             for x in chunked_marginals:
                 marginals_not_normed += x[0]
@@ -336,7 +340,6 @@ class Sonia(object):
             #     jobs.append(j)
             # for j in jobs:
             #     j.start()
-
         else:
             marginals_not_normed, energies_sum = compute_seq_marginal((seq_compute_features, self.model_params if not use_flat_distribution else None, len(self.features)))
 
