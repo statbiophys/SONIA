@@ -96,7 +96,7 @@ class SoniaLengthPos(Sonia):
                 seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in v_gene.lower().split('v')[-1].split('-')]), 'j' + '-'.join([str(int(y)) for y in j_gene.lower().split('j')[-1].split('-')])] for v_gene in v_genes for j_gene in j_genes]
             except ValueError:
                 pass
-            seq_features = [self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]
+            seq_features = list(set([self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]))
         else:
             seq_features = []
             for feature_index,feature_lst in enumerate(features):
