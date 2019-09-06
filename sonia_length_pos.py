@@ -86,6 +86,9 @@ class SoniaLengthPos(Sonia):
             seq_feature_lsts += [['l' + str(len(seq[0])), 'a' + aa + str(i)] for i, aa in enumerate(seq[0])]
             v_genes = [gene for gene in seq[1:] if 'v' in gene.lower()]
             j_genes = [gene for gene in seq[1:] if 'j' in gene.lower()]
+            #Allow for just the gene family match
+            v_genes += [gene.split('-')[0] for gene in seq[1:] if 'v' in gene.lower()]
+            j_genes += [gene.split('-')[0] for gene in seq[1:] if 'j' in gene.lower()]
             
             try:
                 seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
