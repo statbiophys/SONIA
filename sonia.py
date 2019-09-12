@@ -410,7 +410,7 @@ class Sonia(object):
 
         if keras_learn:
             self.l2_reg = 0.0001
-            self.infer_using_keras()
+            self.infer_using_keras(n_epochs=max_iterations)
             return
 
         for _ in range(self.max_iterations):
