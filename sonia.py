@@ -35,7 +35,7 @@ def compute_seq_marginal(seqs_features, model_params, number_of_features): #args
             t = np.exp(-np.sum(model_params[seq_features]))
             marginals[seq_features] += t
             energy_sum += t
-            return marginals, energy_sum
+        return marginals, energy_sum
     else:
         for seq_features in seqs_features:
             marginals[seq_features] += 1
@@ -475,16 +475,20 @@ class Sonia(object):
         len_features = len(self.features)
 
         # define likelihood
+        self.gamma=1e-1
         def loss(y_true, y_pred):
-            data = K.sum(K.log(y_pred + 1e-20) * (1. - y_true)) / (K.sum((1. - y_true)))
-            gen = K.log(K.sum(y_pred * y_true) / (K.sum(y_true)) + 1e-20)
-            return gen - data
+            data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+            gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+            reg= K.exp(gen)-1.
+            return gen-data+self.gamma*reg*reg
 
         # I need an additional class to compute the marginals within the training.
         class computeL1(kr.callbacks.Callback):
-
-            def __init__(self, data_marginals):
+            
+            def __init__(self, data_marginals,X,Y):
                 self.data_marginals = data_marginals
+                self.X=X
+                self.Y=Y
 
             def on_train_begin(self, logs={}):
                 self.L1_history = []
@@ -493,36 +497,37 @@ class Sonia(object):
 
             def return_model_marginals(self):
                 marginals = np.zeros(len_features)
-                gen_enc = X[Y.astype(np.bool)]
-                qs = model.predict(gen_enc)[:, 0]  # compute qs model
+                gen_enc = self.X[self.Y.astype(np.bool)]
+                qs = np.exp(-self.model.predict(gen_enc)[:, 0])  # compute qs model
                 for i in range(len(gen_enc)):
                     marginals[gen_enc[i].astype(np.bool)] += qs[i]
                 return marginals / np.sum(qs)
 
             def on_epoch_end(self, epoch, logs={}):
                 curr_loss = logs.get('loss')
+                curr_loss_val = logs.get('val_loss')
                 self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
-                print "epoch = ", epoch, " loss = ", curr_loss, " L1 dist: ", self.L1_history[-1]
+                print "epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4)
 
         # Define model
 
         input_data = Input(shape=(length_input,))
         print 'l2 reg is ' + str(self.l2_reg)
         out = Dense(1, use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(self.l2_reg))(input_data)
-        activation = Lambda(lambda x: K.exp(-x))(out)
+        activation = Lambda(lambda x: K.clip(x,-10,10))(out)
 
-        model = Model(inputs=input_data, outputs=activation)
+        self.model = Model(inputs=input_data, outputs=activation)
         optimizer = kr.optimizers.RMSprop()
-        model.compile(optimizer=optimizer, loss=loss)
+        self.model.compile(optimizer=optimizer, loss=loss)
 
-        computeL1_dist = computeL1(self.data_marginals)
+        computeL1_dist = computeL1(self.data_marginals,X,Y)
         callbacks = [computeL1_dist]
         print 'and start gradient descent'
         shuffle = np.random.permutation(len(X))
-        self.learning_history = model.fit(X[shuffle], Y[shuffle], epochs=n_epochs, batch_size=batch_size,
+        self.learning_history = self.model.fit(X[shuffle], Y[shuffle], epochs=n_epochs, batch_size=batch_size,
                                           validation_split=0.1, verbose=0, callbacks=callbacks)
         self.L1_converge_history = computeL1_dist.L1_history
-        self.model_params = model.get_weights()[0][:, 0]
+        self.model_params = self.model.get_weights()[0][:, 0]
         self.update_model(auto_update_marginals=True)
 
     def gauge_energies(self):
