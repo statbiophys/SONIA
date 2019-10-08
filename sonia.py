@@ -11,38 +11,6 @@ import numpy as np
 import os
 
 
-def compute_seq_marginal(seqs_features, model_params, number_of_features): #args):#
-    """Computes the energy of a sequence according to the model.
-
-
-    Parameters
-    ----------
-    seq_features : list
-        Features indices seq projects onto.
-
-    Returns
-    -------
-    E : float
-        Energy of seq according to the model.
-
-    """
-
-    #seqs_features, model_params, number_of_features = args[0], args[1], args[2]
-    marginals = np.zeros(number_of_features)
-    energy_sum = 0
-    if model_params is not None:
-        for seq_features in seqs_features:
-            t = np.exp(-np.sum(model_params[seq_features]))
-            marginals[seq_features] += t
-            energy_sum += t
-        return marginals, energy_sum
-    else:
-        for seq_features in seqs_features:
-            marginals[seq_features] += 1
-            energy_sum += 1
-    return marginals, energy_sum
-
-
 class Sonia(object):
     """Class used to infer a Q selection model.
 
@@ -300,7 +268,7 @@ class Sonia(object):
         if seq_model_features is None:  # if model features are not given
             if seqs is not None:  # if sequences are given, get model features from them
                 seq_model_features = [self.find_seq_features(seq) for seq in seqs]
-            else:   # if not sequences are given, sequences features is empty
+            else:   # if no sequences are given, sequences features is empty
                 seq_model_features = []
 
         if len(seq_model_features) == 0:  # if no model features are given, return empty array
@@ -311,40 +279,21 @@ class Sonia(object):
         else:  # if no features or no sequences are provided, compute marginals using model features
             seq_compute_features = seq_model_features
 
-        if self.processes > 1:
-            import multiprocessing as mp
-            import math
-            from functools import partial
-
-            chunk_size = int(math.ceil(float(len(seq_compute_features))/self.processes))
-
-            chunked = [seq_compute_features[i:i+chunk_size] for i in range(0, len(seq_compute_features), chunk_size)]
-
-            pool = mp.Pool(self.processes)
-            chunked_marginals = pool.map(partial(compute_seq_marginal,
-                                                 model_params = self.model_params if not use_flat_distribution else None,
-                                                 number_of_features = len(self.features)), chunked)
-
-            pool.close()
-            pool.join()
-
-            marginals_not_normed = np.zeros(len(self.features))
-            energies_sum = 0
-            for x in chunked_marginals:
-                marginals_not_normed += x[0]
-                energies_sum += x[1]
-            #jobs = []
-            #q = mp.Queue()
-
-            # for s in chunked:
-            #     j = mp.Process(target=compute_seq_marginal, args=(s, self.model_params if not use_flat_distribution else None, len(self.features), q))
-            #     jobs.append(j)
-            # for j in jobs:
-            #     j.start()
+        marginals = np.zeros(len(seq_compute_features))
+        energy_sum = 0
+        if not use_flat_distribution:
+            for seq_features in seq_compute_features:
+                # t = np.exp(-np.sum(self.model_params[seq_features]))
+                t = np.exp(-self.compute_seq_energy(seq_features))
+                marginals[seq_features] += t
+                energy_sum += t
+            return marginals, energy_sum
         else:
-            marginals_not_normed, energies_sum = compute_seq_marginal(seq_compute_features, self.model_params if not use_flat_distribution else None, len(self.features))
+            for seq_features in seq_compute_features:
+                marginals[seq_features] += 1
+                energy_sum += 1
 
-        marginals = marginals_not_normed / energies_sum
+        marginals = marginals / energy_sum
         return marginals
 
     def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None, keras_learn = False):
@@ -371,6 +320,8 @@ class Sonia(object):
             L2 regularization. If None (default) then no regularization.
         sub_sample_frac : float
             Fraction of the gen_seqs to use for stochastic gradient descent.
+        keras_learn: bool
+            If True uses Keras for inference (this is now default behaviour)
 
 
         Attributes set
