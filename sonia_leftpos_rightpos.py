@@ -15,7 +15,7 @@ class SoniaLeftposRightpos(Sonia):
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model)
         self.max_depth = max_depth
         self.max_L = max_L
-        self.add_features()
+        if load_model is None:self.add_features()
     
     def add_features(self, include_genes = True):
         """Generates a list of feature_lsts for L/R pos model.

@@ -20,7 +20,7 @@ class SoniaLengthPos(Sonia):
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model, processes = processes)
         self.min_L = min_L
         self.max_L = max_L
-        self.add_features(include_genes)
+        if load_model is None:self.add_features(include_genes)
     
     def add_features(self, include_genes = True):
         """Generates a list of feature_lsts for a length dependent L pos model.
@@ -124,7 +124,7 @@ class SoniaLengthPos(Sonia):
             Maximum length CDR3 sequence, if not given taken from class attribute
                 
         """
-                
+        if len(self.model_params)==1: self.model_params=self.model_params[0]
         for l in range(self.min_L, self.max_L + 1):
             if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
                 for i in range(l):
@@ -133,7 +133,9 @@ class SoniaLengthPos(Sonia):
                                     np.exp(-self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
                                     for aa in self.amino_acids])
                     for aa in self.amino_acids:
-                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)   
+                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)
+        self.model.set_weights([self.model_params])
+        self.model_params=[self.model_params]
                         
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
@@ -228,7 +230,8 @@ class SoniaLengthPos(Sonia):
             threshold on the marginals, anything lower would be grayed out
         
         """
-        p1 = np.exp(-self.model_params)
+        params=self.model_params[0]
+        p1 = np.exp(-params)
         if low_freq_mask:
             p1[(self.data_marginals < low_freq_mask) & (self.gen_marginals < low_freq_mask)] = -1
         self.plot_onepoint_values(onepoint = p1, min_L = 8, max_L = 16, min_val = 0, max_value = 2, title = 'model parameters q=exp(-E)')

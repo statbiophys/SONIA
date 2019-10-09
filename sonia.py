@@ -125,6 +125,8 @@ class Sonia(object):
         self.model_marginals = np.zeros(len(features))
         self.L1_converge_history = []
         self.pseudo_count = .5
+        self.l2_reg = 0.
+
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
             print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
@@ -143,7 +145,6 @@ class Sonia(object):
         self.max_iterations = 100
         self.step_size = 0.1 #step size
         self.converge_threshold = 1e-3
-        self.l2_reg = None
         self.amino_acids = 'ARNDCQEGHILKMFPSTWYV'
         self.v = np.zeros(len(self.features))
         self.drag = 0.0
@@ -252,6 +253,7 @@ class Sonia(object):
             Energy of seq according to the model.
 
         """
+        evaluate=np.zeros((1,len(self.features)))
         if seq_features is not None:
             evaluate[:,seq_features]=1
             return self.model.predict(evaluate)[0,0]
@@ -262,7 +264,7 @@ class Sonia(object):
         return 0
 
     def compute_energy(self,seqs_features):
-        """Computes the energy of a list sequences according to the model.
+        """Computes the energy of a list of sequences according to the model.
 
 
         Parameters
@@ -276,9 +278,9 @@ class Sonia(object):
             Energies of seqs according to the model.
 
         """
-        energies = np.zeros(len(seq_features))
+        energies = np.zeros(len(seqs_features))
         seqs_features_enc = np.zeros((len(energies), len(self.features)), dtype=np.int8)
-        for i in range(len(seqs_features_enc)): seqs_features_enc[i][seq_features[i]] = 1
+        for i in range(len(seqs_features_enc)): seqs_features_enc[i][seqs_features[i]] = 1
         return self.model.predict(seqs_features_enc)[:, 0]
 
     def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
@@ -334,17 +336,16 @@ class Sonia(object):
         else:  # if no features or no sequences are provided, compute marginals using model features
             seq_compute_features = seq_model_features
 
-        marginals = np.zeros(len(seq_compute_features))
+        marginals = np.zeros(len(self.features))
         energy_sum = 0
         if not use_flat_distribution:
-            energies = self.compute_energy(seqs_features)
+            energies = self.compute_energy(seq_compute_features)
             qs= np.exp(-energies)
-            for seq_features,t in zip(seqs_features,qs):
+            for seq_features,t in zip(seq_compute_features,qs):
                 marginals[seq_features] += t
                 energy_sum += t
-            return marginals, energy_sum
         else:
-            for seq_features in seqs_features:
+            for seq_features in seq_compute_features:
                 marginals[seq_features] += 1
                 energy_sum += 1
 
@@ -398,7 +399,7 @@ class Sonia(object):
             else:
                 self.model_params = np.array([-np.log10(self.data_marginals[i]/x) if x > 0 and self.data_marginals[i] > 0 else 0. for i, x in enumerate(self.gen_marginals)])
             self.update_model(auto_update_marginals=True) #make sure all attributes are updated
-            self.L1_converge_history = [sum(abs(self.data_marginals - self.model_marginals))]
+            self.L1_converge_history = []#[sum(abs(self.data_marginals - self.model_marginals))]
             self.model_params_history = []
             self.v = np.zeros(len(self.features))
 
@@ -455,6 +456,7 @@ class Sonia(object):
                                           validation_split=0.2, verbose=0, callbacks=callbacks)
         self.L1_converge_history = computeL1_dist.L1_history
         self.model_params = self.model.get_weights()
+        self.gauge_energies()
         self.update_model(auto_update_marginals=True)
         
     def gauge_energies(self):
@@ -655,8 +657,8 @@ class Sonia(object):
         
         fig.add_subplot(133)
         plt.title('Likelihood', fontsize = 15)
-        plt.plot(self.learning_history.history['likelihood'],label='loss train',c='k')
-        plt.plot(self.learning_history.history['val_likelihood'],label='loss val',c='r')
+        plt.plot(self.learning_history.history['likelihood'],label='train',c='k')
+        plt.plot(self.learning_history.history['val_likelihood'],label='validation',c='r')
         plt.legend(fontsize = 10)
         plt.xlabel('Iteration', fontsize = 13)
         plt.ylabel('Likelihood', fontsize = 13)
@@ -735,7 +737,7 @@ class Sonia(object):
                 except:
                     pass
             features_file.close()
-            self.model = load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
+            self.model = lm(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
             self.model_params=self.model.get_weights()
             self.features = np.array(features)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
