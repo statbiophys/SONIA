@@ -9,6 +9,14 @@ Created on Wed Jan 30 12:06:58 2019
 
 import numpy as np
 import os
+import logging
+logging.getLogger('tensorflow').disabled = True
+from keras.layers import Dense, Input, Lambda
+from keras.models import Sequential,Model
+from keras.models import load_model as lm
+from keras import regularizers
+import keras.backend as K
+import keras as kr
 
 
 class Sonia(object):
@@ -129,11 +137,8 @@ class Sonia(object):
             self.load_model(load_model)
         else:
             self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
+            self.update_model_structure(initialize=True)
             self.L1_converge_history = []
-
-        #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-        #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
-        #self.floating_features = self.data_marginals > 0
 
         self.max_iterations = 100
         self.step_size = 0.1 #step size
@@ -142,6 +147,33 @@ class Sonia(object):
         self.amino_acids = 'ARNDCQEGHILKMFPSTWYV'
         self.v = np.zeros(len(self.features))
         self.drag = 0.0
+
+    def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
+        """ Defines the model structure and compiles it.
+
+        Parameters
+        ----------
+        structure : Sequential Model Keras
+            structure of the model
+        initialize: bool
+            if True, it initializes to linear model, otherwise it updates to new structure
+
+        """
+        length_input=np.max([len(self.features),1])
+        
+        if initialize:
+            input_layer = Input(shape=(length_input,))
+            self.model_structure = Dense(1,use_bias=False,activation='linear', activity_regularizer=regularizers.l2(self.l2_reg))(input_layer) #normal glm model
+        else: self.model_structure=output_layer
+
+        # Define model
+        clipped_out=Lambda(lambda x: K.clip(x,-4,8))(self.model_structure)
+        self.model = Model(inputs=input_layer, outputs=clipped_out)
+
+        self.optimizer = kr.optimizers.RMSprop()
+        self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
+        self.model_params = self.model.get_weights()
+        return True 
 
     def seq_feature_proj(self, feature, seq):
         """Checks if a sequence matches all subfeatures of the feature list
@@ -221,10 +253,33 @@ class Sonia(object):
 
         """
         if seq_features is not None:
-            return np.sum(self.model_params[seq_features])
+            evaluate[:,seq_features]=1
+            return self.model.predict(evaluate)[0,0]
         elif seq is not None:
-            return np.sum(self.model_params[self.find_seq_features(seq)])
+            seq_features=self.find_seq_features(seq)
+            evaluate[:,seq_features]=1
+            return self.model.predict(evaluate)[0,0]
         return 0
+
+    def compute_energy(self,seqs_features):
+        """Computes the energy of a list sequences according to the model.
+
+
+        Parameters
+        ----------
+        seqs_features : list
+            list of encoded sequences into sonia features.
+
+        Returns
+        -------
+        E : float
+            Energies of seqs according to the model.
+
+        """
+        energies = np.zeros(len(seq_features))
+        seqs_features_enc = np.zeros((len(energies), len(self.features)), dtype=np.int8)
+        for i in range(len(seqs_features_enc)): seqs_features_enc[i][seq_features[i]] = 1
+        return self.model.predict(seqs_features_enc)[:, 0]
 
     def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
         """Computes the marginals of each feature over sequences.
@@ -282,71 +337,59 @@ class Sonia(object):
         marginals = np.zeros(len(seq_compute_features))
         energy_sum = 0
         if not use_flat_distribution:
-            for seq_features in seq_compute_features:
-                # t = np.exp(-np.sum(self.model_params[seq_features]))
-                t = np.exp(-self.compute_seq_energy(seq_features))
+            energies = self.compute_energy(seqs_features)
+            qs= np.exp(-energies)
+            for seq_features,t in zip(seqs_features,qs):
                 marginals[seq_features] += t
                 energy_sum += t
             return marginals, energy_sum
         else:
-            for seq_features in seq_compute_features:
+            for seq_features in seqs_features:
                 marginals[seq_features] += 1
                 energy_sum += 1
 
         marginals = marginals / energy_sum
         return marginals
 
-    def infer_selection(self, max_iterations = None, step_size = None, drag = None, initialize = False, initialize_from_zero = False, zero_flipped_indices = True, l2_reg = None, sub_sample_frac = None, converge_threshold = None, keras_learn = False):
+    def infer_selection(self, max_iterations = 20, step_size = None,  initialize = False, initialize_from_zero = False,  l2_reg = None, converge_threshold = None,batch_size=5000):
         """Infer model parameters, i.e. energies for each model feature.
 
 
         Parameters
         ----------
         max_iterations : int
-            Maximum number of iterations per learning epoch
+            Maximum number of learning epochs
         step_size : float
             Step size for the update of the model energies at each iteration.
-        drag : float
-            Drag coefficient for the inference iterations. The smaller the drag,
-            the faster the parameter learning, but the convergence is less stable.
         intialize : bool
             Resets model before inferring model_params
         initialize_from_zero : bool
             Resets model parameters to zeros (instead of matching mean field)
-        zero_flipped_indices : bool
-            Controls whether the velocity in a parameter gets reset to 0 if the
-            direction of the step changes. Default is True.
         l2_reg : float or None
             L2 regularization. If None (default) then no regularization.
-        sub_sample_frac : float
-            Fraction of the gen_seqs to use for stochastic gradient descent.
-        keras_learn: bool
-            If True uses Keras for inference (this is now default behaviour)
+        converge_threshold: float
+            stop inference once reached a specific L1 dist
+        batch_size: int
+            size of the batch in the inference
 
 
         Attributes set
         --------------
         model_params : array
-            Energies for each model feature
+            Parameters of the model
         model_marginals : array
-            Marginals over the generated sequences, reweighted by the model,
-            for each model feature.
+            Marginals over the generated sequences, reweighted by the model.
         L1_converge_history : list
             L1 distance between data_marginals and model_marginals at each
             iteration.
 
         """
 
+        self.l2_reg = 0.0001
         if max_iterations is not None:
             self.max_iterations = max_iterations
-        if step_size is not None:
-            self.step_size = step_size
-        if drag is not None:
-            self.drag = drag
         if converge_threshold is not None:
             self.converge_threshold = converge_threshold
-        if sub_sample_frac is not None:
-            sub_sample_size = min([int(np.floor(len(self.gen_seqs)*sub_sample_frac)), len(self.gen_seqs)])
         self.l2_reg = l2_reg
 
         if initialize or initialize_from_zero:
@@ -359,81 +402,27 @@ class Sonia(object):
             self.model_params_history = []
             self.v = np.zeros(len(self.features))
 
-        if keras_learn:
-            self.l2_reg = 0.0001
-            self.infer_using_keras(n_epochs=max_iterations)
-            return
+            # reshape to binary encoding
+            length_input = len(self.features)
 
-        for _ in range(self.max_iterations):
-            #Set the 'velocity' for this iteration
+            data = np.array(self.data_seq_features)
+            gen = np.array(self.gen_seq_features)
+            data_enc = np.zeros((len(data), length_input), dtype=np.int8)
+            gen_enc = np.zeros((len(gen), length_input), dtype=np.int8)
 
-            if zero_flipped_indices:
-                flipped_indices = self.v * (self.data_marginals - self.model_marginals) > 0
-                self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
-                #print sum(flipped_indices)
-                self.v[flipped_indices] = self.data_marginals[flipped_indices] - self.model_marginals[flipped_indices]
-            else:
-                self.v = (1. - self.drag)*self.v + self.data_marginals - self.model_marginals
-            if self.l2_reg is not None: #Step with l2 reg
-                self.model_params = (1-self.step_size*self.l2_reg)*self.model_params - self.step_size * self.v #new parameters
-            else: #Step without l2 reg
-                self.model_params = self.model_params - self.step_size * self.v #new parameters
-
-
-            if sub_sample_frac is None:
-                self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
-            else:
-                self.model_marginals = self.compute_marginals(seq_model_features = np.random.choice(self.gen_seq_features, sub_sample_size, replace = False))
-            self.L1_converge_history.append(sum(abs(self.data_marginals - self.model_marginals)))
-
-            #self.gauge_energies()
-
-            if np.sum(np.abs(self.v)) < self.converge_threshold:
-                break
-
-        if sub_sample_frac is not None:
-            self.update_model(auto_update_marginals=True)
-
-    def infer_using_keras(self, n_epochs=10, batch_size=5000):
-        """
-        Giulio's version of the learning function using keras
-        :return:
-        """
-
-        from keras.layers import Dense, Input, Lambda
-        from keras.models import Model
-        from keras import regularizers
-        import keras.backend as K
-        import keras as kr
-
-        # reshape to binary encoding
-        length_input = len(self.features)
-
-        data = np.array(self.data_seq_features)
-        length_gen = np.min([len(data), int(5e5)])  # to be checked
-        gen = np.array(self.gen_seq_features)[:length_gen]
-
-        data_enc = np.zeros((len(data), length_input), dtype=np.int8)
-        gen_enc = np.zeros((len(gen), length_input), dtype=np.int8)
-        for i in range(len(data_enc)): data_enc[i][data[i]] = 1
-        for i in range(len(gen_enc)): gen_enc[i][gen[i]] = 1
-
-        X = np.concatenate([data_enc, gen_enc])
-        Y = np.concatenate([np.zeros(len(data_enc)), np.ones(len(gen_enc))])
-
-        data, gen, data_enc, gen_enc = 0, 0, 0, 0  # forget about them
+            for i in range(len(data_enc)): data_enc[i][data[i]] = 1
+            for i in range(len(gen_enc)): gen_enc[i][gen[i]] = 1
+            
+            self.X = np.concatenate([data_enc, gen_enc])
+            self.Y = np.concatenate([np.zeros(len(data_enc)), np.ones(len(gen_enc))])
+            
+            shuffle = np.random.permutation(len(self.X)) # shuffle
+            self.X=self.X[shuffle]
+            self.Y=self.Y[shuffle]
+            data, gen, data_enc, gen_enc = 0, 0, 0, 0  # forget about them
 
         len_features = len(self.features)
-
-        # define likelihood
-        self.gamma=1e-1
-        def loss(y_true, y_pred):
-            data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-            gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-            reg= K.exp(gen)-1.
-            return gen-data+self.gamma*reg*reg
-
-        # I need an additional class to compute the marginals within the training.
+        
         class computeL1(kr.callbacks.Callback):
             
             def __init__(self, data_marginals,X,Y):
@@ -449,7 +438,7 @@ class Sonia(object):
             def return_model_marginals(self):
                 marginals = np.zeros(len_features)
                 gen_enc = self.X[self.Y.astype(np.bool)]
-                qs = np.exp(-self.model.predict(gen_enc)[:, 0])  # compute qs model
+                qs = np.exp(-self.model.predict(gen_enc)[:, 0])  
                 for i in range(len(gen_enc)):
                     marginals[gen_enc[i].astype(np.bool)] += qs[i]
                 return marginals / np.sum(qs)
@@ -460,27 +449,14 @@ class Sonia(object):
                 self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
                 print "epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4)
 
-        # Define model
-
-        input_data = Input(shape=(length_input,))
-        print 'l2 reg is ' + str(self.l2_reg)
-        out = Dense(1, use_bias=False, activation='linear', kernel_regularizer=regularizers.l2(self.l2_reg))(input_data)
-        activation = Lambda(lambda x: K.clip(x,-10,10))(out)
-
-        self.model = Model(inputs=input_data, outputs=activation)
-        optimizer = kr.optimizers.RMSprop()
-        self.model.compile(optimizer=optimizer, loss=loss)
-
-        computeL1_dist = computeL1(self.data_marginals,X,Y)
+        computeL1_dist = computeL1(self.data_marginals,self.X,self.Y)
         callbacks = [computeL1_dist]
-        print 'and start gradient descent'
-        shuffle = np.random.permutation(len(X))
-        self.learning_history = self.model.fit(X[shuffle], Y[shuffle], epochs=n_epochs, batch_size=batch_size,
-                                          validation_split=0.1, verbose=0, callbacks=callbacks)
+        self.learning_history = self.model.fit(self.X, self.Y, epochs=max_iterations, batch_size=batch_size,
+                                          validation_split=0.2, verbose=0, callbacks=callbacks)
         self.L1_converge_history = computeL1_dist.L1_history
-        self.model_params = self.model.get_weights()[0][:, 0]
+        self.model_params = self.model.get_weights()
         self.update_model(auto_update_marginals=True)
-
+        
     def gauge_energies(self):
         """Gauge energies (i.e. model parameters).
 
@@ -543,17 +519,14 @@ class Sonia(object):
         if len(remove_features) > 0:
             indices_to_keep = [i for i, feature_lst in enumerate(self.features) if feature_lst not in remove_features and i not in remove_features]
             self.features = self.features[indices_to_keep]
-            self.model_params = self.model_params[indices_to_keep]
+            self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-            #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-            #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
+
         if len(add_features) > 0:
             self.features = np.append(self.features, add_features)
-            self.model_params = np.append(self.model_params, np.zeros(len(add_features)))
+            self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-            #self.floating_features = np.array([i for i in range(len(self.features)) if self.features[i] not in self.constant_features])
-            #self.floating_features = np.isin(self.features, self.constant_features, invert = True)
-
+            
         if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
             self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
 
@@ -654,8 +627,8 @@ class Sonia(object):
         import matplotlib.pyplot as plt
 
         min_for_plot = 1/(10.*np.power(10, np.ceil(np.log10(len(self.data_seqs)))))
-        fig = plt.figure(figsize = (9, 4))
-        fig.add_subplot(121)
+        fig = plt.figure(figsize =(13, 4))
+        fig.add_subplot(131)
         fig.subplots_adjust(left=0.1, bottom = 0.13, top = 0.91, right = 0.97, wspace = 0.3, hspace = 0.15)
         plt.loglog(range(1, len(self.L1_converge_history)+1), self.L1_converge_history, 'k', linewidth = 2)
         plt.xlabel('Iteration', fontsize = 13)
@@ -663,8 +636,8 @@ class Sonia(object):
 
         plt.legend(frameon = False, loc = 2)
         plt.title('L1 Distance convergence', fontsize = 15)
-
-        fig.add_subplot(122)
+        
+        fig.add_subplot(132)
 
         plt.loglog(self.data_marginals, self.gen_marginals, 'r.', alpha = 0.2, markersize=1)
         plt.loglog(self.data_marginals, self.model_marginals, 'b.', alpha = 0.2, markersize=1)
@@ -679,6 +652,14 @@ class Sonia(object):
         plt.ylabel('Marginals over generated sequences', fontsize = 13)
         plt.legend(loc = 2, fontsize = 10)
         plt.title('Marginal Scatter', fontsize = 15)
+        
+        fig.add_subplot(133)
+        plt.title('Likelihood', fontsize = 15)
+        plt.plot(self.learning_history.history['likelihood'],label='loss train',c='k')
+        plt.plot(self.learning_history.history['val_likelihood'],label='loss val',c='r')
+        plt.legend(fontsize = 10)
+        plt.xlabel('Iteration', fontsize = 13)
+        plt.ylabel('Likelihood', fontsize = 13)
 
         if save_name is not None:
             fig.savefig(save_name)
@@ -690,6 +671,8 @@ class Sonia(object):
         ----------
         save_dir : str
             Directory name to save model attributes to.
+        attributes_to_save: list
+            name of attributes to save
 
         """
 
@@ -718,12 +701,12 @@ class Sonia(object):
                 L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
 
         if 'model_params' in attributes_to_save:
-            model_file = open(os.path.join(save_dir, 'model.tsv'), 'w')
-            model_file.write('Feature\tEnergy\n')
+            features_file = open(os.path.join(save_dir, 'features.tsv'), 'w')
+            features_file.write('Feature\n')
             for i, p in enumerate(self.features):
-                model_file.write(';'.join(p) + '\t' + str(self.model_params[i]) + '\n')
-            model_file.close()
-
+                features_file.write(';'.join(p) + '\n')
+            features_file.close()
+            self.model.save(os.path.join(save_dir, 'model.h5'))
         return None
 
     def load_model(self, load_dir, load_seqs = True):
@@ -740,29 +723,27 @@ class Sonia(object):
             print 'Exiting...'
             return None
 
-        if os.path.isfile(os.path.join(load_dir, 'model.tsv')):
+        if os.path.isfile(os.path.join(load_dir, 'features.tsv')):
             features = []
-            model_params = []
-            model_file = open(os.path.join(load_dir, 'model.tsv'), 'r')
-            for i, line in enumerate(model_file):
-                split_line = line.strip().split('\t')
+            features_file = open(os.path.join(load_dir, 'features.tsv'), 'r')
+            for i, line in enumerate(features_file):
+                split_line = line.strip()
                 if i == 0: #skip header
                     continue
                 try:
-                    features.append(split_line[0].split(';'))
-                    model_params.append(float(split_line[1]))
+                    features.append(split_line.split(';'))
                 except:
                     pass
-            model_file.close()
+            features_file.close()
+            self.model = load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
+            self.model_params=self.model.get_weights()
             self.features = np.array(features)
-            self.model_params = np.array(model_params)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         else:
             print 'Cannot find model.tsv  --  no features or model parameters loaded.'
 
         if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
-                #self.data_seqs = [seq.split('\t')[0].split(';') for seq in data_seqs_file.read().strip().split('\n')[1:]]
                 self.data_seqs = []
                 self.data_seq_features = []
                 for line in data_seqs_file.read().strip().split('\n')[1:]:
@@ -794,3 +775,16 @@ class Sonia(object):
             print 'Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.'
 
         return None
+
+gamma=1e-1
+def loss(y_true, y_pred):
+    data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+    gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+    reg= K.exp(gen)-1.
+    return gen-data+gamma*reg*reg
+
+
+def likelihood(y_true, y_pred):
+    data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+    gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+    return gen-data
