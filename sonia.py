@@ -111,7 +111,7 @@ class Sonia(object):
 
     """
 
-    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, processes = 4):
+    def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None,sample_gen=False,size_sample=int(5e4)):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         #self.constant_features =  constant_features
@@ -133,14 +133,13 @@ class Sonia(object):
             return None
         self.chain_type = default_chain_types[chain_type]
 
-        self.processes = processes
-
         if load_model is not None:
             self.load_model(load_model)
         else:
             self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
             self.update_model_structure(initialize=True)
             self.L1_converge_history = []
+        if sample_gen: self.add_generated_seqs(size_sample)
 
         self.max_iterations = 100
         self.step_size = 0.1 #step size
@@ -236,32 +235,32 @@ class Sonia(object):
 
         return seq_features
 
-    def compute_seq_energy(self, seq_features = None, seq = None):
-        """Computes the energy of a sequence according to the model.
+    # def compute_seq_energy(self, seq_features = None, seq = None):
+    #     """Computes the energy of a sequence according to the model.
 
 
-        Parameters
-        ----------
-        seq_features : list
-            Features indices seq projects onto.
-        seq : list
-            CDR3 sequence and any associated genes
+    #     Parameters
+    #     ----------
+    #     seq_features : list
+    #         Features indices seq projects onto.
+    #     seq : list
+    #         CDR3 sequence and any associated genes
 
-        Returns
-        -------
-        E : float
-            Energy of seq according to the model.
+    #     Returns
+    #     -------
+    #     E : float
+    #         Energy of seq according to the model.
 
-        """
-        evaluate=np.zeros((1,len(self.features)))
-        if seq_features is not None:
-            evaluate[:,seq_features]=1
-            return self.model.predict(evaluate)[0,0]
-        elif seq is not None:
-            seq_features=self.find_seq_features(seq)
-            evaluate[:,seq_features]=1
-            return self.model.predict(evaluate)[0,0]
-        return 0
+    #     """
+    #     evaluate=np.zeros((1,len(self.features)))
+    #     if seq_features is not None:
+    #         evaluate[:,seq_features]=1
+    #         return self.model.predict(evaluate)[0,0]
+    #     elif seq is not None:
+    #         seq_features=self.find_seq_features(seq)
+    #         evaluate[:,seq_features]=1
+    #         return self.model.predict(evaluate)[0,0]
+    #     return 0
 
     def compute_energy(self,seqs_features):
         """Computes the energy of a list of sequences according to the model.
@@ -278,9 +277,7 @@ class Sonia(object):
             Energies of seqs according to the model.
 
         """
-        energies = np.zeros(len(seqs_features))
-        seqs_features_enc = np.zeros((len(energies), len(self.features)), dtype=np.int8)
-        for i in range(len(seqs_features_enc)): seqs_features_enc[i][seqs_features[i]] = 1
+        seqs_features_enc=self.encode_data(seqs_features)
         return self.model.predict(seqs_features_enc)[:, 0]
 
     def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
@@ -394,6 +391,7 @@ class Sonia(object):
         self.l2_reg = l2_reg
 
         if initialize or initialize_from_zero:
+
             if initialize_from_zero:
                 self.model_params = np.zeros(len(self.features))
             else:
@@ -403,56 +401,18 @@ class Sonia(object):
             self.model_params_history = []
             self.v = np.zeros(len(self.features))
 
-            # reshape to binary encoding
-            length_input = len(self.features)
-
-            data = np.array(self.data_seq_features)
-            gen = np.array(self.gen_seq_features)
-            data_enc = np.zeros((len(data), length_input), dtype=np.int8)
-            gen_enc = np.zeros((len(gen), length_input), dtype=np.int8)
-
-            for i in range(len(data_enc)): data_enc[i][data[i]] = 1
-            for i in range(len(gen_enc)): gen_enc[i][gen[i]] = 1
-            
-            self.X = np.concatenate([data_enc, gen_enc])
-            self.Y = np.concatenate([np.zeros(len(data_enc)), np.ones(len(gen_enc))])
+            # prepare data
+            self.X = np.array(self.data_seq_features+self.gen_seq_features)
+            self.Y = np.concatenate([np.zeros(len(self.data_seq_features)), np.ones(len(self.gen_seq_features))])
             
             shuffle = np.random.permutation(len(self.X)) # shuffle
             self.X=self.X[shuffle]
             self.Y=self.Y[shuffle]
-            data, gen, data_enc, gen_enc = 0, 0, 0, 0  # forget about them
 
         len_features = len(self.features)
-        
-        class computeL1(kr.callbacks.Callback):
-            
-            def __init__(self, data_marginals,X,Y):
-                self.data_marginals = data_marginals
-                self.X=X
-                self.Y=Y
-
-            def on_train_begin(self, logs={}):
-                self.L1_history = []
-                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
-                print "Initial L1 dist: ", self.L1_history[-1]
-
-            def return_model_marginals(self):
-                marginals = np.zeros(len_features)
-                gen_enc = self.X[self.Y.astype(np.bool)]
-                qs = np.exp(-self.model.predict(gen_enc)[:, 0])  
-                for i in range(len(gen_enc)):
-                    marginals[gen_enc[i].astype(np.bool)] += qs[i]
-                return marginals / np.sum(qs)
-
-            def on_epoch_end(self, epoch, logs={}):
-                curr_loss = logs.get('loss')
-                curr_loss_val = logs.get('val_loss')
-                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
-                print "epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4)
-
-        computeL1_dist = computeL1(self.data_marginals,self.X,self.Y)
+        computeL1_dist = computeL1(self)
         callbacks = [computeL1_dist]
-        self.learning_history = self.model.fit(self.X, self.Y, epochs=max_iterations, batch_size=batch_size,
+        self.learning_history = self.model.fit(self.encode_data(self.X), self.Y, epochs=max_iterations, batch_size=batch_size,
                                           validation_split=0.2, verbose=0, callbacks=callbacks)
         self.L1_converge_history = computeL1_dist.L1_history
         self.model_params = self.model.get_weights()
@@ -778,6 +738,14 @@ class Sonia(object):
 
         return None
 
+    def encode_data(self,seq_features):
+        if len(seq_features[0])==0: seq_features=[seq_features]
+        length_input=len(self.features)
+        data=np.array(seq_features)
+        data_enc = np.zeros((len(data), length_input), dtype=np.int8)
+        for i in range(len(data_enc)): data_enc[i][data[i]] = 1
+        return data_enc
+
 gamma=1e-1
 def loss(y_true, y_pred):
     data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
@@ -790,3 +758,29 @@ def likelihood(y_true, y_pred):
     data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
     gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
     return gen-data
+
+class computeL1(kr.callbacks.Callback):
+            
+            def __init__(self, sonia):
+                self.data_marginals = sonia.data_marginals
+                self.sonia=sonia
+                self.len_features=len(sonia.features)
+
+            def on_train_begin(self, logs={}):
+                self.L1_history = []
+                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
+                print "Initial L1 dist: ", self.L1_history[-1]
+
+            def return_model_marginals(self):
+                marginals = np.zeros(self.len_features)
+                gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
+                qs = np.exp(-self.model.predict(self.sonia.encode_data(gen_enc))[:, 0])  
+                for i in range(len(gen_enc)):
+                    marginals[gen_enc[i]] += qs[i]
+                return marginals / np.sum(qs)
+
+            def on_epoch_end(self, epoch, logs={}):
+                curr_loss = logs.get('loss')
+                curr_loss_val = logs.get('val_loss')
+                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
+                print "epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4)
