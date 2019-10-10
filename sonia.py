@@ -111,7 +111,7 @@ class Sonia(object):
 
 	"""
 
-	def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None,sample_gen=False,size_sample=int(5e4)):
+	def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None,sample_gen=False,size_sample=int(5e4),custom_pgen_model=None):
 		self.features = np.array(features)
 		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 		#self.constant_features =  constant_features
@@ -139,7 +139,7 @@ class Sonia(object):
 			self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
 			self.update_model_structure(initialize=True)
 			self.L1_converge_history = []
-		if sample_gen: self.add_generated_seqs(size_sample)
+		if sample_gen: self.add_generated_seqs(size_sample,custom_model_folder=custom_pgen_model)
 
 		self.max_iterations = 100
 		self.step_size = 0.1 #step size
@@ -147,6 +147,26 @@ class Sonia(object):
 		self.amino_acids = 'ARNDCQEGHILKMFPSTWYV'
 		self.v = np.zeros(len(self.features))
 		self.drag = 0.0
+		
+		
+	def reject_bad_features(self,threshold=5):
+		""" Keeps only the features associated with marginals that have a high enough count in the gen pool, in order to 
+		avoid numerical instability in the inference. Restricted only to VJ genes.
+
+		Parameters
+		----------
+		threshold : int
+			minimum number of counts in datasets
+		"""
+		if not self.include_genes: return True # skip rejection if don't have v,j genes
+		self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
+		n_gen=(self.gen_marginals*len(self.gen_seq_features)).astype(np.int) # get counts
+		selection=n_gen>threshold
+		selection[:np.sum([(q[0][0]=='a' or q[0][0]=='l')for q in self.features])]=True # throw away only vj bad components
+		self.features=self.features[selection]
+		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+		self.update_model(auto_update_seq_features=True)
+		return True 
 
 	def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
 		""" Defines the model structure and compiles it.
