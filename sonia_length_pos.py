@@ -125,6 +125,7 @@ class SoniaLengthPos(Sonia):
 			Maximum length CDR3 sequence, if not given taken from class attribute
 				
 		"""
+		self.model_params=self.model.get_weights()
 		params=self.model_params[0]
 		for l in range(self.min_L, self.max_L + 1):
 			if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:

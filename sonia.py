@@ -18,7 +18,6 @@ from keras import regularizers
 import keras.backend as K
 import keras as kr
 
-
 class Sonia(object):
 	"""Class used to infer a Q selection model.
 
@@ -439,7 +438,7 @@ class Sonia(object):
 										  validation_split=0.2, verbose=0, callbacks=callbacks)
 		self.L1_converge_history = computeL1_dist.L1_history
 		self.model_params = self.model.get_weights()
-		self.gauge_energies()
+		#self.gauge_energies()
 		self.update_model(auto_update_marginals=True)
 		
 	def gauge_energies(self):
