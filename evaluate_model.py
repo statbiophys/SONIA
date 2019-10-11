@@ -19,8 +19,7 @@ class EvaluateModel(object):
 		self.chain_type=chain_type
 		self.define_olga_models(olga_model=olga_model)
 		self.define_sonia_model(sonia_model=sonia_model)
-		if 'v' in [s[0][0] for s in self.sonia_model.features]: self.include_genes=True
-		else:self.include_genes=False
+		self.include_genes=include_genes
 		if processes is None: self.processes = mp.cpu_count()
 
 
@@ -216,7 +215,7 @@ class EvaluateModel(object):
 		Compute energies for all sequences 
 		'''
 		
-		self.sonia_model.gauge_energies() # set gauge for proper energies
+		#self.sonia_model.gauge_energies() # set gauge for proper energies
 		
 		if energies_data:
 			self.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
