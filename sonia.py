@@ -165,7 +165,10 @@ class Sonia(object):
 		selection[:np.sum([(q[0][0]=='a' or q[0][0]=='l')for q in self.features])]=True # throw away only vj bad components
 		self.features=self.features[selection]
 		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+		self.update_model_structure(initialize=True)
+
 		self.update_model(auto_update_seq_features=True)
+
 		return True 
 
 	def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
