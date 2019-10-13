@@ -42,6 +42,7 @@ class SoniaLeftposRightpos(Sonia):
 			features += [['a' + aa + str(L)] for L in range(-self.max_depth, 0)]
 			
 		if include_genes:
+			import olga.load_model as olga_load_model
 			if self.custom_model_folder is None:
 				main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
 			else:
