@@ -672,13 +672,13 @@ class Sonia(object):
 
 		if 'data_seqs' in attributes_to_save:
 			with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
-				data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-				data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(self.compute_seq_energy(seq_features=self.data_seq_features[i])) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
+				data_seqs_file.write('Sequence;Genes\tFeatures\n')
+				data_seqs_file.write('\n'.join([';'.join(seq) + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
 		if 'gen_seqs' in attributes_to_save:
 			with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
-				gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-				gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(self.compute_seq_energy(seq_features=self.gen_seq_features[i])) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
+				gen_seqs_file.write('Sequence;Genes\tFeatures\n')
+				gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
 		if 'L1_converge_history' in attributes_to_save:
 			with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
@@ -733,7 +733,7 @@ class Sonia(object):
 				for line in data_seqs_file.read().strip().split('\n')[1:]:
 					split_line = line.split('\t')
 					self.data_seqs.append(split_line[0].split(';'))
-					self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+					self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[1].split(';') if tuple(f.split(',')) in self.feature_dict])
 		else:
 			print 'Cannot find data_seqs.tsv  --  no data seqs loaded.'
 
@@ -745,7 +745,7 @@ class Sonia(object):
 				for line in gen_seqs_file.read().strip().split('\n')[1:]:
 					split_line = line.split('\t')
 					self.gen_seqs.append(split_line[0].split(';'))
-					self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+					self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[1].split(';') if tuple(f.split(',')) in self.feature_dict])
 		else:
 			print 'Cannot find gen_seqs.tsv  --  no generated seqs loaded.'
 
