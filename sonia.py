@@ -131,7 +131,7 @@ class Sonia(object):
 			print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
 			return None
 		self.chain_type = default_chain_types[chain_type]
-
+		self.custom_model_folder=custom_pgen_model
 		if load_model is not None:
 			self.load_model(load_model)
 		else:

@@ -42,9 +42,10 @@ class SoniaLeftposRightpos(Sonia):
 			features += [['a' + aa + str(L)] for L in range(-self.max_depth, 0)]
 			
 		if include_genes:
-			import olga.load_model as olga_load_model
-			main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', 'human_T_beta')
-		
+			if self.custom_model_folder is None:
+				main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+			else:
+				main_folder = self.custom_model_folder		
 			params_file_name = os.path.join(main_folder,'model_params.txt')
 			V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
 			J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
