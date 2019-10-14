@@ -644,7 +644,7 @@ class Sonia(object):
 		if 'data_seqs' in attributes_to_save:
 			with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
 				data_seqs_file.write('Sequence;Genes\tFeatures\n')
-				data_seqs_file.write('\n'.join([';'.join(seq) + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
+				data_seqs_file.write('\n'.join([';'.join(seq)+ '\t'+ ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
 		if 'gen_seqs' in attributes_to_save:
 			with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
@@ -710,7 +710,6 @@ class Sonia(object):
 
 		if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
 			with open(os.path.join(load_dir, 'gen_seqs.tsv'), 'r') as gen_seqs_file:
-				#self.gen_seqs = [seq.split('\t')[0].split(';') for seq in gen_seqs_file.read().strip().split('\n')[1:]]
 				self.gen_seqs = []
 				self.gen_seq_features = []
 				for line in gen_seqs_file.read().strip().split('\n')[1:]:
