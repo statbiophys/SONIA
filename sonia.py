@@ -165,7 +165,6 @@ class Sonia(object):
 		self.features=self.features[selection]
 		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 		self.update_model_structure(initialize=True)
-
 		self.update_model(auto_update_seq_features=True)
 
 		return True 
@@ -182,7 +181,6 @@ class Sonia(object):
 
 		"""
 		length_input=np.max([len(self.features),1])
-		
 		if initialize:
 			input_layer = Input(shape=(length_input,))
 			self.model_structure = Dense(1,use_bias=False,activation='linear', activity_regularizer=regularizers.l2(self.l2_reg))(input_layer) #normal glm model
@@ -256,33 +254,6 @@ class Sonia(object):
 				seq_features += [feature_index]
 
 		return seq_features
-
-	# def compute_seq_energy(self, seq_features = None, seq = None):
-	#     """Computes the energy of a sequence according to the model.
-
-
-	#     Parameters
-	#     ----------
-	#     seq_features : list
-	#         Features indices seq projects onto.
-	#     seq : list
-	#         CDR3 sequence and any associated genes
-
-	#     Returns
-	#     -------
-	#     E : float
-	#         Energy of seq according to the model.
-
-	#     """
-	#     evaluate=np.zeros((1,len(self.features)))
-	#     if seq_features is not None:
-	#         evaluate[:,seq_features]=1
-	#         return self.model.predict(evaluate)[0,0]
-	#     elif seq is not None:
-	#         seq_features=self.find_seq_features(seq)
-	#         evaluate[:,seq_features]=1
-	#         return self.model.predict(evaluate)[0,0]
-	#     return 0
 
 	def compute_energy(self,seqs_features):
 		"""Computes the energy of a list of sequences according to the model.
@@ -787,6 +758,8 @@ class computeL1(kr.callbacks.Callback):
 				self.data_marginals = sonia.data_marginals
 				self.sonia=sonia
 				self.len_features=len(sonia.features)
+				self.gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
+				self.encoded_data=self.sonia.encode_data(self.gen_enc)
 
 			def on_train_begin(self, logs={}):
 				self.L1_history = []
@@ -795,10 +768,9 @@ class computeL1(kr.callbacks.Callback):
 
 			def return_model_marginals(self):
 				marginals = np.zeros(self.len_features)
-				gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
-				qs = np.exp(-self.model.predict(self.sonia.encode_data(gen_enc))[:, 0])  
-				for i in range(len(gen_enc)):
-					marginals[gen_enc[i]] += qs[i]
+				qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])  
+				for i in range(len(self.gen_enc)):
+					marginals[self.gen_enc[i]] += qs[i]
 				return marginals / np.sum(qs)
 
 			def on_epoch_end(self, epoch, logs={}):
