@@ -15,7 +15,7 @@ from sonia import Sonia
 
 class SoniaLengthPos(Sonia):
 	
-	def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, min_L = 4, max_L = 30, include_genes = True,sample_gen=False,size_sample=int(5e4),custom_pgen_model=None):
+	def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, min_L = 4, max_L = 30, include_genes = True,sample_gen=False,size_sample=int(1e6),custom_pgen_model=None):
 		
 		Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model, sample_gen=sample_gen,size_sample=size_sample,custom_pgen_model=custom_pgen_model)
 		self.min_L = min_L

@@ -110,7 +110,7 @@ class Sonia(object):
 
 	"""
 
-	def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None,sample_gen=False,size_sample=int(5e4),custom_pgen_model=None):
+	def __init__(self, features = [], constant_features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None,sample_gen=False,size_sample=int(1e6),custom_pgen_model=None):
 		self.features = np.array(features)
 		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 		#self.constant_features =  constant_features
