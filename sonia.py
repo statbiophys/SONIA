@@ -453,9 +453,6 @@ class Sonia(object):
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
 
-        if len(self.data_seqs) > 0 and len(self.gen_seqs) > 0:
-            self.data_marginals[[self.data_marginals[i] == 0 and self.gen_marginals[i] > 0 for i in range(len(self.data_marginals))]] = self.pseudo_count/float(len(self.data_seqs))
-        
     def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
