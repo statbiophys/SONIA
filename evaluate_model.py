@@ -2,6 +2,7 @@ import numpy as np
 import os
 from sonia import Sonia
 import multiprocessing as mp
+import matplotlib.pyplot as plt
 
 class EvaluateModel(object):
 	"""Class used to evaluate sequences with the sonia model
@@ -9,6 +10,8 @@ class EvaluateModel(object):
 
 	Attributes
 	----------
+	chain_type: string
+
 	Methods
 	----------
 
@@ -260,10 +263,12 @@ class EvaluateModel(object):
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
-
-		plt.hist(np.nan_to_num(np.log10(self.pgen_data)),binning_,histtype='step',normed=True,label='data')
-		plt.hist(np.nan_to_num(np.log10(self.pgen_gen)),binning_,histtype='step',normed=True,label='pre-sel')
-		plt.hist(np.nan_to_num(np.log10(self.pgen_sel)),binning_,histtype='step',normed=True,label='post-sel')
+		k,l=np.histogram(np.nan_to_num(np.log10(self.pgen_data)),binning_,density=True)
+		plt.plot(l[:-1],k,label='data',linewidth=2)
+		k,l=np.histogram(np.nan_to_num(np.log10(self.pgen_gen)),binning_,density=True)
+		plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
+		k,l=np.histogram(np.nan_to_num(np.log10(self.pgen_sel)),binning_,density=True)
+		plt.plot(l[:-1],k,label='post-sel',linewidth=2)
 
 		plt.xlabel('$log_{10} P_{pre}$',fontsize=20)
 		plt.ylabel('density',fontsize=20)
@@ -276,16 +281,17 @@ class EvaluateModel(object):
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
-
-		plt.hist(np.nan_to_num(np.log10(self.ppost_data)),binning_,histtype='step',normed=True,label='data')
-		plt.hist(np.nan_to_num(np.log10(self.ppost_gen)),binning_,histtype='step',normed=True,label='pre-sel')
-		plt.hist(np.nan_to_num(np.log10(self.ppost_sel)),binning_,histtype='step',normed=True,label='post-sel')
+		k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_data)),binning_,density=True)
+		plt.plot(l[:-1],k,label='data',linewidth=2)
+		k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_gen)),binning_,density=True)
+		plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
+		k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_sel)),binning_,density=True)
+		plt.plot(l[:-1],k,label='post-sel',linewidth=2)
 
 		plt.xlabel('$log_{10} P_{post}$',fontsize=20)
 		plt.ylabel('density',fontsize=20)
 		plt.legend()
 		plt.show()
-
 
 # some parallel utils for pgen computation
 
