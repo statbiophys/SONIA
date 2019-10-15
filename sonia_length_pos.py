@@ -15,12 +15,15 @@ from sonia import Sonia
 
 class SoniaLengthPos(Sonia):
     
-    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, min_L = 4, max_L = 30, include_genes = True, processes = 4):
+    def __init__(self, data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', min_L = 4, max_L = 30, include_genes = True, seed = None):
         
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model, processes = processes)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, load_model = load_model, chain_type=chain_type, seed = seed)
         self.min_L = min_L
         self.max_L = max_L
-        self.add_features(include_genes)
+        if load_model is not None:
+            self.load_model(load_model)
+        else:
+            self.add_features(include_genes)
     
     def add_features(self, include_genes = True):
         """Generates a list of feature_lsts for a length dependent L pos model.
@@ -106,9 +109,8 @@ class SoniaLengthPos(Sonia):
         return seq_features
 
         
-    def gauge_energies(self):
-        """Gauge energies (i.e. model parameters).
-        
+    def get_energy_parameters(self, return_as_dict = False):
+        """Extract energy terms from keras model and gauge.
         
         For the length dependent position model, the gauge is set so that at a 
         given position, for a given length, we have: 
@@ -124,16 +126,21 @@ class SoniaLengthPos(Sonia):
             Maximum length CDR3 sequence, if not given taken from class attribute
                 
         """
-                
+        model_energy_parameters = self.model.get_weights()[0].flatten()
         for l in range(self.min_L, self.max_L + 1):
             if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
                 for i in range(l):
                     G = sum([(self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
                                     /self.gen_marginals[self.feature_dict[('l' + str(l),)]]) * 
-                                    np.exp(-self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
+                                    np.exp(-model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
                                     for aa in self.amino_acids])
                     for aa in self.amino_acids:
-                        self.model_params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)   
+                        model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)  
+                        
+        if return_as_dict:
+            return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
+        else:
+            return model_energy_parameters
                         
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):

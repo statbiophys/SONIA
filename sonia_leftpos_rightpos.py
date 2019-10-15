@@ -10,12 +10,15 @@ from sonia import Sonia
 
 class SoniaLeftposRightpos(Sonia):
     
-    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, max_depth = 25, max_L = 30, include_genes = True):
+    def __init__(self, data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', max_depth = 25, max_L = 30, include_genes = True, seed = None):
                 
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, seed = seed)
         self.max_depth = max_depth
         self.max_L = max_L
-        self.add_features()
+        if load_model is not None:
+            self.load_model(load_model)
+        else:
+            self.add_features(include_genes)
     
     def add_features(self, include_genes = True):
         """Generates a list of feature_lsts for L/R pos model.
@@ -101,3 +104,15 @@ class SoniaLeftposRightpos(Sonia):
                     seq_features += [feature_index]
                 
         return seq_features
+    
+    def get_energy_parameters(self, return_as_dict = False):
+        """Extract energy terms from keras model.
+        
+        """
+        model_energy_parameters = self.model.get_weights()[0].flatten()
+                                
+        if return_as_dict:
+            return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
+        else:
+            return model_energy_parameters
+
