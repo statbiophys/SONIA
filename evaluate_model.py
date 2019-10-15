@@ -180,7 +180,7 @@ class EvaluateModel(object):
 		return seqs
 	
 	def generate_sequences_post(self,num_seqs,upper_bound=10):
-		"""Generates MonteCarlo sequences from Sonia thourgh rejection sampling
+		"""Generates MonteCarlo sequences from Sonia through rejection sampling
 
 
 		Parameters
