@@ -445,8 +445,7 @@ class EvaluateModel(object):
 	
 	
 	def plot_pgen(self,n_bins=100):
-		'''
-		Histogram plot of Pgen
+		'''Histogram plot of Pgen
 
 		Parameters
 		----------
@@ -469,8 +468,7 @@ class EvaluateModel(object):
 		plt.show()
 		
 	def plot_ppost(self,n_bins=100):
-		'''
-		Histogram plot of Ppost
+		'''Histogram plot of Ppost
 
 		Parameters
 		----------
@@ -547,7 +545,7 @@ def compute_all_pgens(seqs,model=None,processes=None,include_genes=True):
 	-------
 	pgens: array
 		generation probabilities of the sequences.
-		
+
 	'''
 	
 	# every process needs to access this vector, for sure there is a smarter way to implement this.
