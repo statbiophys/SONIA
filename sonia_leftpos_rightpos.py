@@ -10,30 +10,30 @@ from sonia import Sonia
 
 class SoniaLeftposRightpos(Sonia):
 	
-	def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, max_depth = 25, max_L = 30, include_genes = True,sample_gen=False,size_sample=int(1e6),custom_pgen_model=None):
+	def __init__(self, data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', max_depth = 25, max_L = 30, include_genes = True, seed = None,custom_pgen_model=None):
 				
-		Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model,sample_gen=sample_gen,size_sample=size_sample,custom_pgen_model=custom_pgen_model)
+		Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, seed = seed)
 		self.max_depth = max_depth
 		self.max_L = max_L
-		self.include_genes=include_genes
-		if load_model is None:self.add_features()
+		if load_model is not None:
+			self.load_model(load_model)
+		else:
+			self.add_features(include_genes,custom_pgen_model)
 	
-	def add_features(self, include_genes = True):
+	def add_features(self, include_genes = True,custom_pgen_model=None):
 		"""Generates a list of feature_lsts for L/R pos model.
 		
 		
 		Parameters
 		----------
-		max_depth : int
-			Maximum index (from right or left) for amino acid positions
-		max_L : int
-			Maximum length CDR3 sequence
 		include_genes : bool
 			If true, features for gene selection are also generated. Currently
 			joint V/J pairs used.
+			
+		custom_pgen_model: string
+			path to folder of custom olga model.
 				
 		"""
-		
 		features = []
 		L_features = [['l' + str(L)] for L in range(1, self.max_L + 1)]
 		features += L_features
@@ -43,10 +43,10 @@ class SoniaLeftposRightpos(Sonia):
 			
 		if include_genes:
 			import olga.load_model as olga_load_model
-			if self.custom_model_folder is None:
+			if custom_pgen_model is None:
 				main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
 			else:
-				main_folder = self.custom_model_folder		
+				main_folder = self.custom_pgen_model        
 			params_file_name = os.path.join(main_folder,'model_params.txt')
 			V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
 			J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
@@ -55,7 +55,6 @@ class SoniaLeftposRightpos(Sonia):
 			genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 			
 			features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
-	
 		
 		self.update_model(add_features=features)
 		
@@ -104,3 +103,14 @@ class SoniaLeftposRightpos(Sonia):
 					seq_features += [feature_index]
 				
 		return seq_features
+
+	def get_energy_parameters(self, return_as_dict = False):
+		"""Extract energy terms from keras model.
+		
+		"""
+		model_energy_parameters = self.model.get_weights()[0].flatten()
+		   
+		if return_as_dict:
+			return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
+		else:
+			return model_energy_parameters

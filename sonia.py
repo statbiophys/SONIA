@@ -68,16 +68,16 @@ class Sonia(object):
 		Computes the energy, as determined by the model, of a sequence.
 
 	compute_energy(seqs_features)
-        Computes the energies of a list of seq_features according to the model.
+		Computes the energies of a list of seq_features according to the model.
 
 	compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False)
 		Computes the marginals of features over a set of sequences.
 
 	infer_selection(self, epochs = 20, batch_size=5000, initialize = True, seed = None)
-        Infers model parameters (energies for each feature).
+		Infers model parameters (energies for each feature).
 
 	update_model_structure(self,output_layer=[],input_layer=[],initialize=False)
-        Sets keras model structure and compiles.
+		Sets keras model structure and compiles.
 
 	update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False)
 		Updates model by adding/removing model features or data/generated seqs.
@@ -97,7 +97,7 @@ class Sonia(object):
 
 	"""
 
-def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', l2_reg = 0., seed = None):		self.features = np.array(features)
+	def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', l2_reg = 0., seed = None):
 		self.features = np.array(features)
 		self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 		self.data_seqs = []
@@ -123,152 +123,153 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 			self.L1_converge_history = []
 		
 		if seed is not None:
-            np.random.seed(seed = seed)
+			np.random.seed(seed = seed)
 
-        self.amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
+		self.amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
 		
-	    def seq_feature_proj(self, feature, seq):
-        """Checks if a sequence matches all subfeatures of the feature list
+	def seq_feature_proj(self, feature, seq):
+		"""Checks if a sequence matches all subfeatures of the feature list
 
-        Parameters
-        ----------
-        feature : list
-            List of individual subfeatures the sequence must match
-        seq : list
-            CDR3 sequence and any associated genes
+		Parameters
+		----------
+		feature : list
+			List of individual subfeatures the sequence must match
+		seq : list
+			CDR3 sequence and any associated genes
 
-        Returns
-        -------
-        bool
-            True if seq matches feature else False.
-        """
-        try:
-            for f in feature:
-                if f[0] == 'a': #Amino acid subfeature
-                    if len(f) == 2:
-                        if f[1] not in seq[0]:
-                            return False
-                    elif seq[0][int(f[2:])] != f[1]:
-                        return False
-                elif f[0] == 'v' or f[0] == 'j': #Gene subfeature
-                        if not any([[int(x) for x in f[1:].split('-')] == [int(y) for y in gene.lower().split(f[0])[-1].split('-')] for gene in seq[1:] if f[0] in gene.lower()]):
-                            if not any([[int(x) for x in f[1:].split('-')] == [int(gene.lower().split(f[0])[-1].split('-')[0])] for gene in seq[1:] if f[0] in gene.lower()]): #Checks for gene-family match if specified as such
-                                return False
-                elif f[0] == 'l': #CDR3 length subfeature
-                    if len(seq[0]) != int(f[1:]):
-                        return False
-        except: #All ValueErrors and IndexErrors return False
-            return False
+		Returns
+		-------
+		bool
+			True if seq matches feature else False.
+		"""
 
-        return True
+		try:
+			for f in feature:
+				if f[0] == 'a': #Amino acid subfeature
+					if len(f) == 2:
+						if f[1] not in seq[0]:
+							return False
+					elif seq[0][int(f[2:])] != f[1]:
+						return False
+				elif f[0] == 'v' or f[0] == 'j': #Gene subfeature
+						if not any([[int(x) for x in f[1:].split('-')] == [int(y) for y in gene.lower().split(f[0])[-1].split('-')] for gene in seq[1:] if f[0] in gene.lower()]):
+							if not any([[int(x) for x in f[1:].split('-')] == [int(gene.lower().split(f[0])[-1].split('-')[0])] for gene in seq[1:] if f[0] in gene.lower()]): #Checks for gene-family match if specified as such
+								return False
+				elif f[0] == 'l': #CDR3 length subfeature
+					if len(seq[0]) != int(f[1:]):
+						return False
+		except: #All ValueErrors and IndexErrors return False
+			return False
 
-    def find_seq_features(self, seq, features = None):
-        """Finds which features match seq
+		return True
 
-        Parameters
-        ----------
-        seq : list
-            CDR3 sequence and any associated genes
-        features : ndarray
-            Array of feature lists. Each list contains individual subfeatures which
-            all must be satisfied.
+	def find_seq_features(self, seq, features = None):
+		"""Finds which features match seq
 
-        Returns
-        -------
-        seq_features : list
-            Indices of features seq projects onto.
-        """
-        if features is None:
-            features = self.features
-        seq_features = []
-        for feature_index, feature_lst in enumerate(features):
-            if self.seq_feature_proj(feature_lst, seq):
-                seq_features += [feature_index]
+		Parameters
+		----------
+		seq : list
+			CDR3 sequence and any associated genes
+		features : ndarray
+			Array of feature lists. Each list contains individual subfeatures which
+			all must be satisfied.
 
-        return seq_features
+		Returns
+		-------
+		seq_features : list
+			Indices of features seq projects onto.
+		"""
+		if features is None:
+			features = self.features
+		seq_features = []
+		for feature_index, feature_lst in enumerate(features):
+			if self.seq_feature_proj(feature_lst, seq):
+				seq_features += [feature_index]
 
-    def compute_seq_energy(self, seq = None, seq_features = None):
-        """Computes the energy of a sequence according to the model.
+		return seq_features
 
-        Parameters
-        ----------
-        seq : list
-            CDR3 sequence and any associated genes
-        seq_features : list
-            Features indices seq projects onto.
+	def compute_seq_energy(self, seq = None, seq_features = None):
+		"""Computes the energy of a sequence according to the model.
 
-        Returns
-        -------
-        E : float
-            Energy of seq according to the model.
-        """
-        if seq_features is not None:
-            return self.compute_energy([seq_features])[0]
-        elif seq is not None:
-            return self.compute_energy([self.find_seq_features(seq)])[0]
-        return 0
+		Parameters
+		----------
+		seq : list
+			CDR3 sequence and any associated genes
+		seq_features : list
+			Features indices seq projects onto.
 
-    def compute_energy(self,seqs_features):
-        """Computes the energy of a list of sequences according to the model.
-        
-        Parameters
-        ----------
-        seqs_features : list
-            list of encoded sequences into sonia features.
-        
-        Returns
-        -------
-        E : float
-            Energies of seqs according to the model.
+		Returns
+		-------
+		E : float
+			Energy of seq according to the model.
+		"""
+		if seq_features is not None:
+			return self.compute_energy([seq_features])[0]
+		elif seq is not None:
+			return self.compute_energy([self.find_seq_features(seq)])[0]
+		return 0
 
-        """
-        seqs_features_enc=self._encode_data(seqs_features)
-        return self.model.predict(seqs_features_enc)[:, 0]
+	def compute_energy(self,seqs_features):
+		"""Computes the energy of a list of sequences according to the model.
+		
+		Parameters
+		----------
+		seqs_features : list
+			list of encoded sequences into sonia features.
+		
+		Returns
+		-------
+		E : float
+			Energies of seqs according to the model.
 
-    def _encode_data(self,seq_features):
-        """Turns seq_features into expanded numpy array"""
+		"""
+		seqs_features_enc=self._encode_data(seqs_features)
+		return self.model.predict(seqs_features_enc)[:, 0]
 
-        if len(seq_features[0])==0: seq_features=[seq_features]
-        length_input=len(self.features)
-        data=np.array(seq_features)
-        data_enc = np.zeros((len(data), length_input), dtype=np.int8)
-        for i in range(len(data_enc)): data_enc[i][data[i]] = 1
-        return data_enc
+	def _encode_data(self,seq_features):
+		"""Turns seq_features into expanded numpy array"""
+
+		if len(seq_features[0])==0: seq_features=[seq_features]
+		length_input=len(self.features)
+		data=np.array(seq_features)
+		data_enc = np.zeros((len(data), length_input), dtype=np.int8)
+		for i in range(len(data_enc)): data_enc[i][data[i]] = 1
+		return data_enc
 
 	
 	def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
 		"""Computes the marginals of each feature over sequences.
-        Computes marginals either with a flat distribution over the sequences
-        or weighted by the model energies. Note, finding the features of each
-        sequence takes time and should be avoided if it has already been done.
-        If computing marginals of model features use the default setting to
-        prevent searching for the model features a second time. Similarly, if
-        seq_model_features has already been determined use this to avoid
-        recalculating it.
+		Computes marginals either with a flat distribution over the sequences
+		or weighted by the model energies. Note, finding the features of each
+		sequence takes time and should be avoided if it has already been done.
+		If computing marginals of model features use the default setting to
+		prevent searching for the model features a second time. Similarly, if
+		seq_model_features has already been determined use this to avoid
+		recalculating it.
 
-        Parameters
-        ----------
-        features : list or None
-            List of features. This does not need to match the model
-            features. If None (default) the model features will be used.
-        seq_features_all : list
-            Indices of model features seqs project onto.
-        seqs : list
-            List of sequences to compute the feature marginals over. Note, each
-            'sequence' is a list where the first element is the CDR3 sequence
-            which is followed by any V or J genes.
-        use_flat_distribution : bool
-            Marginals will be computed using a flat distribution (each seq is
-            weighted as 1) if True. If False, the marginals are computed using
-            model weights (each sequence is weighted as exp(-E) = Q). Default
-            is False.
+		Parameters
+		----------
+		features : list or None
+			List of features. This does not need to match the model
+			features. If None (default) the model features will be used.
+		seq_features_all : list
+			Indices of model features seqs project onto.
+		seqs : list
+			List of sequences to compute the feature marginals over. Note, each
+			'sequence' is a list where the first element is the CDR3 sequence
+			which is followed by any V or J genes.
+		use_flat_distribution : bool
+			Marginals will be computed using a flat distribution (each seq is
+			weighted as 1) if True. If False, the marginals are computed using
+			model weights (each sequence is weighted as exp(-E) = Q). Default
+			is False.
 
-        Returns
-        -------
-        marginals : ndarray or dict
-            Marginals of model features over seqs.
+		Returns
+		-------
+		marginals : ndarray or dict
+			Marginals of model features over seqs.
 
-        """
+		"""
 		if seq_model_features is None:  # if model features are not given
 			if seqs is not None:  # if sequences are given, get model features from them
 				seq_model_features = [self.find_seq_features(seq) for seq in seqs]
@@ -279,142 +280,142 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 			return np.array([])
 
 		if features is not None and seqs is not None:  # if a different set of features for the marginals is given
-            seq_compute_features = [self.find_seq_features(seq, features = features) for seq in seqs]
-        else:  # if no features or no sequences are provided, compute marginals using model features
-            seq_compute_features = seq_model_features
-            features = self.features
+			seq_compute_features = [self.find_seq_features(seq, features = features) for seq in seqs]
+		else:  # if no features or no sequences are provided, compute marginals using model features
+			seq_compute_features = seq_model_features
+			features = self.features
 
 		marginals = np.zeros(len(features))
-        if len(seq_model_features) != 0:
-            Z = 0.
-            if not use_flat_distribution:
-                energies = self.compute_energy(seq_model_features)
-                Qs= np.exp(-energies)
-                for seq_features,Q in zip(seq_compute_features,Qs):
-                    marginals[seq_features] += Q
-                    Z += Q
-            else:
-                for seq_features in seq_compute_features:
-                    marginals[seq_features] += 1.
-                    Z += 1.
+		if len(seq_model_features) != 0:
+			Z = 0.
+			if not use_flat_distribution:
+				energies = self.compute_energy(seq_model_features)
+				Qs= np.exp(-energies)
+				for seq_features,Q in zip(seq_compute_features,Qs):
+					marginals[seq_features] += Q
+					Z += Q
+			else:
+				for seq_features in seq_compute_features:
+					marginals[seq_features] += 1.
+					Z += 1.
 
-            marginals = marginals / Z
-        return marginals
+			marginals = marginals / Z
+		return marginals
 
 	def infer_selection(self, epochs = 20, batch_size=5000, initialize = True, seed = None):
-        """Infer model parameters, i.e. energies for each model feature.
+		"""Infer model parameters, i.e. energies for each model feature.
 
-        Parameters
-        ----------
-        epochs : int
-            Maximum number of learning epochs
-        intialize : bool
-            Resets data shuffle
-        batch_size : int
-            Size of the batches in the inference
-        seed : int
-            Sets random seed
+		Parameters
+		----------
+		epochs : int
+			Maximum number of learning epochs
+		intialize : bool
+			Resets data shuffle
+		batch_size : int
+			Size of the batches in the inference
+		seed : int
+			Sets random seed
 
-        Attributes set
-        --------------
-        model : keras model
-            Parameters of the model
-        model_marginals : array
-            Marginals over the generated sequences, reweighted by the model.
-        L1_converge_history : list
-            L1 distance between data_marginals and model_marginals at each
-            iteration.
+		Attributes set
+		--------------
+		model : keras model
+			Parameters of the model
+		model_marginals : array
+			Marginals over the generated sequences, reweighted by the model.
+		L1_converge_history : list
+			L1 distance between data_marginals and model_marginals at each
+			iteration.
 
-        """
+		"""
 
 		if seed is not None:
-            np.random.seed(seed = seed)
-        if initialize:
-            # prepare data
-            self.X = np.array(self.data_seq_features+self.gen_seq_features)
-            self.Y = np.concatenate([np.zeros(len(self.data_seq_features)), np.ones(len(self.gen_seq_features))])
+			np.random.seed(seed = seed)
+		if initialize:
+			# prepare data
+			self.X = np.array(self.data_seq_features+self.gen_seq_features)
+			self.Y = np.concatenate([np.zeros(len(self.data_seq_features)), np.ones(len(self.gen_seq_features))])
 
-            shuffle = np.random.permutation(len(self.X)) # shuffle
-            self.X=self.X[shuffle]
-            self.Y=self.Y[shuffle]
+			shuffle = np.random.permutation(len(self.X)) # shuffle
+			self.X=self.X[shuffle]
+			self.Y=self.Y[shuffle]
 
 		computeL1_dist = computeL1(self)
 		callbacks = [computeL1_dist]
 		self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
 										  validation_split=0.2, verbose=0, callbacks=callbacks)
-        self.L1_converge_history = computeL1_dist.L1_history
-        self.update_model(auto_update_marginals=True)
+		self.L1_converge_history = computeL1_dist.L1_history
+		self.update_model(auto_update_marginals=True)
 
-    def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
-        """ Defines the model structure and compiles it.
+	def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
+		""" Defines the model structure and compiles it.
 
-        Parameters
-        ----------
-        structure : Sequential Model Keras
-            structure of the model
+		Parameters
+		----------
+		structure : Sequential Model Keras
+			structure of the model
 
-        initialize: bool
-            if True, it initializes to linear model, otherwise it updates to new structure
+		initialize: bool
+			if True, it initializes to linear model, otherwise it updates to new structure
 
-        """
-        length_input=np.max([len(self.features),1])
+		"""
+		length_input=np.max([len(self.features),1])
 
-        if initialize:
-            input_layer = keras.layers.Input(shape=(length_input,))
-            self.model_structure = keras.layers.Dense(1,use_bias=False,activation='linear', activity_regularizer=keras.regularizers.l2(self.l2_reg))(input_layer) #normal glm model
-        else: self.model_structure=output_layer
+		if initialize:
+			input_layer = keras.layers.Input(shape=(length_input,))
+			self.model_structure = keras.layers.Dense(1,use_bias=False,activation='linear', activity_regularizer=keras.regularizers.l2(self.l2_reg))(input_layer) #normal glm model
+		else: self.model_structure=output_layer
 
-        # Define model
-        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,-4,8))(self.model_structure)
-        self.model = keras.models.Model(inputs=input_layer, outputs=clipped_out)
+		# Define model
+		clipped_out=keras.layers.Lambda(lambda x: K.clip(x,-4,8))(self.model_structure)
+		self.model = keras.models.Model(inputs=input_layer, outputs=clipped_out)
 
-        self.optimizer = keras.optimizers.RMSprop()
-        self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
-        return True
+		self.optimizer = keras.optimizers.RMSprop()
+		self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
+		return True
 
 	def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
-        """Updates the model attributes
-        This method is used to add/remove model features or data/generated
-        sequences. These changes will be propagated through the class to update
-        any other attributes that need to match (e.g. the marginals or
-        seq_features).
+		"""Updates the model attributes
+		This method is used to add/remove model features or data/generated
+		sequences. These changes will be propagated through the class to update
+		any other attributes that need to match (e.g. the marginals or
+		seq_features).
 
-        Parameters
-        ----------
-        add_data_seqs : list
-            List of CDR3 sequences to add to data_seq pool.
-        add_gen_seqs : list
-            List of CDR3 sequences to add to data_seq pool.
-        add_gen_seqs : list
-            List of CDR3 sequences to add to data_seq pool.
-        add_features : list
-            List of feature lists to add to self.features
-        remove_featurese : list
-            List of feature lists and/or indices to remove from self.features
-        add_constant_features : list
-            List of feature lists to add to constant features. (Not currently used)
-        auto_update_marginals : bool
-            Specifies to update marginals.
-        auto_update_seq_features : bool
-            Specifies to update seq features.
+		Parameters
+		----------
+		add_data_seqs : list
+			List of CDR3 sequences to add to data_seq pool.
+		add_gen_seqs : list
+			List of CDR3 sequences to add to data_seq pool.
+		add_gen_seqs : list
+			List of CDR3 sequences to add to data_seq pool.
+		add_features : list
+			List of feature lists to add to self.features
+		remove_featurese : list
+			List of feature lists and/or indices to remove from self.features
+		add_constant_features : list
+			List of feature lists to add to constant features. (Not currently used)
+		auto_update_marginals : bool
+			Specifies to update marginals.
+		auto_update_seq_features : bool
+			Specifies to update seq features.
 
-        Attributes set
-        --------------
-        features : list
-            List of model features
-        data_seq_features : list
-            Features data_seqs have been projected onto.
-        gen_seq_features : list
-            Features gen_seqs have been projected onto.
-        data_marginals : ndarray
-            Marginals over the data sequences for each model feature.
-        gen_marginals : ndarray
-            Marginals over the generated sequences for each model feature.
-        model_marginals : ndarray
-            Marginals over the generated sequences, reweighted by the model,
-            for each model feature.
+		Attributes set
+		--------------
+		features : list
+			List of model features
+		data_seq_features : list
+			Features data_seqs have been projected onto.
+		gen_seq_features : list
+			Features gen_seqs have been projected onto.
+		data_marginals : ndarray
+			Marginals over the data sequences for each model feature.
+		gen_marginals : ndarray
+			Marginals over the generated sequences for each model feature.
+		model_marginals : ndarray
+			Marginals over the generated sequences, reweighted by the model,
+			for each model feature.
 
-        """
+		"""
 
 		self.data_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs] #add_data_seqs
 		self.gen_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs] #add_gen_seqs
@@ -587,28 +588,28 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 			os.mkdir(save_dir)
 
 		if 'data_seqs' in attributes_to_save:
-            with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
-                data_seq_energies = self.compute_energy(self.data_seq_features)
-                data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
+			with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
+				data_seq_energies = self.compute_energy(self.data_seq_features)
+				data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
+				data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
-        if 'gen_seqs' in attributes_to_save:
-            with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
-                gen_seq_energies = self.compute_energy(self.gen_seq_features)
-                gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
+		if 'gen_seqs' in attributes_to_save:
+			with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
+				gen_seq_energies = self.compute_energy(self.gen_seq_features)
+				gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
+				gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
 		if 'L1_converge_history' in attributes_to_save:
 			with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
 				L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
 
 		if 'model' in attributes_to_save:
-            with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
-                feature_file.write('Feature\n')
-                feature_file.write('\n'.join([';'.join(f) for f in self.features]))
-            self.model.save(os.path.join(save_dir, 'model.h5'))
+			with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
+				feature_file.write('Feature\n')
+				feature_file.write('\n'.join([';'.join(f) for f in self.features]))
+			self.model.save(os.path.join(save_dir, 'model.h5'))
 
-        return None
+		return None
 
 	def load_model(self, load_dir, load_seqs = True):
 		"""Loads model from directory.
@@ -625,24 +626,24 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 			return None
 
 		if os.path.isfile(os.path.join(load_dir, 'features.tsv')):
-            features = []
-            with open(os.path.join(load_dir, 'features.tsv'), 'r') as features_file:
-                for i, line in enumerate(features_file):
-                    if i == 0: #skip header
-                        continue
-                    try:
-                        features.append(line.strip().split(';'))
-                    except:
-                        pass
-            self.features = np.array(features)
-            self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-        else:
-            print 'Cannot find features.tsv or model.h5 --  no features loaded.'
+			features = []
+			with open(os.path.join(load_dir, 'features.tsv'), 'r') as features_file:
+				for i, line in enumerate(features_file):
+					if i == 0: #skip header
+						continue
+					try:
+						features.append(line.strip().split(';'))
+					except:
+						pass
+			self.features = np.array(features)
+			self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+		else:
+			print 'Cannot find features.tsv or model.h5 --  no features loaded.'
 
-        if os.path.isfile(os.path.join(load_dir, 'model.h5')):
-            self.model = keras.models.load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
-        else:
-            print 'Cannot find model.h5 --  no model parameters loaded.'
+		if os.path.isfile(os.path.join(load_dir, 'model.h5')):
+			self.model = keras.models.load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
+		else:
+			print 'Cannot find model.h5 --  no model parameters loaded.'
 
 		if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
 			with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
@@ -651,7 +652,7 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 				for line in data_seqs_file.read().strip().split('\n')[1:]:
 					split_line = line.split('\t')
 					self.data_seqs.append(split_line[0].split(';'))
-                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+					self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
 		else:	
 			print 'Cannot find data_seqs.tsv  --  no data seqs loaded.'
 
@@ -662,8 +663,8 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 				for line in gen_seqs_file.read().strip().split('\n')[1:]:
 					split_line = line.split('\t')
 					self.gen_seqs.append(split_line[0].split(';'))
-                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        else:
+					self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+		else:
 			print 'Cannot find gen_seqs.tsv  --  no generated seqs loaded.'
 
 		self.update_model(auto_update_marginals = True)
@@ -704,12 +705,12 @@ def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = No
 		return True 
 
 def loss(y_true, y_pred):
-    """Loss function for keras training"""
+	"""Loss function for keras training"""
 
-    gamma=1e-1
-    data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-    gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-    reg= K.exp(gen)-1.
+	gamma=1e-1
+	data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+	gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+	reg= K.exp(gen)-1.
 
 	return gen-data+gamma*reg*reg
 
@@ -721,7 +722,7 @@ def likelihood(y_true, y_pred):
 
 	return gen-data
 
-class computeL1(kr.callbacks.Callback):
+class computeL1(keras.callbacks.Callback):
 			
 			def __init__(self, sonia):
 				self.data_marginals = sonia.data_marginals

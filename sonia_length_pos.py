@@ -15,27 +15,27 @@ from sonia import Sonia
 
 class SoniaLengthPos(Sonia):
 	
-	def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', load_model = None, min_L = 4, max_L = 30, include_genes = True,sample_gen=False,size_sample=int(1e6),custom_pgen_model=None):
+	def __init__(self, data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', min_L = 4, max_L = 30, include_genes = True, seed = None,custom_pgen_model=None):
 		
-		Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, load_model = load_model, sample_gen=sample_gen,size_sample=size_sample,custom_pgen_model=custom_pgen_model)
+		Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, load_model = load_model, chain_type=chain_type, seed = seed)
 		self.min_L = min_L
 		self.max_L = max_L
-		self.include_genes=include_genes
-		if load_model is None:self.add_features(include_genes)
-	
-	def add_features(self, include_genes = True):
-		"""Generates a list of feature_lsts for a length dependent L pos model.
-		
+		if load_model is not None:
+			self.load_model(load_model)
+		else:
+			self.add_features(include_genes,custom_pgen_model)
+
+	def add_features(self, include_genes = True, custom_pgen_model=None):
+		"""Generates a list of feature_lsts for a length dependent L pos model.        
 		
 		Parameters
 		----------
-		min_L : int
-			Minimum length CDR3 sequence
-		max_L : int
-			Maximum length CDR3 sequence
 		include_genes : bool
 			If true, features for gene selection are also generated. Currently
 			joint V/J pairs used.
+
+		custom_pgen_model: string
+			path to folder of custom olga model.
 				
 		"""
 		
@@ -49,11 +49,10 @@ class SoniaLengthPos(Sonia):
 					
 		if include_genes:
 			import olga.load_model as olga_load_model
-			if self.custom_model_folder is None:
+			if custom_pgen_model is None:
 				main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
 			else:
-				main_folder = self.custom_model_folder
-
+				main_folder = self.custom_pgen_model		
 			params_file_name = os.path.join(main_folder,'model_params.txt')
 			V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
 			J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
@@ -62,7 +61,7 @@ class SoniaLengthPos(Sonia):
 			genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 			
 			features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
-			
+		
 		self.update_model(add_features=features)
 		
 	def find_seq_features(self, seq, features = None):
@@ -110,9 +109,8 @@ class SoniaLengthPos(Sonia):
 		return seq_features
 
 		
-	def gauge_energies(self):
-		"""Gauge energies (i.e. model parameters).
-		
+	def get_energy_parameters(self, return_as_dict = False):
+		"""Extract energy terms from keras model and gauge.
 		
 		For the length dependent position model, the gauge is set so that at a 
 		given position, for a given length, we have: 
@@ -128,19 +126,21 @@ class SoniaLengthPos(Sonia):
 			Maximum length CDR3 sequence, if not given taken from class attribute
 				
 		"""
-		self.model_params=self.model.get_weights()
-		params=self.model_params[0]
+		model_energy_parameters = self.model.get_weights()[0].flatten()
 		for l in range(self.min_L, self.max_L + 1):
 			if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
 				for i in range(l):
 					G = sum([(self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
 									/self.gen_marginals[self.feature_dict[('l' + str(l),)]]) * 
-									np.exp(-params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
+									np.exp(-model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
 									for aa in self.amino_acids])
 					for aa in self.amino_acids:
-						params[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)
-		self.model.set_weights([params])
-		self.model_params=self.model.get_weights()
+						model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)  
+						
+		if return_as_dict:
+			return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
+		else:
+			return model_energy_parameters
 						
 	def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
 							 title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
@@ -235,8 +235,7 @@ class SoniaLengthPos(Sonia):
 			threshold on the marginals, anything lower would be grayed out
 		
 		"""
-		params=self.model_params[0]
-		p1 = np.exp(-params)
+		p1 = np.exp(-self.model.get_weights()[0].flatten())
 		if low_freq_mask:
 			p1[(self.data_marginals < low_freq_mask) & (self.gen_marginals < low_freq_mask)] = -1
 		self.plot_onepoint_values(onepoint = p1, min_L = 8, max_L = 16, min_val = 0, max_value = 2, title = 'model parameters q=exp(-E)')
