@@ -441,6 +441,8 @@ class Sonia(object):
 
 		if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
 			self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
+			self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
+
 
 		if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
 			self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
