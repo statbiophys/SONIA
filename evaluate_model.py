@@ -347,9 +347,7 @@ class EvaluateModel(object):
 		return seqs_post[1:num_seqs+1]
 
 	def compute_energies(self,energies_gen=True,energies_data=True):
-		'''
-		Compute energies of data and generated seqs in the sonia model.
-
+		'''Compute energies of data and generated seqs in the sonia model.
 
 		Parameters
 		----------
@@ -363,10 +361,19 @@ class EvaluateModel(object):
 		--------------
 		
 		energies_data: array
+			energy for each data seq
+
 		Q_data: array
+			selection factor for each data seq
+
 		energies_gen: array
+			energy factor for each generated seq
+
 		Q_gen: array
-		Z:
+			selection factor for each generated seq
+
+		Z: float
+			value of the partition function
 
 		'''
 				
@@ -382,18 +389,27 @@ class EvaluateModel(object):
 			self.Q_data=np.exp(-self.energies_data)/self.Z
 
 		 
-	def compute_pgen(self,rejection_bound=10):
-		'''
-		Compute pgen for all seqs in the dataset in parallel
+	def compute_pgen(self,upper_bound=10):
+		'''Compute pgen for all seqs in the dataset in parallel
 
 		Parameters
 		----------
+		upper_bound : int or float
+			accept all above the threshold. Relates to the percentage of 
+			sequences that pass selection
 
 		Attributes set
 		--------------
+		pgen_data: array
+			generation probabilities of data
 
-		Returns
-		-------
+		pgen_gen: array
+			generation probabilities of generated sequences
+
+		pgen_sel: array
+			generation probabilities of genereated sequences that pass
+			selection.
+
 
 		'''
 
@@ -407,25 +423,25 @@ class EvaluateModel(object):
 		self.pgen_sel=np.array(self.pgen_gen)[self.rejection_selection] #add energies
 	
 	def compute_ppost(self):
-		'''
-		Compute ppost by weighting with selection factor Q=exp(-E)
-
-		Parameters
-		----------
+		'''Compute ppost by weighting with selection factor Q=exp(-E)
 
 		Attributes set
 		--------------
+		ppost_data: array
+			post selection probabilities of data
+		ppost_gen: array
+			post selection probabilities of generated sequences
+		ppost_sel: array
+			post selection probabilities of genereated sequences that pass
+			selection.
 
-		Returns
-		-------
+
 		'''
 		self.compute_energies()
-		self.Q_gen=np.exp(-self.energies_gen)
-		self.Z=np.sum(self.Q_gen)/len(self.Q_gen)
 
 		self.ppost_data=self.pgen_data*np.exp(-self.energies_data)/self.Z
 		self.ppost_gen=self.pgen_gen*np.exp(-self.energies_gen)/self.Z
-		self.ppost_sel=np.array(self.ppost_gen)[self.rejection_selection] #add energies
+		self.ppost_sel=np.array(self.ppost_gen)[self.rejection_selection]
 	
 	
 	def plot_pgen(self,n_bins=100):
@@ -434,12 +450,9 @@ class EvaluateModel(object):
 
 		Parameters
 		----------
+		n_bins: int
+			number of bins of the histogram
 
-		Attributes set
-		--------------
-
-		Returns
-		-------
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
@@ -461,12 +474,9 @@ class EvaluateModel(object):
 
 		Parameters
 		----------
+		n_bins: int
+			number of bins of the histogram
 
-		Attributes set
-		--------------
-
-		Returns
-		-------
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
@@ -493,7 +503,13 @@ class EvaluateModel(object):
 
 		Attributes set
 		----------
-		features: list
+		sonia_model.features : ndarray
+			Array of feature lists. Each list contains individual subfeatures which
+			all must be satisfied.
+
+		sonia_model.features_dict : dict
+			Dictionary keyed by tuples of the feature lists. Values are the index
+			of the feature, i.e. self.features[self.features_dict[tuple(f)]] = f.
 
 		"""
 		if not self.include_genes: return True # skip rejection if don't have v,j genes
@@ -509,7 +525,6 @@ class EvaluateModel(object):
 		return True 
 
 # some parallel utils for pgen computation
-
 def compute_pgen_expand(x):
 	return x[1].compute_aa_CDR3_pgen(x[0][0],x[0][1],x[0][2])
 
@@ -517,31 +532,23 @@ def compute_pgen_expand_novj(x):
 	return x[1].compute_aa_CDR3_pgen(x[0][0])
 
 def compute_all_pgens(seqs,model=None,processes=None,include_genes=True):
-	'''Compute Pgen of sequences using OLGA
+	'''Compute Pgen of sequences using OLGA in parallel
 
 	Parameters
 	----------
-
+	model: object
+		olga model for evaluation of pgen.
+	processes: int
+		number of parallel processes (default all).
+	include_genes: bool
+		condition of v,j usage
 
 	Returns
 	-------
+	pgens: array
+		generation probabilities of the sequences.
+		
 	'''
-	#Load OLGA for seq pgen estimation
-	if model is None:
-		import olga.load_model as load_model
-		import olga.generation_probability as pgen
-
-		main_folder = os.path.join(os.path.dirname(load_model.__file__), 'default_models', chain_type)
-		params_file_name = os.path.join(main_folder,'model_params.txt')
-		marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
-		V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
-		J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-
-		genomic_data = load_model.GenomicDataVDJ()
-		genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-		generative_model = load_model.GenerativeModelVDJ()
-		generative_model.load_and_process_igor_model(marginals_file_name)        
-		model_pgen = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
 	
 	# every process needs to access this vector, for sure there is a smarter way to implement this.
 	final_models = [model for i in range(len(seqs))]
