@@ -10,16 +10,83 @@ class EvaluateModel(object):
 
 	Attributes
 	----------
+	sonia_model: object , (optionally string but not recommended)
+		sonia model
+		Alternatively, path to a folder specifying a Sonia model.
+		The second option is not suggested, since it is much slower.
+
+	olga_model: string
+		Path to a folder specifying a custom IGoR formatted model to be
+		used as a generative model. Folder must contain 'model_params.txt',
+		model_marginals.txt','V_gene_CDR3_anchors.csv' and 'J_gene_CDR3_anchors.csv'.
+
 	chain_type: string
+		Type of receptor. This specification is used to determine gene names
+		and allow integrated OLGA sequence generation. Options: 'humanTRA',
+		'humanTRB' (default), 'humanIGH', and 'mouseTRB'.
+
+	include_genes: bool
+		Presence of gene information in data/generated sequences
+
+	processes: int
+		number of processes to use to infer pgen. Deafult: all.
 
 	Methods
 	----------
+	define_olga_models(olga_model=None)
+		Defines Olga pgen and seqgen models and keeps them as attributes.
 
+	define_sonia_model(sonia_model=None)
+		Imports a Sonia model and keeps it as attribute.
+	
+	complement_V_mask(model)
+		add V genes to OLGA mask.
+
+	evaluate_seqs(seqs=[])
+		Returns energies, pgen and ppost of a list of sequences. 
+
+	evaluate_energies_seqs(seqs=[])
+		Returns energies of a list of sequences.
+	
+	rejection_vector(upper_bound=10,energies=None)
+		Returns acceptance from rejection sampling of a list of seqs.
+		By default uses the generated sequences within the sonia model.
+
+	generate_sequences_pre(num_seqs = 1)
+		Generate sequences using olga
+	
+	generate_sequences_post(num_seqs,upper_bound=10)
+		Generate sequences using olga and perform rejection selection.
+
+	compute_energies(energies_gen=True,energies_data=True)
+		Compute energies of data and generated seqs in the sonia model.
+	
+	compute_pgen(rejection_bound=10)
+		Compute pgen of data and generated seqs in the sonia model in parallel.
+	
+	compute_ppost()
+		Compute ppost of data and generated seqs in the sonia model
+		by weighting the pgen with selection factor Qs=exp(-energies)
+
+	plot_pgen(n_bins=100)
+		Histogram plot of pgen
+
+	plot_ppost(n_bins=100)
+		Histogram plot of ppost
+
+	reject_bad_features(threshold=5)
+		Keeps only the features associated with marginals that have a high enough 
+		count in the gen pool. Restricted only to VJ genes.
 
 	"""
 
 	def __init__(self,sonia_model=None,olga_model=None,chain_type = 'human_T_beta',include_genes=True,processes=None):
-		self.chain_type=chain_type
+		default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
+		if chain_type not in default_chain_types.keys():
+			print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
+			return None
+		self.chain_type = default_chain_types[chain_type]
+
 		self.define_olga_models(olga_model=olga_model)
 		self.define_sonia_model(sonia_model=sonia_model)
 		self.include_genes=include_genes
@@ -29,6 +96,15 @@ class EvaluateModel(object):
 	def define_olga_models(self,olga_model=None):
 		"""
 		Defines Olga pgen and seqgen models and keeps them as attributes.
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 
 		"""
 		import olga.load_model as load_model
@@ -69,6 +145,15 @@ class EvaluateModel(object):
 		"""
 		Loads a Sonia model and keeps it as attribute.
 
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
+
 		"""
 		try:
 			# load from file, generic load, means the find_seq_feats function is slow.
@@ -80,6 +165,15 @@ class EvaluateModel(object):
 	def complement_V_mask(self,model):
 		"""Add V genese with -1 at end. 
 		i.e before TRBV9 only, then TRBV9 and TRBV9-1  
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		"""
 		x,y=[],[]
 		for f in model.V_mask_mapping:
@@ -93,6 +187,15 @@ class EvaluateModel(object):
 	def evaluate_seqs(self,seqs=[]):
 		'''
 		returns selection factors, pgen and pposts of sequences. 
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		'''
 		
 		self.compute_energies(energies_data=False)
@@ -114,6 +217,15 @@ class EvaluateModel(object):
 	def evaluate_energies_seqs(self,seqs=[]):
 		'''
 		returns selection factors of sequences. 
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		'''
 		
 		self.compute_energies(energies_data=False)
@@ -134,6 +246,12 @@ class EvaluateModel(object):
 		----------
 		upper_bound : int or float
 		accept all above the threshold (domain of validity of the model)
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		
 		'''
 
@@ -215,10 +333,19 @@ class EvaluateModel(object):
 	def compute_energies(self,energies_gen=True,energies_data=True):
 		'''
 		Compute energies for all sequences 
+
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
+
 		'''
-		
-		#self.sonia_model.gauge_energies() # set gauge for proper energies
-		
+				
 		if energies_data:
 			self.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
 			self.Q_data=np.exp(-self.energies_data)
@@ -229,9 +356,19 @@ class EvaluateModel(object):
 			self.Z=np.sum(self.Q_gen)/len(self.Q_gen)  
 
 		 
-	def compute_pgen(self,rejection_bound=10,custom_model_folder=None,default_olga=False):
+	def compute_pgen(self,rejection_bound=10):
 		'''
 		Compute pgen for all seqs in the dataset in parallel
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
+
 		'''
 
 		try: self.pgen_data
@@ -246,6 +383,15 @@ class EvaluateModel(object):
 	def compute_ppost(self):
 		'''
 		Compute ppost by weighting with selection factor Q=exp(-E)
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		'''
 		self.compute_energies()
 		self.Q_gen=np.exp(-self.energies_gen)
@@ -259,6 +405,15 @@ class EvaluateModel(object):
 	def plot_pgen(self,n_bins=100):
 		'''
 		Histogram plot of Pgen
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
@@ -277,6 +432,15 @@ class EvaluateModel(object):
 	def plot_ppost(self,n_bins=100):
 		'''
 		Histogram plot of Ppost
+
+		Parameters
+		----------
+
+		Attributes set
+		--------------
+
+		Returns
+		-------
 		'''
 		plt.figure(figsize=(12,8))
 		binning_=np.linspace(-20,-5,n_bins)
@@ -327,8 +491,14 @@ def compute_pgen_expand_novj(x):
 	return x[1].compute_aa_CDR3_pgen(x[0][0])
 
 def compute_all_pgens(seqs,model=None,processes=None,include_genes=True):
-	'''
-	Compute Pgen of sequences using OLGA
+	'''Compute Pgen of sequences using OLGA
+
+	Parameters
+	----------
+
+
+	Returns
+	-------
 	'''
 	#Load OLGA for seq pgen estimation
 	if model is None:
