@@ -293,6 +293,32 @@ class EvaluateModel(object):
 		plt.legend()
 		plt.show()
 
+	def reject_bad_features(self,threshold=5):
+		""" Keeps only the features associated with marginals that have a high enough count in the gen pool.
+		Now restricted only to VJ genes.
+
+		Parameters
+		----------
+		threshold : int
+			minimum number of counts in datasets
+
+		Attributes set
+		----------
+		features: list
+
+		"""
+		if not self.include_genes: return True # skip rejection if don't have v,j genes
+		self.sonia_model.gen_marginals = self.sonia_model.compute_marginals(seq_model_features = self.sonia_model.gen_seq_features, use_flat_distribution = True)
+		n_gen=(self.sonia_model.gen_marginals*len(self.sonia_model.gen_seq_features)).astype(np.int) # get counts
+		selection=n_gen>threshold
+		selection[:np.sum([(q[0][0]=='a' or q[0][0]=='l')for q in self.sonia_model.features])]=True # throw away only vj bad components
+		self.sonia_model.features=self.sonia_model.features[selection]
+		self.sonia_model.feature_dict = {tuple(f): i for i, f in enumerate(self.sonia_model.features)}
+		self.sonia_model.update_model_structure(initialize=True)
+		self.sonia_model.update_model(auto_update_seq_features=True)
+
+		return True 
+
 # some parallel utils for pgen computation
 
 def compute_pgen_expand(x):
