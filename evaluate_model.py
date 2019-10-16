@@ -148,7 +148,6 @@ class EvaluateModel(object):
 		self.rejection_selection=random_samples < np.clip(Q/self.Z,0,upper_bound)/float(upper_bound)
 
 		#print 'acceptance frequency:',np.sum(self.rejection_selection)/float(len(self.rejection_selection))
-
 		return self.rejection_selection
 
 	def generate_sequences_pre(self, num_seqs = 1):
