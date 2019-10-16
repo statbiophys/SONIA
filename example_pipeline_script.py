@@ -13,7 +13,7 @@ work_folder = './' # where data files are and output folder should be
 
 data_file = work_folder + 'data_seqs.txt' # file with data sequences
 gen_file = work_folder + 'gen_seqs.txt' # file with generated sequences if not generated internally
-output_folder = work_folder + '../ciao' # location to save model
+output_folder = work_folder + 'selection/' # location to save model
 
 # %%
 epochs = 30  # maximum epochs to run
@@ -23,14 +23,13 @@ with open(data_file) as f: # this assume data sequences are in semi-colon separa
     data_seqs = [x.strip().split(';') for x in f]
 
 gen_seqs = []
-with open(gen_file) as f:  # this assume gen sequences are in semi-colon separated text file, with gene specification
+with open(gen_file) as f:  # this assume generated sequences are in semi-colon separated text file, with gene specification
     gen_seqs = [x.strip().split(';') for x in f]
 
 # creates the model object, load up sequences and set the features to learn
 qm = SoniaLengthPos(data_seqs=data_seqs, gen_seqs=gen_seqs)
 
 # %% inferring the model
-
 qm.infer_selection(epochs=epochs)
 
 # %% saving the model
