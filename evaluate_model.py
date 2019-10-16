@@ -518,7 +518,7 @@ class EvaluateModel(object):
 		self.sonia_model.features=self.sonia_model.features[selection]
 		self.sonia_model.feature_dict = {tuple(f): i for i, f in enumerate(self.sonia_model.features)}
 		self.sonia_model.update_model_structure(initialize=True)
-		self.sonia_model.update_model(auto_update_seq_features=True)
+		self.sonia_model.update_model(auto_update_seq_features=True,auto_update_marginals=True)
 
 		return True 
 
