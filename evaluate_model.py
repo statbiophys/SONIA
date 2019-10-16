@@ -362,22 +362,24 @@ class EvaluateModel(object):
 		Attributes set
 		--------------
 		
-		energies_data
-		Q_data
-		energies_gen
-		Q_gen
-		Z
+		energies_data: array
+		Q_data: array
+		energies_gen: array
+		Q_gen: array
+		Z:
 
 		'''
 				
-		if energies_data:
-			self.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
-			self.Q_data=np.exp(-self.energies_data)
+
 
 		if energies_gen:
 			self.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)
 			self.Q_gen=np.exp(-self.energies_gen)
 			self.Z=np.sum(self.Q_gen)/len(self.Q_gen)  
+
+		if energies_data:
+			self.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
+			self.Q_data=np.exp(-self.energies_data)/self.Z
 
 		 
 	def compute_pgen(self,rejection_bound=10):

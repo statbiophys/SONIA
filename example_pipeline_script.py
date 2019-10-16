@@ -8,6 +8,8 @@ Created on Tue Mar 26 23:38:07 2019
 
 import os
 from sonia_length_pos import SoniaLengthPos
+from evaluate_model import EvaluateModel
+
 
 work_folder = './' # where data files are and output folder should be
 
@@ -36,3 +38,12 @@ qm.infer_selection(epochs=epochs)
 if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 qm.save_model(output_folder + 'SONIA_model_example')
+
+
+#load evaluation class
+ev=EvaluateModel(sonia_model=qm)
+
+# generate seqs pre
+print ev.generate_sequences_pre(10)
+# generate seqs post
+print ev.generate_sequences_post(10)
