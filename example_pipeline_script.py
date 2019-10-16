@@ -50,7 +50,7 @@ print ev.generate_sequences_pre(10)
 seqs= ev.generate_sequences_post(10)
 print seqs
 
-# evaluate energies, pgen and ppost of generated seqs
+# evaluate energies, pgen and ppost of sequences
 energies,pgens,pposts= ev.evaluate_seqs(seqs)
 print pgens
 print pposts
