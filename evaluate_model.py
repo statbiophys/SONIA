@@ -3,6 +3,9 @@ import os
 from sonia import Sonia
 import multiprocessing as mp
 import matplotlib.pyplot as plt
+import olga.load_model as olga_load_model
+import olga.generation_probability as pgen
+import olga.sequence_generation as seq_gen
 
 class EvaluateModel(object):
 	"""Class used to evaluate sequences with the sonia model
@@ -11,7 +14,7 @@ class EvaluateModel(object):
 	Attributes
 	----------
 	sonia_model: object , (optionally string but not recommended)
-		sonia model
+		Sonia model.
 		Alternatively, path to a folder specifying a Sonia model.
 		The second option is not suggested, since it is much slower.
 
@@ -94,22 +97,28 @@ class EvaluateModel(object):
 
 
 	def define_olga_models(self,olga_model=None):
-		"""
-		Defines Olga pgen and seqgen models and keeps them as attributes.
+		"""Defines Olga pgen and seqgen models and keeps them as attributes.
 
 		Parameters
 		----------
+		olga_model: string
+			Path to a folder specifying a custom IGoR formatted model to be
+			used as a generative model. Folder must contain 'model_params.txt',
+			model_marginals.txt','V_gene_CDR3_anchors.csv' and 'J_gene_CDR3_anchors.csv'.
+
 
 		Attributes set
 		--------------
+		genomic_data: object
+			genomic data associate with the olga model.
 
-		Returns
-		-------
+		pgen_model: object
+			olga model for evaluation of pgen.
+
+		seq_gen_model: object
+			olga model for generation of seqs.
 
 		"""
-		import olga.load_model as load_model
-		import olga.generation_probability as pgen
-		import olga.sequence_generation as seq_gen
 
 
 		#Load generative model
@@ -123,17 +132,17 @@ class EvaluateModel(object):
 				# absolute path
 				main_folder=olga_model
 		else:
-			main_folder=os.path.join(os.path.dirname(load_model.__file__), 'default_models', self.chain_type)
+			main_folder=os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
 
 		params_file_name = os.path.join(main_folder,'model_params.txt')
 		marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
 		V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
 		J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
-		genomic_data = load_model.GenomicDataVDJ()
+		genomic_data = olga_load_model.GenomicDataVDJ()
 		genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 		self.genomic_data=genomic_data
-		generative_model = load_model.GenerativeModelVDJ()
+		generative_model = olga_load_model.GenerativeModelVDJ()
 		generative_model.load_and_process_igor_model(marginals_file_name)        
 
 		self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
@@ -142,17 +151,20 @@ class EvaluateModel(object):
 		self.seq_gen_model = seq_gen.SequenceGenerationVDJ(generative_model, genomic_data)
 
 	def define_sonia_model(self,sonia_model=None):
-		"""
-		Loads a Sonia model and keeps it as attribute.
+		"""Loads a Sonia model and keeps it as attribute.
 
 		Parameters
 		----------
+		sonia_model: object , (optionally string but not recommended)
+			Sonia model.
+			Alternatively, path to a folder specifying a Sonia model.
+			The second option is not suggested, since it is much slower.
 
 		Attributes set
 		--------------
+		sonia_model: object
+			Sonia model.
 
-		Returns
-		-------
 
 		"""
 		try:
@@ -168,12 +180,14 @@ class EvaluateModel(object):
 
 		Parameters
 		----------
-
-		Attributes set
-		--------------
+		model: object
+			Olga model for evaluation of pgen
 
 		Returns
 		-------
+		V_mask_mapping: dict
+			Dictionary that maps V genes to olga model parameters.
+
 		"""
 		x,y=[],[]
 		for f in model.V_mask_mapping:
@@ -185,17 +199,23 @@ class EvaluateModel(object):
 		return dict(zip(x,y))
 
 	def evaluate_seqs(self,seqs=[]):
-		'''
-		returns selection factors, pgen and pposts of sequences. 
+		'''Returns energies, pgen and pposts of sequences. 
 
 		Parameters
 		----------
-
-		Attributes set
-		--------------
+		seqs: list
+			list of sequences to evaluate
 
 		Returns
 		-------
+		energies: array
+			energies,i.e. -log(Q), of the sequences
+
+		pgens: array
+			pgen of the sequences
+
+		pposts: array
+			ppost of the sequences
 		'''
 		
 		self.compute_energies(energies_data=False)
@@ -215,17 +235,18 @@ class EvaluateModel(object):
 		return energies, pgens, pposts
 	
 	def evaluate_energies_seqs(self,seqs=[]):
-		'''
-		returns selection factors of sequences. 
+		'''Returns energies of sequences. 
 
 		Parameters
 		----------
-
-		Attributes set
-		--------------
+		seqs: list
+			list of sequences to evaluate
 
 		Returns
 		-------
+		energies: array
+			energies,i.e. -log(Q), of the sequences
+
 		'''
 		
 		self.compute_energies(energies_data=False)
@@ -239,19 +260,19 @@ class EvaluateModel(object):
 		return energies
 
 	def rejection_vector(self,upper_bound=10,energies=None):
-		'''
-		Compute rejection 
+		''' Returns acceptance from rejection sampling of a list of seqs.
+		By default uses the generated sequences within the sonia model.
 		
 		Parameters
 		----------
 		upper_bound : int or float
-		accept all above the threshold (domain of validity of the model)
-
-		Attributes set
-		--------------
+			accept all above the threshold. Relates to the percentage of 
+			sequences that pass selection
 
 		Returns
 		-------
+		rejection selection: array of bool
+			acceptance of each sequence.
 		
 		'''
 
@@ -279,11 +300,7 @@ class EvaluateModel(object):
 		num_seqs : int or float
 			Number of MonteCarlo sequences to generate and add to the specified
 			sequence pool.
-		custom_model_folder : str
-			Path to a folder specifying a custom IGoR formatted model to be
-			used as a generative model. Folder must contain 'model_params.txt'
-			and 'model_marginals.txt'
-
+		
 		Returns
 		--------------
 		seqs : list
@@ -291,7 +308,6 @@ class EvaluateModel(object):
 
 		"""
 		#Generate sequences
-		#seqs_generated=generate_all_seqs(int(num_seqs),sg_model) # parallel version
 		seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3() for i in range(int(num_seqs))]
 		seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]#[sg_model.gen_rnd_prod_CDR3() for _ in range(int(num_gen_seqs))]]
 		if not self.include_genes:
@@ -300,8 +316,7 @@ class EvaluateModel(object):
 		return seqs
 	
 	def generate_sequences_post(self,num_seqs,upper_bound=10):
-		"""Generates MonteCarlo sequences from Sonia through rejection sampling
-
+		"""Generates MonteCarlo sequences from Sonia through rejection sampling.
 
 		Parameters
 		----------
@@ -309,12 +324,13 @@ class EvaluateModel(object):
 			Number of MonteCarlo sequences to generate and add to the specified
 			sequence pool.
 		upper_bound: int
-			1/ratio of sequences that are rejected in the process 
+			accept all above the threshold. Relates to the percentage of 
+			sequences that pass selection.
 
 		Returns
 		--------------
 		seqs : list
-			MonteCarlo sequences drawn from a VDJ recomb model
+			MonteCarlo sequences drawn from a VDJ recomb model that pass selection.
 
 		"""
 		seqs_post=[['a','b','c']] # initialize
@@ -332,17 +348,25 @@ class EvaluateModel(object):
 
 	def compute_energies(self,energies_gen=True,energies_data=True):
 		'''
-		Compute energies for all sequences 
+		Compute energies of data and generated seqs in the sonia model.
 
 
 		Parameters
 		----------
+		energies_gen: bool
+			Energies are computed on generated data
+
+		energies_data: bool
+			Energies are computed on data
 
 		Attributes set
 		--------------
-
-		Returns
-		-------
+		
+		energies_data
+		Q_data
+		energies_gen
+		Q_gen
+		Z
 
 		'''
 				
