@@ -73,12 +73,6 @@ def main():
     parser.add_option('-m', '--max_number_of_seqs', type='int',metavar='N', dest='max_number_of_seqs', help='evaluate for at most N sequences.')
     parser.add_option('--lines_to_skip', type='int',metavar='N', dest='lines_to_skip', default = 0, help='skip the first N lines of the file. Default is 0.')
     
-    #display
-    parser.add_option('--display_off', action='store_false', dest='display_seqs', default=True, help='turn the sequence display off (only applies in write-to-file mode). Default is on.')
-    parser.add_option('--num_lines_for_display', type='int', metavar='N', default = 50, dest='num_lines_for_display', help='N lines of the output file are displayed when sequence display is on. Also used to determine the number of sequences to average over for speed and time estimates.')
-    parser.add_option('--time_updates_off', action='store_false', dest='time_updates', default=True, help='turn time updates off (only applies when sequence display is disabled).')
-    parser.add_option('--seqs_per_time_update', type='float', metavar='N', default = 100, dest='seqs_per_time_update', help='specify the number of sequences between time updates. Default is 1e5.')
-
     #delimeters
     parser.add_option('-d', '--delimiter', type='choice', dest='delimiter',  choices=['tab', 'space', ',', ';', ':'], help="declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':'")
     parser.add_option('--raw_delimiter', type='str', dest='delimiter', help="declare infile delimiter as a raw string.")
@@ -215,13 +209,9 @@ def main():
 
 
     #More options
-    time_updates = options.time_updates
-    display_seqs = options.display_seqs
-    num_lines_for_display = options.num_lines_for_display
     seq_in_index = options.seq_in_index #where in the line the sequence is after line.split(delimiter)
     lines_to_skip = options.lines_to_skip #one method of skipping header
     comment_delimiter = options.comment_delimiter #another method of skipping header
-    seqs_per_time_update = options.seqs_per_time_update
     max_number_of_seqs = options.max_number_of_seqs
     V_mask_index = options.V_mask_index #Default is not conditioning on V identity
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
@@ -366,7 +356,26 @@ def main():
             if max_number_of_seqs is not None:
                 if len(seqs) >= max_number_of_seqs:
                     break
+
+        # combine sequences.
         zipped=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
-        print(ev.evaluate_selection_factors(zipped))
+
+        print('Continuing to Ppost computation.')
+
+        if options.outfile_name is not None: #OUTFILE SPECIFIED
+            if (not options.skip_ppost) or (not options.skip_pgen):
+                Q,pgen,ppost=ev.evaluate_seqs(zipped)
+                np.savetxt(options.outfile_name ,zip(Q,pgen,ppost),fmt='%s')
+            else:
+                Q=ev.evaluate_selection_factors(zipped)
+                np.savetxt(options.outfile_name ,Q,fmt='%s')
+        else: #print to stdout
+            if (not options.skip_ppost) or (not options.skip_pgen):
+                Q,pgen,ppost=ev.evaluate_seqs(zipped)
+                for i in range(len(Q)):print(Q[i],pgen[i],ppost[i])
+            else:
+                Q=ev.evaluate_selection_factors(zipped)
+                print(Q)
+
 
 if __name__ == '__main__': main()
