@@ -14,10 +14,10 @@ class EvaluateModel(object):
 		Sonia model. Loaded previously, do not put the path.
 
 	include_genes: bool
-		Conditioning on gene usage for pgen/ppost evaluation
+		Conditioning on gene usage for pgen/ppost evaluation. Default: True
 
 	processes: int
-		number of processes to use to infer pgen. Deafult: all.
+		Number of processes to use to infer pgen. Default: all.
 
 	custom_olga_model: object
 		Optional: already loaded custom generation_probability olga model.
@@ -29,7 +29,7 @@ class EvaluateModel(object):
 		Returns Q, pgen and ppost of a list of sequences. 
 
 	evaluate_selection_factors(seqs=[])
-		Returns normalised selection factor Q (of Ppost=Q*Pgen) of list of sequences (faster than evaluate_seqs because it does not compute pgen and ppost)
+		Returns normalised selection factor Q (Ppost=Q*Pgen) of a list of sequences (faster than evaluate_seqs because it does not compute pgen and ppost)
 
 	"""
 
