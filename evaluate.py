@@ -24,7 +24,6 @@ from __future__ import print_function, division
 import os
 
 import olga.load_model as load_model
-import evaluate_model as ev
 from optparse import OptionParser
 import olga.sequence_generation as sequence_generation
 from sonia_length_pos import SoniaLengthPos
@@ -61,7 +60,7 @@ def main():
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
-    parser.add_option('--j_in', '--j_mask_index', type='int', metavar='INDEX', dest='J_mask_index', default=1, help='specifies J_masks are found in column INDEX in the input file. Default is 2.')
+    parser.add_option('--j_in', '--j_mask_index', type='int', metavar='INDEX', dest='J_mask_index', default=2, help='specifies J_masks are found in column INDEX in the input file. Default is 2.')
     parser.add_option('--v_mask', type='string', dest='V_mask', help='specify V usage to condition as arguments.')
     parser.add_option('--j_mask', type='string', dest='J_mask', help='specify J usage to condition as arguments.')
 
@@ -284,6 +283,90 @@ def main():
             v,j=V_mask[0],J_mask[0]
             Q=ev.evaluate_selection_factors([[seq,v,j]])
             print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
+    else:
+        seqs = []
+        V_usage_masks = []
+        J_usage_masks = []
 
+        infile = open(infile_name, 'r')
+
+        for i, line in enumerate(infile):
+            if comment_delimiter is not None: #Default case -- no comments/header delimiter
+                if line.startswith(comment_delimiter): #allow comments
+                    continue
+            if i < lines_to_skip:
+                continue
+
+            if delimiter is None: #Default delimiter is any whitespace
+                split_line = line.split('\n')[0].split()
+            else:
+                split_line = line.split('\n')[0].split(delimiter)
+            #Find the seq
+            try:
+                seq = split_line[seq_in_index].strip()
+                if len(seq.strip()) == 0:
+                    if skip_empty:
+                        continue
+                    else:
+                        seqs.append(seq) #keep the blank seq as a placeholder
+                        #seq_types.append('aaseq')
+                else:
+                    seqs.append(seq)
+                    #seq_types.append(determine_seq_type(seq, aa_alphabet))
+            except IndexError: #no index match for seq
+                if skip_empty and len(line.strip()) == 0:
+                    continue
+                print('seq_in_index is out of range')
+                print('Exiting...')
+                infile.close()
+                return -1
+
+            #Find and format V_usage_mask
+            if V_mask_index is None:
+                V_usage_masks.append(None) #default mask
+            else:
+                try:
+                    V_usage_mask = split_line[V_mask_index].strip().split(gene_mask_delimiter)
+                    #check that all V gene/allele names are recognized
+                    if all([gene_to_num_str(v, 'V') in pgen_model.V_mask_mapping for v in V_usage_mask]):
+                        V_usage_masks.append(V_usage_mask)
+                    else:
+                        print(str(V_usage_mask) + " is not a usable V_usage_mask composed exclusively of recognized V gene/allele names")
+                        print('Unrecognized V gene/allele names: ' + ', '.join([v for v in V_usage_mask if gene_to_num_str(v, 'V') not in pgen_model.V_mask_mapping.keys()]))
+                        print('Exiting...')
+                        infile.close()
+                        return -1
+                except IndexError: #no index match for V_mask_index
+                    print('V_mask_index is out of range')
+                    print('Exiting...')
+                    infile.close()
+                    return -1
+
+            #Find and format J_usage_mask
+            if J_mask_index is None:
+                J_usage_masks.append(None) #default mask
+            else:
+                try:
+                    J_usage_mask = split_line[J_mask_index].strip().split(gene_mask_delimiter)
+                    #check that all V gene/allele names are recognized
+                    if all([gene_to_num_str(j, 'J') in pgen_model.J_mask_mapping for j in J_usage_mask]):
+                        J_usage_masks.append(J_usage_mask)
+                    else:
+                        print(str(J_usage_mask) + " is not a usable J_usage_mask composed exclusively of recognized J gene/allele names")
+                        print('Unrecognized J gene/allele names: ' + ', '.join([j for j in J_usage_mask if gene_to_num_str(j, 'J') not in pgen_model.J_mask_mapping.keys()]))
+                        print('Exiting...')
+                        infile.close()
+                        return -1
+                except IndexError: #no index match for J_mask_index
+                    print('J_mask_index is out of range')
+                    print('Exiting...')
+                    infile.close()
+                    return -1
+
+            if max_number_of_seqs is not None:
+                if len(seqs) >= max_number_of_seqs:
+                    break
+        zipped=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
+        print(ev.evaluate_selection_factors(zipped))
 
 if __name__ == '__main__': main()
