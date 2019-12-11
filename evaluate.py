@@ -31,6 +31,7 @@ from sonia_length_pos import SoniaLengthPos
 from sonia_leftpos_rightpos import SoniaLeftposRightpos
 from evaluate_model import EvaluateModel
 import time
+from utils import gene_to_num_str
 import olga.load_model as olga_load_model
 import olga.generation_probability as generation_probability
 import numpy as np
@@ -54,9 +55,9 @@ def main():
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
-    parser.add_option('--ppost', '--Ppost', action='store_true', dest='eval_ppost', default=False, help='evaluate Ppost, default False')
-    parser.add_option('--pgen', '--Pgen', action='store_true', dest='eval_pgen', default=False, help='evaluate Pgen, default False')
-    parser.add_option('--Q', '--selection_factor', action='store_true', dest='eval_q', default=True, help='evaluate selection factor, default True')
+    parser.add_option('--skip_ppost', '--Ppost', action='store_true', dest='skip_ppost', default=False, help='skip Ppost, default False')
+    parser.add_option('--skip_pgen', '--Pgen', action='store_true', dest='skip_pgen', default=False, help='skip Pgen, default False')
+    parser.add_option('--skip_Q', '--selection_factor', action='store_true', dest='skip_Q', default=False, help='skip selection factor, default False')
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
@@ -238,8 +239,13 @@ def main():
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)
     if options.infile_name is None: #No infile specified -- args should be the input seqs
         print_warnings = True
-        seqs = [seq for i, seq in enumerate(args)]
+        if len(args)>1 : 
+            print('ERROR: can process only one sequence at the time. Submit thourgh file instead.')
+            return -1
+        seq=args[0]
 
+        #Format V and J masks -- uniform for all argument input sequences
+ 
         try:
             V_mask = options.V_mask.split(',')
             unrecognized_v_genes = [v for v in V_mask if gene_to_num_str(v, 'V') not in pgen_model.V_mask_mapping.keys()]
@@ -263,20 +269,21 @@ def main():
                 J_mask = None
         except AttributeError:
             J_mask = options.J_mask #Default is None, i.e. not conditioning on J identity
-            
-        if options.eval_ppost or options.eval_pgen:
 
-            Q,pgen,ppost=ev.evaluate_seqs(sonia_model.gen_seqs[:3])
-        
-            if options.eval_ppost and options.eval_pgen: print('both')
-            elif options.eval_ppost and (not options.eval_pgen) : print('ppost')
-            elif (not options.eval_ppost) and options.eval_pgen : print('pgen')
+        print('')
+
+        if (not options.skip_ppost) or (not options.skip_pgen):
+            v,j=V_mask[0],J_mask[0]
+            Q,pgen,ppost=ev.evaluate_seqs([[seq,v,j]])
+            if not options.skip_ppost: print('Ppost of ' + seq + ' '+v+ ' '+j+ ': ' + str(ppost[0]))
+            if not options.skip_pgen: print('Pgen of ' + seq + ' '+v+ ' '+j+ ': ' + str(pgen[0]))
+            if not options.skip_Q: print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
+            print('')
 
         else:
-
-            Q=ev.evaluate_selection_factors(sonia_model.gen_seqs[:3])
-            print(Q)
-
+            v,j=V_mask[0],J_mask[0]
+            Q=ev.evaluate_selection_factors([[seq,v,j]])
+            print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
 
 
 if __name__ == '__main__': main()
