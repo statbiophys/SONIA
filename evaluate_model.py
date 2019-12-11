@@ -98,7 +98,7 @@ class EvaluateModel(object):
 		energies =self.sonia_model.compute_energy(seq_features) # compute energies
 		Q= np.exp(-energies)/self.Z # compute Q
 		pgens=compute_all_pgens(seqs,self.pgen_model,self.processes,self.include_genes) # compute pgen
-		pposts=pgens*np.exp(-energies)/self.Z # compute ppost
+		pposts=pgens*Q # compute ppost
 		
 		return Q, pgens, pposts
 	

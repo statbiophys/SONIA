@@ -167,8 +167,8 @@ class SoniaLengthPos(Sonia):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
                 print('Exiting...')
                 return None
-            else:
-                os.mkdir(save_dir)
+        else:
+            os.mkdir(save_dir)
                 
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
@@ -194,7 +194,7 @@ class SoniaLengthPos(Sonia):
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
                 feature_file.write('Feature\tEnergy\n')
-                feature_file.write('\n'.join([';'.join(f) + '\t' + model_energy_dict[tuple(f)] for f in self.features]))
+                feature_file.write('\n'.join([';'.join(f) + '\t' + str(model_energy_dict[tuple(f)]) for f in self.features]))
             self.model.save(os.path.join(save_dir, 'model.h5'))
             
         return None

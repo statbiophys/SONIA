@@ -41,7 +41,7 @@ class SequenceGeneration(object):
 
 		self.sonia_model=sonia_model # sonia model passed as an argument
 
-		# define olga seqgen model
+		# define olga sequence_generation model
 		if custom_olga_model is not None:
 			if custom_genomic_data is None:
 				print('ERROR: you need to pass also the custom_genomic_data')
