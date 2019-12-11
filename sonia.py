@@ -9,6 +9,7 @@ Created on Wed Jan 30 12:06:58 2019
 from __future__ import print_function, division
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 from tensorflow import keras
 import tensorflow.keras.backend as K
 import olga.load_model as olga_load_model
