@@ -27,6 +27,9 @@ import olga.load_model as load_model
 import evaluate_model as ev
 from optparse import OptionParser
 import olga.sequence_generation as sequence_generation
+from sonia_length_pos import SoniaLengthPos
+from sonia_leftpos_rightpos import SoniaLeftposRightpos
+from evaluate_model import EvaluateModel
 import time
 import olga.load_model as olga_load_model
 
@@ -43,8 +46,6 @@ def main():
     """ Evaluate sequences."""
     parser = OptionParser(conflict_handler="resolve")
 
-    parser.add_option('--nociao', action='store_true',default=False, help='decide what to do')
-
     parser.add_option('--humanTRA', '--human_T_alpha', action='store_true', dest='humanTRA', default=False, help='use default human TRA model (T cell alpha chain)')
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
@@ -52,6 +53,7 @@ def main():
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
 
+    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
 
     (options, args) = parser.parse_args()
 
@@ -101,15 +103,16 @@ def main():
             print('Exiting...')
             return -1
 
-    genomic_data = olga_load_model.GenomicDataVDJ()
-    genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-    generative_model = olga_load_model.GenerativeModelVDJ()
-    generative_model.load_and_process_igor_model(marginals_file_name)
-    seq_gen = sequence_generation.SequenceGenerationVDJ(generative_model, genomic_data)
-    seq=seq_gen.gen_rnd_prod_CDR3()
-    print (seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0])
+    # choose model type
+    if options.model_type=='leftright': 
+        sonia_model=SoniaLeftposRightpos(load_model=os.path.join(model_folder,'left_right'))
+        sonia_model.add_generated_seqs(int(1e3)) 
+    elif options.model_type=='lengthpos':
+        sonia_model=SoniaLengthPos(load_model=os.path.join(model_folder,'/length_pos'))
+        sonia_model.add_generated_seqs(int(1e3)) 
 
-    if options.nociao: print('nociao')
-    else: print('ciao')
+    ev=EvaluateModel(sonia_model)
+    print (ev.evaluate_seqs(sonia_model.gen_seqs[:3]))
+
 
 if __name__ == '__main__': main()
