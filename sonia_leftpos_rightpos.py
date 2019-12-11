@@ -25,7 +25,7 @@ class SoniaLeftposRightpos(Sonia):
         self.max_depth = max_depth
         self.max_L = max_L
         if load_model is not None:
-            self.load_model(load_model)
+            self.load_model(load_model,verbose=False)
         else:
             self.add_features(include_genes,custom_pgen_model)
 

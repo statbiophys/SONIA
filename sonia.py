@@ -574,7 +574,7 @@ class Sonia(object):
 
         return None
 
-    def load_model(self, load_dir, load_seqs = True):
+    def load_model(self, load_dir, load_seqs = True,verbose=True):
         """Loads model from directory.
 
         Parameters
@@ -606,7 +606,7 @@ class Sonia(object):
         if os.path.isfile(os.path.join(load_dir, 'model.h5')):
             self.model = keras.models.load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
         else:
-            print('Cannot find model.h5 --  no model parameters loaded.')
+            if verbose: print('Cannot find model.h5 --  no model parameters loaded.')
 
         if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
@@ -617,7 +617,7 @@ class Sonia(object):
                     self.data_seqs.append(split_line[0].split(';'))
                     self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
         else:    
-            print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
+            if verbose: print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
 
         if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
             with open(os.path.join(load_dir, 'gen_seqs.tsv'), 'r') as gen_seqs_file:
@@ -628,7 +628,7 @@ class Sonia(object):
                     self.gen_seqs.append(split_line[0].split(';'))
                     self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
         else:
-            print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
+            if verbose: print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
 
         self.update_model(auto_update_marginals = True)
 
@@ -637,7 +637,7 @@ class Sonia(object):
                 self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
         else:
             self.L1_converge_history = []
-            print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
+            if verbose: print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
 
         return None
 
