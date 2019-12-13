@@ -62,13 +62,15 @@ class SequenceGeneration(object):
 				self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 				generative_model = olga_load_model.GenerativeModelVDJ()
 				generative_model.load_and_process_igor_model(marginals_file_name)
+				self.seq_gen_model = seq_gen.SequenceGenerationVDJ(generative_model, self.genomic_data)
+
 			else:
 				self.genomic_data = olga_load_model.GenomicDataVJ()
 				self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 				generative_model = olga_load_model.GenerativeModelVJ()
 				generative_model.load_and_process_igor_model(marginals_file_name)   
 
-			self.seq_gen_model = seq_gen.SequenceGenerationVDJ(generative_model, self.genomic_data)
+				self.seq_gen_model = seq_gen.SequenceGenerationVJ(generative_model, self.genomic_data)
 
 		# you need Z for rejection selection and generate sequences ppost --> compute only once
 		self.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)

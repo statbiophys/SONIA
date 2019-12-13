@@ -219,10 +219,10 @@ def main():
     # choose sonia model type
     if options.model_type=='leftright': 
         sonia_model=SoniaLeftposRightpos(load_model=os.path.join(model_folder,'left_right'))
-        sonia_model.add_generated_seqs(int(1e3)) 
+        sonia_model.add_generated_seqs(int(1e4)) 
     elif options.model_type=='lengthpos':
         sonia_model=SoniaLengthPos(load_model=os.path.join(model_folder,'length_pos'))
-        sonia_model.add_generated_seqs(int(1e3)) 
+        sonia_model.add_generated_seqs(int(1e4)) 
 
     # load Evaluate model class
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)

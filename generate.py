@@ -135,9 +135,15 @@ import os
 #import olga.load_model as load_model
 #import olga.sequence_generation as sequence_generation
 import olga.load_model as load_model
-import olga.sequence_generation as sequence_generation
 from optparse import OptionParser
+import olga.sequence_generation as sequence_generation
+from sonia_length_pos import SoniaLengthPos
+from sonia_leftpos_rightpos import SoniaLeftposRightpos
+from evaluate_model import EvaluateModel
+from sequence_generation import SequenceGeneration
 import time
+from utils import gene_to_num_str
+import olga.load_model as olga_load_model
 import numpy as np
 
 #Set input = raw_input for python 2
@@ -152,47 +158,33 @@ def main():
 
     parser = OptionParser(conflict_handler="resolve")
 
+    #specify model
     parser.add_option('--humanTRA', '--human_T_alpha', action='store_true', dest='humanTRA', default=False, help='use default human TRA model (T cell alpha chain)')
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
     parser.add_option('--humanIGH', '--human_B_heavy', action='store_true', dest='humanIGH', default=False, help='use default human IGH model (B cell heavy chain)')
-    parser.add_option('--VDJ_model_folder', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
-    parser.add_option('--VJ_model_folder', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
-    parser.add_option('--Sonia_model', dest='sonia_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
-    parser.add_option('--Ppre', '--ppre', dest = 'sample_ppre', default=False, help='sample Ppre')
-    parser.add_option('--Ppost', '--ppost', dest = 'sample_ppost', default=True, help='sample Ppre')
+    parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
+    parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
+    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
+    parser.add_option('--ppost', '--Ppost', action='store_true', dest='ppost', default=False, help='sample from Ppost')
+    parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='sample from Pgen')
+
+    # input output
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences to PATH/TO/FILE')
-
-    parser.add_option('-n', '--num_seqs', type='float', metavar='N', default = 0, dest='num_seqs_to_generate', help='specify the number of sequences to generate.')
-    parser.add_option('--seed', type='int', dest='seed', help='set seed for pseudorandom number generator. Default is to not set a seed.')
-    parser.add_option('--seqs_per_time_update', type='float', default = 100000, dest='seqs_per_time_update', help='specify the number of sequences between time updates. Default is 1e5')
-    parser.add_option('--conserved_J_residues', type='string', default = 'FVW', dest='conserved_J_residues', help="specify conserved J residues. Default is 'FVW'.")
-    parser.add_option('--time_updates_off', action='store_false', dest='time_updates', default=True, help='turn time updates off.')
-    parser.add_option('--seq_type', type='choice', default = 'all', dest='seq_type',  choices=['all', 'ntseq', 'nucleotide', 'aaseq', 'amino_acid'], help="declare sequence type for output sequences. Choices: 'all' [default], 'ntseq', 'nucleotide', 'aaseq', 'amino_acid'")
-    parser.add_option('--record_genes_off', action='store_false', dest="record_genes", default=True, help='turn off recording V and J gene info.')
-    parser.add_option('-d', '--delimiter', type='choice', dest='delimiter',  choices=['tab', 'space', ',', ';', ':'], help="declare delimiter choice. Default is tab for .tsv output files, comma for .csv files, and tab for all others. Choices: 'tab', 'space', ',', ';', ':'")
-    parser.add_option('--raw_delimiter', type='str', dest='delimiter', help="declare delimiter choice as a raw string.")
-
+    parser.add_option('-n', '--N', type='int',metavar='N', dest='num_seqs_to_generate', help='Number of sequences to sample from.')
 
     (options, args) = parser.parse_args()
 
-    olga_main_folder = os.path.dirname(load_model.__file__)
+    #Check that the model is specified properly
+    main_folder = os.path.dirname(__file__)
 
-    default_olga_models = {}
-    default_olga_models['humanTRA'] = [os.path.join(olga_main_folder, 'default_models', 'human_T_alpha'),  'VJ']
-    default_olga_models['humanTRB'] = [os.path.join(olga_main_folder, 'default_models', 'human_T_beta'), 'VDJ']
-    default_olga_models['mouseTRB'] = [os.path.join(olga_main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
-    default_olga_models['humanIGH'] = [os.path.join(olga_main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
+    default_models = {}
+    default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
+    default_models['humanTRB'] = [os.path.join(main_folder, 'default_models', 'human_T_beta'), 'VDJ']
+    default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
+    default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
-    sonia_main_folder = os.path.dirname(__file__)
-    default_sonia_models = {}
-    default_sonia_models['humanTRA'] = [os.path.join(sonia_main_folder, 'default_models', 'human_T_alpha'),  'VJ']
-    default_sonia_models['humanTRB'] = [os.path.join(sonia_main_folder, 'default_models', 'human_T_beta'), 'VDJ']
-    default_sonia_models['mouseTRB'] = [os.path.join(sonia_main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
-    default_sonia_models['humanIGH'] = [os.path.join(sonia_main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
-
-    num_models_specified = sum([1 for x in list(olga_default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
-    #TODO: Need to allow for specification of custom SONIA model
+    num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
 
     if num_models_specified == 1: #exactly one model specified
         try:
@@ -215,12 +207,6 @@ def main():
         print('Exiting...')
         return -1
 
-    #Check that all model and genomic files exist in the indicated model folder
-    if not os.path.isdir(model_folder):
-        print('Check pathing... cannot find the model folder: ' + model_folder)
-        print('Exiting...')
-        return -1
-
     #Generative model specification -- note we'll probably change this syntax to
     #allow for arbitrary model file specification
     params_file_name = os.path.join(model_folder,'model_params.txt')
@@ -229,12 +215,27 @@ def main():
     J_anchor_pos_file = os.path.join(model_folder,'J_gene_CDR3_anchors.csv')
 
     for x in [params_file_name, marginals_file_name, V_anchor_pos_file, J_anchor_pos_file]:
-        if not os.path.isfile(x):
-            print('Cannot find: ' + x)
-            print('Please check the files (and naming conventions) in the model folder ' + model_folder)
-            print('Exiting...')
-            return -1
+            if not os.path.isfile(x):
+                print('Cannot find: ' + x)
+                print('Please check the files (and naming conventions) in the model folder ' + model_folder)
+                print('Exiting...')
+                return -1
 
+    #Load up model based on recomb_type
+    #VDJ recomb case --- used for TCRB and IGH
+    if recomb_type == 'VDJ':
+        genomic_data = load_model.GenomicDataVDJ()
+        genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+        generative_model = load_model.GenerativeModelVDJ()
+        generative_model.load_and_process_igor_model(marginals_file_name)
+        seqgen_model = sequence_generation.SequenceGenerationVDJ(generative_model, genomic_data)
+    #VJ recomb case --- used for TCRA and light chain
+    elif recomb_type == 'VJ':
+        genomic_data = load_model.GenomicDataVJ()
+        genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+        generative_model = load_model.GenerativeModelVJ()
+        generative_model.load_and_process_igor_model(marginals_file_name)
+        seqgen_model = sequence_generation.SequenceGenerationVJ(generative_model, genomic_data)
 
     if options.outfile_name is not None:
         outfile_name = options.outfile_name
@@ -243,124 +244,39 @@ def main():
                 print('Exiting...')
                 return -1
 
-    #Parse arguments
-
-    num_seqs_to_generate = int(options.num_seqs_to_generate)
-
-    if num_seqs_to_generate <= 0:
-        print('Need to specify num_seqs (number of sequences to generate).')
-        print('Exiting...')
-        return -1
-
-    #Parse default delimiter
-    delimiter = options.delimiter
-    if delimiter is None:
-        delimiter = '\t'
-        if options.outfile_name is not None:
-            if outfile_name.endswith('.tsv'):
-                delimiter = '\t'
-            elif outfile_name.endswith('.csv'):
-                delimiter = ','
+    # choose sonia model type
+    if options.model_type=='leftright': 
+        sonia_model=SoniaLeftposRightpos(load_model=os.path.join(model_folder,'left_right'))
+        sonia_model.add_generated_seqs(int(1e4)) 
+    elif options.model_type=='lengthpos':
+        sonia_model=SoniaLengthPos(load_model=os.path.join(model_folder,'length_pos'))
+        sonia_model.add_generated_seqs(int(1e4)) 
     else:
-        try:
-            delimiter = {'tab': '\t', 'space': ' ', ',': ',', ';': ';', ':': ':'}[delimiter]
-        except KeyError:
-            pass #Other raw string.
+        print ('ERROR: give right option of model')
+        print -1
 
-    #Optional flags
-    seq_type = {'all': 'all', 'ntseq': 'ntseq', 'nucleotide': 'ntseq', 'aaseq': 'aaseq', 'amino_acid': 'aaseq'}[options.seq_type]
-    record_genes = options.record_genes
-    seqs_per_time_update = int(options.seqs_per_time_update)
-    time_updates = options.time_updates
-    conserved_J_residues = options.conserved_J_residues
-
-    if options.seed is not None:
-        np.random.seed(options.seed)
-
-    #VDJ recomb case --- used for TCRB and IGH
-    if recomb_type == 'VDJ':
-        genomic_data = load_model.GenomicDataVDJ()
-        genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVDJ()
-        generative_model.load_and_process_igor_model(marginals_file_name)
-        seq_gen = sequence_generation.SequenceGenerationVDJ(generative_model, genomic_data)
-    #VJ recomb case --- used for TCRA and light chain
-    elif recomb_type == 'VJ':
-        genomic_data = load_model.GenomicDataVJ()
-        genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVJ()
-        generative_model.load_and_process_igor_model(marginals_file_name)
-        seq_gen = sequence_generation.SequenceGenerationVJ(generative_model, genomic_data)
+    # load Evaluate model class
+    seq_gen=SequenceGeneration(sonia_model,custom_olga_model=seqgen_model,custom_genomic_data=genomic_data)
 
 
-    V_gene_names = [V[0].split('*')[0] for V in genomic_data.genV]
-    J_gene_names = [J[0].split('*')[0] for J in genomic_data.genJ]
-
-    if options.outfile_name is not None:
-        outfile = open(outfile_name, 'w')
-
-        print('Starting sequence generation... ')
-        start_time = time.time()
-        for i in range(num_seqs_to_generate):
-            ntseq, aaseq, V_in, J_in = seq_gen.gen_rnd_prod_CDR3(conserved_J_residues)
-            if seq_type == 'all': #default, include both ntseq and aaseq
-                current_line_out = ntseq + delimiter + aaseq
-            elif seq_type == 'ntseq': #only record ntseq
-                current_line_out = ntseq
-            elif seq_type == 'aaseq': #only record aaseq
-                current_line_out = aaseq
-
-            if record_genes:
-                current_line_out += delimiter + V_gene_names[V_in] + delimiter + J_gene_names[J_in]
-            outfile.write(current_line_out + '\n')
-
-            if (i+1)%seqs_per_time_update == 0 and time_updates:
-                c_time = time.time() - start_time
-                eta = ((num_seqs_to_generate - (i+1))/(i+1))*c_time
-                if c_time > 86400: #more than a day
-                    c_time_str = '%d days, %d hours, %d minutes, and %.2f seconds.'%(int(c_time)//86400, (int(c_time)//3600)%24, (int(c_time)//60)%60, c_time%60)
-                elif c_time > 3600: #more than an hr
-                    c_time_str = '%d hours, %d minutes, and %.2f seconds.'%((int(c_time)//3600)%24, (int(c_time)//60)%60, c_time%60)
-                elif c_time > 60: #more than a min
-                    c_time_str = '%d minutes and %.2f seconds.'%((int(c_time)//60)%60, c_time%60)
-                else:
-                    c_time_str = '%.2f seconds.'%(c_time)
-
-                if eta > 86400: #more than a day
-                    eta_str = '%d days, %d hours, %d minutes, and %.2f seconds.'%(int(eta)//86400, (int(eta)//3600)%24, (int(eta)//60)%60, eta%60)
-                elif eta > 3600: #more than an hr
-                    eta_str = '%d hours, %d minutes, and %.2f seconds.'%((int(eta)//3600)%24, (int(eta)//60)%60, eta%60)
-                elif eta > 60: #more than a min
-                    eta_str = '%d minutes and %.2f seconds.'%((int(eta)//60)%60, eta%60)
-                else:
-                    eta_str = '%.2f seconds.'%(eta)
-
-                print('%d sequences generated in %s Estimated time remaining: %s'%(i+1, c_time_str, eta_str))
-
-        c_time = time.time() - start_time
-        if c_time > 86400: #more than a day
-            c_time_str = '%d days, %d hours, %d minutes, and %.2f seconds.'%(int(c_time)//86400, (int(c_time)//3600)%24, (int(c_time)//60)%60, c_time%60)
-        elif c_time > 3600: #more than an hr
-            c_time_str = '%d hours, %d minutes, and %.2f seconds.'%((int(c_time)//3600)%24, (int(c_time)//60)%60, c_time%60)
-        elif c_time > 60: #more than a min
-            c_time_str = '%d minutes and %.2f seconds.'%((int(c_time)//60)%60, c_time%60)
-        else:
-            c_time_str = '%.2f seconds.'%(c_time)
-        print('Completed generating all %d sequences in %s'%(num_seqs_to_generate, c_time_str))
-        outfile.close()
-
+    if options.outfile_name is not None: #OUTFILE SPECIFIED
+        if options.pgen:
+            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate)
+        elif options.ppost:
+            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
+        else: 
+            print ('ERROR: give option between pgen and ppost')
+            return -1
+        np.savetxt(options.outfile_name,seqs,fmt='%s')
     else: #print to stdout
-        for i in range(num_seqs_to_generate):
-            ntseq, aaseq, V_in, J_in = seq_gen.gen_rnd_prod_CDR3(conserved_J_residues)
-            if seq_type == 'all': #default, include both ntseq and aaseq
-                current_line_out = ntseq + delimiter + aaseq
-            elif seq_type == 'ntseq': #only record ntseq
-                current_line_out = ntseq
-            elif seq_type == 'aaseq': #only record aaseq
-                current_line_out = aaseq
-
-            if record_genes:
-                current_line_out += delimiter + V_gene_names[V_in] + delimiter + J_gene_names[J_in]
-            print(current_line_out)
+        if options.pgen:
+            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate)
+        elif options.ppost:
+            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
+        else:
+            print ('ERROR: give option between pgen and ppost')
+            return -1
+        for seq in seqs:
+            print(seq[0],seq[1],seq[2])
 
 if __name__ == '__main__': main()
