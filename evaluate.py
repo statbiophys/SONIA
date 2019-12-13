@@ -375,7 +375,8 @@ def main():
                 for i in range(len(Q)):print(Q[i],pgen[i],ppost[i])
             else:
                 Q=ev.evaluate_selection_factors(zipped)
-                print(Q)
+                for q in Q:
+                    print(q) 
 
 
 if __name__ == '__main__': main()
