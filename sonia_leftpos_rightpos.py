@@ -19,13 +19,15 @@ except (ImportError, AttributeError):
 
 class SoniaLeftposRightpos(Sonia):
     
-    def __init__(self, data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', max_depth = 25, max_L = 30, include_genes = True, seed = None,custom_pgen_model=None):
+    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
+                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, 
+                 max_depth = 25, max_L = 30, include_genes = True, seed = None,custom_pgen_model=None):
         
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, seed = seed)
         self.max_depth = max_depth
         self.max_L = max_L
-        if load_model is not None:
-            self.load_model(load_model)
+        if any([x is not None for x in [load_dir, feature_file, model_file]]):
+            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file)
         else:
             self.add_features(include_genes,custom_pgen_model)
 

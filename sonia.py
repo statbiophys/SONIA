@@ -106,7 +106,9 @@ class Sonia(object):
 
     """
 
-    def __init__(self, features = [], data_seqs = [], gen_seqs = [], load_model = None, chain_type = 'humanTRB', l2_reg = 0., seed = None):
+    def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
+                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, 
+                 l2_reg = 0., seed = None):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -124,8 +126,10 @@ class Sonia(object):
             return None
         self.chain_type = default_chain_types[chain_type]
 
-        if load_model is not None:
-            self.load_model(load_model)
+        if any([x is not None for x in [load_dir, feature_file, model_file]]):
+            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file)
+            if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
+            if len(self.gen_seqs) == 0: self.update_model(add_data_seqs = gen_seqs)
         else:
             self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
             self.update_model_structure(initialize=True)
@@ -573,7 +577,7 @@ class Sonia(object):
 
         return None
 
-    def load_model(self, load_dir, load_seqs = True):
+    def load_model(self, load_dir = None, load_seqs = True, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None):
         """Loads model from directory.
 
         Parameters
@@ -582,14 +586,24 @@ class Sonia(object):
             Directory name to load model attributes from.
 
         """
-        if not os.path.isdir(load_dir):
-            print('Directory for loading model does not exist (' + load_dir + ')')
-            print('Exiting...')
-            return None
-
-        if os.path.isfile(os.path.join(load_dir, 'features.tsv')):
+        
+        if load_dir is not None:
+            if not os.path.isdir(load_dir):
+                print('Directory for loading model does not exist (' + load_dir + ')')
+                print('Exiting...')
+                return None
+            if feature_file is None: feature_file = os.path.join(load_dir, 'features.tsv')
+            if model_file is None: model_file = os.path.join(load_dir, 'model.h5')
+            if data_seq_file is None: data_seq_file = os.path.join(load_dir, 'data_seqs.tsv')
+            if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seq_file.tsv')
+            if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'L1_converge_history.tsv')
+            
+        
+        if feature_file is None:
+            print('No feature file provided --  no features loaded.')
+        elif os.path.isfile(feature_file):
             features = []
-            with open(os.path.join(load_dir, 'features.tsv'), 'r') as features_file:
+            with open(feature_file, 'r') as features_file:
                 for i, line in enumerate(features_file):
                     if i == 0: #skip header
                         continue
@@ -600,15 +614,22 @@ class Sonia(object):
             self.features = np.array(features)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         else:
-            print('Cannot find features.tsv or model.h5 --  no features loaded.')
+            print('Cannot find features file or model file --  no features loaded.')
 
-        if os.path.isfile(os.path.join(load_dir, 'model.h5')):
-            self.model = keras.models.load_model(os.path.join(load_dir, 'model.h5'), custom_objects={'loss': loss,'likelihood':likelihood})
+        if model_file is None:
+            print('No model file provided -- no model parameters loaded.')
+        elif os.path.isfile(model_file):
+            self.model = keras.models.load_model(model_file, custom_objects={'loss': loss,'likelihood':likelihood}, compile = False)
+            self.optimizer = keras.optimizers.RMSprop()
+            self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
         else:
-            print('Cannot find model.h5 --  no model parameters loaded.')
-
-        if os.path.isfile(os.path.join(load_dir, 'data_seqs.tsv')) and load_seqs:
-            with open(os.path.join(load_dir, 'data_seqs.tsv'), 'r') as data_seqs_file:
+            print('Cannot find model file --  no model parameters loaded.')
+        
+        
+        if data_seq_file is None:
+            pass
+        elif os.path.isfile(data_seq_file) and load_seqs:
+            with open(data_seq_file, 'r') as data_seqs_file:
                 self.data_seqs = []
                 self.data_seq_features = []
                 for line in data_seqs_file.read().strip().split('\n')[1:]:
@@ -618,8 +639,11 @@ class Sonia(object):
         else:    
             print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
 
-        if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
-            with open(os.path.join(load_dir, 'gen_seqs.tsv'), 'r') as gen_seqs_file:
+
+        if gen_seq_file is None:
+            pass
+        elif os.path.isfile(gen_seq_file) and load_seqs:
+            with open(gen_seq_file, 'r') as gen_seqs_file:
                 self.gen_seqs = []
                 self.gen_seq_features = []
                 for line in gen_seqs_file.read().strip().split('\n')[1:]:
@@ -631,8 +655,10 @@ class Sonia(object):
 
         self.update_model(auto_update_marginals = True)
 
-        if os.path.isfile(os.path.join(load_dir, 'L1_converge_history.tsv')):
-            with open(os.path.join(load_dir, 'L1_converge_history.tsv'), 'r') as L1_file:
+        if L1_hist_file is None:
+            self.L1_converge_history = []
+        elif os.path.isfile(L1_hist_file):
+            with open(L1_hist_file, 'r') as L1_file:
                 self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
         else:
             self.L1_converge_history = []
