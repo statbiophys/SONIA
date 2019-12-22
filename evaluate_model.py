@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import print_function, division
+
 import numpy as np
 import os
 from sonia import Sonia
@@ -86,7 +90,7 @@ class EvaluateModel(object):
 	def __init__(self,sonia_model=None,olga_model=None,chain_type = 'human_T_beta',include_genes=True,processes=None):
 		default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
 		if chain_type not in default_chain_types.keys():
-			print 'Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.'
+			print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.')
 			return None
 		self.chain_type = default_chain_types[chain_type]
 
