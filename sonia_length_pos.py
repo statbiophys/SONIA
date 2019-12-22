@@ -20,10 +20,10 @@ except (ImportError, AttributeError):
 
 class SoniaLengthPos(Sonia):
 
-    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
+    def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None,
                  min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -4, max_energy_clip = 8, seed = None,custom_pgen_model=None):
-        
+
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed)
         self.min_L = min_L
         self.max_L = max_L
@@ -33,8 +33,8 @@ class SoniaLengthPos(Sonia):
             self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes, custom_pgen_model = custom_pgen_model)
 
     def add_features(self, include_indep_genes = False, include_joint_genes = True, custom_pgen_model=None):
-        """Generates a list of feature_lsts for a length dependent L pos model.        
-        
+        """Generates a list of feature_lsts for a length dependent L pos model.
+
         Parameters
         ----------
         include_genes : bool
@@ -43,9 +43,9 @@ class SoniaLengthPos(Sonia):
 
         custom_pgen_model: string
             path to folder of custom olga model.
-                
+
         """
-        
+
         features = []
         L_features = [['l' + str(L)] for L in range(self.min_L, self.max_L + 1)]
         features += L_features
@@ -53,7 +53,7 @@ class SoniaLengthPos(Sonia):
             for i in range(L):
                 for aa in self.amino_acids:
                      features.append(['l' + str(L), 'a' + aa + str(i)])
-                    
+
         if include_indep_genes or include_joint_genes:
             import olga.load_model as olga_load_model
             if custom_pgen_model is None:
@@ -63,24 +63,24 @@ class SoniaLengthPos(Sonia):
             params_file_name = os.path.join(main_folder,'model_params.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-            
+
             genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-            
+
             if include_indep_genes:
                 features += [[v] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
                 features += [[j] for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
             if include_joint_genes:
                 features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
-        
+
         self.update_model(add_features=features)
-        
+
     def find_seq_features(self, seq, features = None):
         """Finds which features match seq
-        
+
         If no features are provided, the length dependent amino acid model
         features will be assumed.
-        
+
         Parameters
         ----------
         seq : list
@@ -88,12 +88,12 @@ class SoniaLengthPos(Sonia):
         features : ndarray
             Array of feature lists. Each list contains individual subfeatures which
             all must be satisfied.
-        
+
         Returns
         -------
         seq_features : list
             Indices of features seq projects onto.
-        
+
         """
         if features is None:
             seq_feature_lsts = [['l' + str(len(seq[0]))]]
@@ -103,7 +103,7 @@ class SoniaLengthPos(Sonia):
             #Allow for just the gene family match
             v_genes += [gene.split('-')[0] for gene in seq[1:] if 'v' in gene.lower()]
             j_genes += [gene.split('-')[0] for gene in seq[1:] if 'j' in gene.lower()]
-            
+
             try:
                 seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
                 seq_feature_lsts += [['j' + '-'.join([str(int(y)) for y in gene.lower().split('j')[-1].split('-')])] for gene in j_genes]
@@ -116,56 +116,56 @@ class SoniaLengthPos(Sonia):
             for feature_index,feature_lst in enumerate(features):
                 if self.seq_feature_proj(feature_lst, seq):
                     seq_features += [feature_index]
-                
+
         return seq_features
 
-        
+
     def get_energy_parameters(self, return_as_dict = False):
         """Extract energy terms from keras model and gauge.
-        
-        For the length dependent position model, the gauge is set so that at a 
-        given position, for a given length, we have: 
-        
+
+        For the length dependent position model, the gauge is set so that at a
+        given position, for a given length, we have:
+
         <q_i,aa;L>_gen|L = 1
-        
-        
+
+
         Parameters
         ----------
         min_L : int
             Minimum length CDR3 sequence, if not given taken from class attribute
         max_L : int
             Maximum length CDR3 sequence, if not given taken from class attribute
-                
+
         """
         model_energy_parameters = self.model.get_weights()[0].flatten()
         for l in range(self.min_L, self.max_L + 1):
             if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
                 for i in range(l):
                     G = sum([(self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
-                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]]) * 
-                                    np.exp(-model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]) 
+                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]]) *
+                                    np.exp(-model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]])
                                     for aa in self.amino_acids])
                     for aa in self.amino_acids:
-                        model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)  
-                        
+                        model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)
+
         if return_as_dict:
             return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
         else:
             return model_energy_parameters
-        
+
     def compute_seq_energy_from_parameters(self,seqs = None, seqs_features = None):
         """Computes the energy of a list of sequences according to the model.
-        
+
         This computes according to model parameters instead of the keras model.
         As a result, no clipping occurs.
-        
+
         Parameters
         ----------
         seqs : list or None
             Sequence list for a single sequence or many.
         seqs_features : list or None
             list of sequence features for a single sequence or many.
-        
+
         Returns
         -------
         E : float
@@ -189,30 +189,30 @@ class SoniaLengthPos(Sonia):
             return None
         feature_energies = self.get_energy_parameters()
         return np.array([np.sum(feature_energies[seq_features]) for seq_features in seqs_features])
-        
+
     def save_model(self, save_dir, attributes_to_save = None):
         """Saves model parameters and sequences
-        
+
         Parameters
         ----------
         save_dir : str
             Directory name to save model attributes to.
-            
+
         attributes_to_save: list
             Names of attributes to save
-        
+
         """
-        
+
         if attributes_to_save is None:
             attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'L1_converge_history']
-            
+
         if os.path.isdir(save_dir):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
                 print('Exiting...')
                 return None
-            else:
-                os.mkdir(save_dir)
-                
+        else:
+            os.mkdir(save_dir)
+
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
                 data_seq_energies = self.compute_energy(self.data_seq_features)
@@ -228,26 +228,26 @@ class SoniaLengthPos(Sonia):
                 #gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
-                
+
         if 'L1_converge_history' in attributes_to_save:
             with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
                 L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
-                
+
         if 'model' in attributes_to_save:
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
                 feature_file.write('Feature\tEnergy\n')
                 feature_file.write('\n'.join([';'.join(f) + '\t' + str(model_energy_dict[tuple(f)]) for f in self.features]))
             #self.model.save(os.path.join(save_dir, 'model.h5'))
-            
+
         return None
-    
+
     def _load_features_and_model(self, feature_file, model_file = None):
         """Loads left+right features and sets up model.
-        
+
         Ignores model_file.
         """
-        
+
         if feature_file is None:
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):

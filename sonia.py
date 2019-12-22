@@ -9,6 +9,7 @@ Created on Wed Jan 30 12:06:58 2019
 from __future__ import print_function, division
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import keras
 import tensorflow.keras.backend as K
 import olga.load_model as olga_load_model
@@ -64,7 +65,7 @@ class Sonia(object):
         'humanTRB' (default), 'humanIGH', and 'mouseTRB'.
     l2_reg : float or None
         L2 regularization. If None (default) then no regularization.
-            
+
     Methods
     ----------
     seq_feature_proj(feature, seq)
@@ -106,7 +107,7 @@ class Sonia(object):
 
     """
 
-    def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
+    def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
                  l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None):
         self.features = np.array(features)
@@ -136,12 +137,12 @@ class Sonia(object):
             self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
             self.update_model_structure(initialize=True)
             self.L1_converge_history = []
-        
+
         if seed is not None:
             np.random.seed(seed = seed)
 
         self.amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
-        
+
     def seq_feature_proj(self, feature, seq):
         """Checks if a sequence matches all subfeatures of the feature list
 
@@ -226,12 +227,12 @@ class Sonia(object):
 
     def compute_energy(self,seqs_features):
         """Computes the energy of a list of sequences according to the model.
-        
+
         Parameters
         ----------
         seqs_features : list
             list of encoded sequences into sonia features.
-        
+
         Returns
         -------
         E : float
@@ -251,7 +252,7 @@ class Sonia(object):
         for i in range(len(data_enc)): data_enc[i][data[i]] = 1
         return data_enc
 
-        
+
     def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
         """Computes the marginals of each feature over sequences.
         Computes marginals either with a flat distribution over the sequences
@@ -316,7 +317,7 @@ class Sonia(object):
 
             marginals = marginals / Z
         return marginals
-    
+
     def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None):
         """Infer model parameters, i.e. energies for each model feature.
 
@@ -387,23 +388,23 @@ class Sonia(object):
         self.optimizer = keras.optimizers.RMSprop()
         self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         return True
-    
+
     def _loss(self, y_true, y_pred):
         """Loss function for keras training"""
-    
+
         gamma=1e-1
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
         reg= K.exp(gen)-1.
-    
+
         return gen-data+gamma*reg*reg
-    
-    
+
+
     def _likelihood(self, y_true, y_pred):
-    
+
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-    
+
         return gen-data
 
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
@@ -466,7 +467,7 @@ class Sonia(object):
                 self.features = np.append(self.features, add_features, axis = 0)
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-            
+
         if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
             self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
 
@@ -609,7 +610,7 @@ class Sonia(object):
             Directory name to load model attributes from.
 
         """
-        
+
         if load_dir is not None:
             if not os.path.isdir(load_dir):
                 print('Directory for loading model does not exist (' + load_dir + ')')
@@ -620,10 +621,10 @@ class Sonia(object):
             if data_seq_file is None: data_seq_file = os.path.join(load_dir, 'data_seqs.tsv')
             if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seqs.tsv')
             if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'L1_converge_history.tsv')
-            
-        
+
+
         self._load_features_and_model(feature_file, model_file)
-        
+
         if data_seq_file is None:
             pass
         elif os.path.isfile(data_seq_file) and load_seqs:
@@ -634,7 +635,7 @@ class Sonia(object):
                     split_line = line.split('\t')
                     self.data_seqs.append(split_line[0].split(';'))
                     self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        elif load_seqs:    
+        elif load_seqs:
             print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
 
 
@@ -660,18 +661,18 @@ class Sonia(object):
                 self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
         else:
             self.L1_converge_history = []
-            print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
+            if verbose: print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
 
         return None
-    
+
     def _load_features_and_model(self, feature_file, model_file):
-        """Loads features and model. 
-        
+        """Loads features and model.
+
         This is set as an internal function to allow daughter classes to load
         models from saved feature energies directly.
         """
-        
-        
+
+
         if feature_file is None:
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):
@@ -699,7 +700,7 @@ class Sonia(object):
             print('Cannot find model file --  no model parameters loaded.')
 
 class computeL1(keras.callbacks.Callback):
-            
+
             def __init__(self, sonia):
                 self.data_marginals = sonia.data_marginals
                 self.sonia=sonia
@@ -714,7 +715,7 @@ class computeL1(keras.callbacks.Callback):
 
             def return_model_marginals(self):
                 marginals = np.zeros(self.len_features)
-                Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])  
+                Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])
                 for i in range(len(self.gen_enc)):
                     marginals[self.gen_enc[i]] += Qs[i]
                 return marginals / np.sum(Qs)
