@@ -22,7 +22,7 @@ class SoniaLengthPos(Sonia):
 
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None,
-                 min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -4, max_energy_clip = 8, seed = None,custom_pgen_model=None):
+                 min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None):
 
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed)
         self.min_L = min_L
@@ -242,13 +242,13 @@ class SoniaLengthPos(Sonia):
 
         return None
 
-    def _load_features_and_model(self, feature_file, model_file = None):
+    def _load_features_and_model(self, feature_file, model_file = None, verbose = True):
         """Loads left+right features and sets up model.
 
         Ignores model_file.
         """
 
-        if feature_file is None:
+        if feature_file is None and verbose:
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):
             with open(feature_file, 'r') as features_file:
@@ -259,5 +259,5 @@ class SoniaLengthPos(Sonia):
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             self.update_model_structure(initialize=True)
             self.model.set_weights([feature_energies])
-        else:
+        elif verbose:
             print('Cannot find features file --  no features or model parameters loaded.')

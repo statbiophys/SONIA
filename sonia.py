@@ -9,7 +9,6 @@ Created on Wed Jan 30 12:06:58 2019
 from __future__ import print_function, division
 import numpy as np
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import keras
 import tensorflow.keras.backend as K
 import olga.load_model as olga_load_model
@@ -601,7 +600,7 @@ class Sonia(object):
 
         return None
 
-    def load_model(self, load_dir = None, load_seqs = True, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None):
+    def load_model(self, load_dir = None, load_seqs = True, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, verbose = True):
         """Loads model from directory.
 
         Parameters
@@ -623,7 +622,7 @@ class Sonia(object):
             if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'L1_converge_history.tsv')
 
 
-        self._load_features_and_model(feature_file, model_file)
+        self._load_features_and_model(feature_file, model_file, verbose)
 
         if data_seq_file is None:
             pass
@@ -635,7 +634,7 @@ class Sonia(object):
                     split_line = line.split('\t')
                     self.data_seqs.append(split_line[0].split(';'))
                     self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        elif load_seqs:
+        elif load_seqs and verbose:
             print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
 
 
@@ -649,7 +648,7 @@ class Sonia(object):
                     split_line = line.split('\t')
                     self.gen_seqs.append(split_line[0].split(';'))
                     self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        elif load_seqs:
+        elif load_seqs and verbose:
             print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
 
         self.update_model(auto_update_marginals = True)
@@ -665,7 +664,7 @@ class Sonia(object):
 
         return None
 
-    def _load_features_and_model(self, feature_file, model_file):
+    def _load_features_and_model(self, feature_file, model_file, verbose = True):
         """Loads features and model.
 
         This is set as an internal function to allow daughter classes to load
@@ -673,7 +672,7 @@ class Sonia(object):
         """
 
 
-        if feature_file is None:
+        if feature_file is None and verbose:
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):
             features = []
@@ -687,16 +686,16 @@ class Sonia(object):
                         pass
             self.features = np.array(features)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-        else:
+        elif verbose:
             print('Cannot find features file or model file --  no features loaded.')
 
-        if model_file is None:
+        if model_file is None and verbose:
             print('No model file provided -- no model parameters loaded.')
         elif os.path.isfile(model_file):
             self.model = keras.models.load_model(model_file, custom_objects={'loss': self._loss,'likelihood': self._likelihood}, compile = False)
             self.optimizer = keras.optimizers.RMSprop()
             self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
-        else:
+        elif verbose:
             print('Cannot find model file --  no model parameters loaded.')
 
 class computeL1(keras.callbacks.Callback):

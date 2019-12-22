@@ -216,13 +216,13 @@ class SoniaLeftposRightpos(Sonia):
 
         return None
 
-    def _load_features_and_model(self, feature_file, model_file = None):
+    def _load_features_and_model(self, feature_file, model_file = None, verbose = True):
         """Loads left+right features and sets up model.
 
         Ignores model_file.
         """
 
-        if feature_file is None:
+        if feature_file is None and verbose:
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):
             with open(feature_file, 'r') as features_file:
@@ -233,5 +233,5 @@ class SoniaLeftposRightpos(Sonia):
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             self.update_model_structure(initialize=True)
             self.model.set_weights([feature_energies])
-        else:
+        elif verbose:
             print('Cannot find features file --  no features or model parameters loaded.')
