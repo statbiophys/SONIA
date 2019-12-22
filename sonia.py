@@ -107,8 +107,8 @@ class Sonia(object):
     """
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
-                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, 
-                 l2_reg = 0., seed = None):
+                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
+                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -120,6 +120,8 @@ class Sonia(object):
         self.model_marginals = np.zeros(len(features))
         self.L1_converge_history = []
         self.l2_reg = l2_reg
+        self.min_energy_clip = min_energy_clip
+        self.max_energy_clip = max_energy_clip
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
             print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.')
@@ -127,7 +129,7 @@ class Sonia(object):
         self.chain_type = default_chain_types[chain_type]
 
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file)
+            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
             if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
             if len(self.gen_seqs) == 0: self.update_model(add_data_seqs = gen_seqs)
         else:
@@ -314,8 +316,8 @@ class Sonia(object):
 
             marginals = marginals / Z
         return marginals
-
-    def infer_selection(self, epochs = 20, batch_size=5000, initialize = True, seed = None):
+    
+    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None):
         """Infer model parameters, i.e. energies for each model feature.
 
         Parameters
@@ -379,12 +381,30 @@ class Sonia(object):
         else: self.model_structure=output_layer
 
         # Define model
-        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,-4,8))(self.model_structure)
+        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,self.min_energy_clip,self.max_energy_clip))(self.model_structure)
         self.model = keras.models.Model(inputs=input_layer, outputs=clipped_out)
 
         self.optimizer = keras.optimizers.RMSprop()
-        self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
+        self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         return True
+    
+    def _loss(self, y_true, y_pred):
+        """Loss function for keras training"""
+    
+        gamma=1e-1
+        data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+        gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+        reg= K.exp(gen)-1.
+    
+        return gen-data+gamma*reg*reg
+    
+    
+    def _likelihood(self, y_true, y_pred):
+    
+        data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
+        gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+    
+        return gen-data
 
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
         """Updates the model attributes
@@ -440,7 +460,10 @@ class Sonia(object):
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 
         if len(add_features) > 0:
-            self.features = np.append(self.features, add_features)
+            if len(self.features) == 0:
+                self.features = np.array(add_features)
+            else:
+                self.features = np.append(self.features, add_features, axis = 0)
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             
@@ -595,9 +618,59 @@ class Sonia(object):
             if feature_file is None: feature_file = os.path.join(load_dir, 'features.tsv')
             if model_file is None: model_file = os.path.join(load_dir, 'model.h5')
             if data_seq_file is None: data_seq_file = os.path.join(load_dir, 'data_seqs.tsv')
-            if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seq_file.tsv')
+            if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seqs.tsv')
             if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'L1_converge_history.tsv')
             
+        
+        self._load_features_and_model(feature_file, model_file)
+        
+        if data_seq_file is None:
+            pass
+        elif os.path.isfile(data_seq_file) and load_seqs:
+            with open(data_seq_file, 'r') as data_seqs_file:
+                self.data_seqs = []
+                self.data_seq_features = []
+                for line in data_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.data_seqs.append(split_line[0].split(';'))
+                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+        elif load_seqs:    
+            print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
+
+
+        if gen_seq_file is None:
+            pass
+        elif os.path.isfile(gen_seq_file) and load_seqs:
+            with open(gen_seq_file, 'r') as gen_seqs_file:
+                self.gen_seqs = []
+                self.gen_seq_features = []
+                for line in gen_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.gen_seqs.append(split_line[0].split(';'))
+                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+        elif load_seqs:
+            print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
+
+        self.update_model(auto_update_marginals = True)
+
+        if L1_hist_file is None:
+            self.L1_converge_history = []
+        elif os.path.isfile(L1_hist_file):
+            with open(L1_hist_file, 'r') as L1_file:
+                self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
+        else:
+            self.L1_converge_history = []
+            print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
+
+        return None
+    
+    def _load_features_and_model(self, feature_file, model_file):
+        """Loads features and model. 
+        
+        This is set as an internal function to allow daughter classes to load
+        models from saved feature energies directly.
+        """
+        
         
         if feature_file is None:
             print('No feature file provided --  no features loaded.')
@@ -619,70 +692,11 @@ class Sonia(object):
         if model_file is None:
             print('No model file provided -- no model parameters loaded.')
         elif os.path.isfile(model_file):
-            self.model = keras.models.load_model(model_file, custom_objects={'loss': loss,'likelihood':likelihood}, compile = False)
+            self.model = keras.models.load_model(model_file, custom_objects={'loss': self._loss,'likelihood': self._likelihood}, compile = False)
             self.optimizer = keras.optimizers.RMSprop()
-            self.model.compile(optimizer=self.optimizer, loss=loss,metrics=[likelihood])
+            self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         else:
             print('Cannot find model file --  no model parameters loaded.')
-        
-        
-        if data_seq_file is None:
-            pass
-        elif os.path.isfile(data_seq_file) and load_seqs:
-            with open(data_seq_file, 'r') as data_seqs_file:
-                self.data_seqs = []
-                self.data_seq_features = []
-                for line in data_seqs_file.read().strip().split('\n')[1:]:
-                    split_line = line.split('\t')
-                    self.data_seqs.append(split_line[0].split(';'))
-                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        else:    
-            print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
-
-
-        if gen_seq_file is None:
-            pass
-        elif os.path.isfile(gen_seq_file) and load_seqs:
-            with open(gen_seq_file, 'r') as gen_seqs_file:
-                self.gen_seqs = []
-                self.gen_seq_features = []
-                for line in gen_seqs_file.read().strip().split('\n')[1:]:
-                    split_line = line.split('\t')
-                    self.gen_seqs.append(split_line[0].split(';'))
-                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        else:
-            print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
-
-        self.update_model(auto_update_marginals = True)
-
-        if L1_hist_file is None:
-            self.L1_converge_history = []
-        elif os.path.isfile(L1_hist_file):
-            with open(L1_hist_file, 'r') as L1_file:
-                self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
-        else:
-            self.L1_converge_history = []
-            print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
-
-        return None
-
-def loss(y_true, y_pred):
-    """Loss function for keras training"""
-
-    gamma=1e-1
-    data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-    gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-    reg= K.exp(gen)-1.
-
-    return gen-data+gamma*reg*reg
-
-
-def likelihood(y_true, y_pred):
-
-    data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-    gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-
-    return gen-data
 
 class computeL1(keras.callbacks.Callback):
             

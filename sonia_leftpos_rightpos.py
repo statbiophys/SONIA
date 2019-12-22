@@ -8,7 +8,6 @@ import os
 import numpy as np
 from sonia import Sonia
 
-
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -20,18 +19,18 @@ except (ImportError, AttributeError):
 class SoniaLeftposRightpos(Sonia):
     
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB', 
-                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, 
-                 max_depth = 25, max_L = 30, include_genes = True, seed = None,custom_pgen_model=None):
+                 load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
+                 max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None):
         
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, seed = seed)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed)
         self.max_depth = max_depth
         self.max_L = max_L
-        if any([x is not None for x in [load_dir, feature_file, model_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file)
+        if any([x is not None for x in [load_dir, feature_file]]):
+            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
         else:
-            self.add_features(include_genes,custom_pgen_model)
+            self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes, custom_pgen_model = custom_pgen_model)
 
-    def add_features(self, include_genes = True,custom_pgen_model=None):
+    def add_features(self, include_indep_genes = False, include_joint_genes = True, custom_pgen_model=None):
         """Generates a list of feature_lsts for L/R pos model.
         
         Parameters
@@ -51,7 +50,7 @@ class SoniaLeftposRightpos(Sonia):
             features += [['a' + aa + str(L)] for L in range(self.max_depth)]
             features += [['a' + aa + str(L)] for L in range(-self.max_depth, 0)]
             
-        if include_genes:
+        if include_indep_genes or include_joint_genes:
             import olga.load_model as olga_load_model
             if custom_pgen_model is None:
                 main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
@@ -63,9 +62,12 @@ class SoniaLeftposRightpos(Sonia):
             
             genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-            
-            features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
-        
+            if include_indep_genes:
+                features += [[v] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
+                features += [[j] for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
+            if include_joint_genes:
+                features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]  
+                
         self.update_model(add_features=features)
         
     def find_seq_features(self, seq, features = None):
@@ -124,6 +126,43 @@ class SoniaLeftposRightpos(Sonia):
             return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
         else:
             return model_energy_parameters
+    
+    def compute_seq_energy_from_parameters(self,seqs = None, seqs_features = None):
+        """Computes the energy of a list of sequences according to the model.
+        
+        This computes according to model parameters instead of the keras model.
+        As a result, no clipping occurs.
+        
+        Parameters
+        ----------
+        seqs : list or None
+            Sequence list for a single sequence or many.
+        seqs_features : list or None
+            list of sequence features for a single sequence or many.
+        
+        Returns
+        -------
+        E : float
+            Energies of seqs according to the model.
+
+        """
+        if seqs_features is not None:
+            try:
+                if isinstance(seqs_features[0], int):
+                    seqs_features = [seqs_features]
+            except:
+                return None
+        elif seqs is not None:
+            try:
+                if isinstance(seqs[0], str):
+                    seqs = [seqs]
+            except:
+                return None
+            seqs_features = [self.find_seq_features(seq) for seq in seqs]
+        else:
+            return None
+        feature_energies = self.get_energy_parameters()
+        return np.array([np.sum(feature_energies[seq_features]) for seq_features in seqs_features])
 
     def save_model(self, save_dir, attributes_to_save = None):
         """Saves model parameters and sequences
@@ -145,12 +184,12 @@ class SoniaLeftposRightpos(Sonia):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
                 print('Exiting...')
                 return None
-            else:
-                os.mkdir(save_dir)
+        else:
+            os.mkdir(save_dir)
                 
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
-                data_seq_energies = self.compute_energy(self.data_seq_features)
+                data_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.data_seq_features)
                 #data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
                 #data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
                 data_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
@@ -158,7 +197,7 @@ class SoniaLeftposRightpos(Sonia):
 
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
-                gen_seq_energies = self.compute_energy(self.gen_seq_features)
+                gen_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.gen_seq_features)
                 #gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
                 #gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
@@ -172,7 +211,27 @@ class SoniaLeftposRightpos(Sonia):
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
                 feature_file.write('Feature\tEnergy\n')
-                feature_file.write('\n'.join([';'.join(f) + '\t' + model_energy_dict[tuple(f)] for f in self.features]))
-            self.model.save(os.path.join(save_dir, 'model.h5'))
+                feature_file.write('\n'.join([';'.join(f) + '\t' + str(model_energy_dict[tuple(f)]) for f in self.features]))
+            #self.model.save(os.path.join(save_dir, 'model.h5'))
             
         return None
+    
+    def _load_features_and_model(self, feature_file, model_file = None):
+        """Loads left+right features and sets up model.
+        
+        Ignores model_file.
+        """
+        
+        if feature_file is None:
+            print('No feature file provided --  no features loaded.')
+        elif os.path.isfile(feature_file):
+            with open(feature_file, 'r') as features_file:
+                all_lines = features_file.read().strip().split('\n')[1:] #skip header
+                features = np.array([l.split('\t')[0].split(';') for l in all_lines])
+                feature_energies = np.array([float(l.split('\t')[-1]) for l in all_lines]).reshape((len(features), 1))
+            self.features = features
+            self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+            self.update_model_structure(initialize=True)
+            self.model.set_weights([feature_energies])
+        else:
+            print('Cannot find features file --  no features or model parameters loaded.')
