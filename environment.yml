@@ -1,0 +1,11 @@
+name: sonia
+channels:
+  - anaconda
+dependencies:
+  - python=2.7
+  - matplotlib
+  - numpy
+  - pip
+  - pip:
+      - olga
+      - tensorflow==1.15

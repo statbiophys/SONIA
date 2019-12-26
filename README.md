@@ -6,4 +6,10 @@ SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence
 
 An example script is provided that reads in selected and pre-selected sequences from supplied text files and infer selection factors on any amino acid / position / CDR3 length combinations and V/J identity, saving the inferred model to a file. Then the model is loaded into the EvaluateModel to generate sequences before and after selection, and calculate probabilities and energies for the generated sequences.
 
+## Installation
+
+The provided `environment.yml` file describes the SONIA dependencies.
+
+---
+
 Free use of SONIA is granted under the terms of the GNU General Public License version 3 (GPLv3).
