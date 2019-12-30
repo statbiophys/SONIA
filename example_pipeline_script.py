@@ -1,10 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Tue Mar 26 23:38:07 2019
 
 @author: administrator
 """
+from __future__ import print_function
 
 import os
 from sonia_length_pos import SoniaLengthPos
@@ -44,14 +45,14 @@ qm.save_model(output_folder + 'SONIA_model_example')
 ev=EvaluateModel(sonia_model=qm)
 
 # generate seqs pre
-print ev.generate_sequences_pre(10)
+print(ev.generate_sequences_pre(10))
 
 # generate seqs post
 seqs= ev.generate_sequences_post(10)
-print seqs
+print(seqs)
 
 # evaluate energies, pgen and ppost of sequences
 energies,pgens,pposts= ev.evaluate_seqs(seqs)
-print pgens
-print pposts
-print energies
+print(pgens)
+print(pposts)
+print(energies)
