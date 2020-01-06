@@ -64,7 +64,7 @@ class Plotter(object):
 			fig.savefig(save_name)
 		plt.show()
 		
-	def plot_ppost(self,ppost_data=[],ppost_gen=[],pppst_model=[],n_bins=100,save_name=None)
+	def plot_ppost(self,ppost_data=[],ppost_gen=[],pppst_model=[],n_bins=100,save_name=None):
 		'''Histogram plot of Ppost
 
 		Parameters
@@ -127,8 +127,8 @@ class Plotter(object):
 		
 		fig.add_subplot(133)
 		plt.title('Likelihood', fontsize = 15)
-		plt.plot(self.sonia_model.learning_history.history['likelihood'],label='train',c='k')
-		plt.plot(self.sonia_model.learning_history.history['val_likelihood'],label='validation',c='r')
+		plt.plot(self.sonia_model.learning_history.history['_likelihood'],label='train',c='k')
+		plt.plot(self.sonia_model.learning_history.history['val__likelihood'],label='validation',c='r')
 		plt.legend(fontsize = 10)
 		plt.xlabel('Iteration', fontsize = 13)
 		plt.ylabel('Likelihood', fontsize = 13)
