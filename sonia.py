@@ -13,7 +13,7 @@ from tensorflow import keras
 import tensorflow.keras.backend as K
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
-
+from copy import copy
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -374,14 +374,15 @@ class Sonia(object):
 
         """
         length_input=np.max([len(self.features),1])
-
+        min_clip=copy(self.min_energy_clip)
+        max_clip=copy(self.max_energy_clip)
+        l2_reg=copy(self.l2_reg)
         if initialize:
             input_layer = keras.layers.Input(shape=(length_input,))
-            self.model_structure = keras.layers.Dense(1,use_bias=False,activation='linear', activity_regularizer=keras.regularizers.l2(self.l2_reg))(input_layer) #normal glm model
-        else: self.model_structure=output_layer
+            output_layer = keras.layers.Dense(1,use_bias=False,activation='linear', activity_regularizer=keras.regularizers.l2(l2_reg))(input_layer) #normal glm model
 
         # Define model
-        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,self.min_energy_clip,self.max_energy_clip))(self.model_structure)
+        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,min_clip,max_clip))(output_layer)
         self.model = keras.models.Model(inputs=input_layer, outputs=clipped_out)
 
         self.optimizer = keras.optimizers.RMSprop()
