@@ -55,7 +55,7 @@ class Sonia(object):
 		'humanTRB' (default), 'humanIGH', and 'mouseTRB'.
 	l2_reg : float or None
 		L2 regularization. If None (default) then no regularization.
-	
+
 	Methods
 	----------
 	seq_feature_proj(feature, seq)
@@ -121,12 +121,12 @@ class Sonia(object):
 			self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
 			self.update_model_structure(initialize=True)
 			self.L1_converge_history = []
-		
+
 		if seed is not None:
 			np.random.seed(seed = seed)
 
 		self.amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
-		
+
 	def seq_feature_proj(self, feature, seq):
 		"""Checks if a sequence matches all subfeatures of the feature list
 
@@ -211,12 +211,12 @@ class Sonia(object):
 
 	def compute_energy(self,seqs_features):
 		"""Computes the energy of a list of sequences according to the model.
-		
+
 		Parameters
 		----------
 		seqs_features : list
 			list of encoded sequences into sonia features.
-		
+
 		Returns
 		-------
 		E : float
@@ -236,7 +236,7 @@ class Sonia(object):
 		for i in range(len(data_enc)): data_enc[i][data[i]] = 1
 		return data_enc
 
-	
+
 	def compute_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False, output_dict = False):
 		"""Computes the marginals of each feature over sequences.
 		Computes marginals either with a flat distribution over the sequences
@@ -430,7 +430,7 @@ class Sonia(object):
 			self.features = np.append(self.features, add_features)
 			self.update_model_structure(initialize=True)
 			self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
-			
+
 		if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
 			self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
 
@@ -535,7 +535,7 @@ class Sonia(object):
 
 		plt.legend(frameon = False, loc = 2)
 		plt.title('L1 Distance convergence', fontsize = 15)
-		
+
 		fig.add_subplot(132)
 
 		plt.loglog(self.data_marginals, self.gen_marginals, 'r.', alpha = 0.2, markersize=1)
@@ -551,7 +551,7 @@ class Sonia(object):
 		plt.ylabel('Marginals over generated sequences', fontsize = 13)
 		plt.legend(loc = 2, fontsize = 10)
 		plt.title('Marginal Scatter', fontsize = 15)
-		
+
 		fig.add_subplot(133)
 		plt.title('Likelihood', fontsize = 15)
 		plt.plot(self.learning_history.history['likelihood'],label='train',c='k')
@@ -654,7 +654,7 @@ class Sonia(object):
 					split_line = line.split('\t')
 					self.data_seqs.append(split_line[0].split(';'))
 					self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-		else:	
+		else:
 			print 'Cannot find data_seqs.tsv  --  no data seqs loaded.'
 
 		if os.path.isfile(os.path.join(load_dir, 'gen_seqs.tsv')) and load_seqs:
@@ -698,7 +698,7 @@ def likelihood(y_true, y_pred):
 	return gen-data
 
 class computeL1(keras.callbacks.Callback):
-			
+
 			def __init__(self, sonia):
 				self.data_marginals = sonia.data_marginals
 				self.sonia=sonia
@@ -713,7 +713,7 @@ class computeL1(keras.callbacks.Callback):
 
 			def return_model_marginals(self):
 				marginals = np.zeros(self.len_features)
-				Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])  
+				Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])
 				for i in range(len(self.gen_enc)):
 					marginals[self.gen_enc[i]] += Qs[i]
 				return marginals / np.sum(Qs)
