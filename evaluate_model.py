@@ -50,7 +50,7 @@ class EvaluateModel(object):
 		else: self.processes = processes
 
 		# you need Z for everything, better to compute it once at the beginning
-		self.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)
+		self.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features[:int(1e5)])
 		self.Z=np.sum(np.exp(-self.energies_gen))/len(self.energies_gen)
 
 		# define olga model
@@ -77,6 +77,7 @@ class EvaluateModel(object):
 				generative_model.load_and_process_igor_model(marginals_file_name)
 
 			self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
+			self.norm= self.pgen_model.compute_regex_CDR3_template_pgen('X{0,}') # slow (todo: keep already computed ones for default models)
 
 	def evaluate_seqs(self,seqs=[]):
 		'''Returns selection factors, pgen and pposts of sequences.
@@ -101,7 +102,7 @@ class EvaluateModel(object):
 		seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs] #find seq features
 		energies =self.sonia_model.compute_energy(seq_features) # compute energies
 		Q= np.exp(-energies)/self.Z # compute Q
-		pgens=compute_all_pgens(seqs,self.pgen_model,self.processes,self.include_genes) # compute pgen
+		pgens=compute_all_pgens(seqs,self.pgen_model,self.processes,self.include_genes)/self.norm # compute pgen
 		pposts=pgens*Q # compute ppost
 
 		return Q, pgens, pposts
