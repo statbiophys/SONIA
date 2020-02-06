@@ -317,7 +317,7 @@ class Sonia(object):
             marginals = marginals / Z
         return marginals
 
-    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None):
+    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None,validation_split=0.2, monitor=False):
         """Infer model parameters, i.e. energies for each model feature.
 
         Parameters
@@ -355,10 +355,13 @@ class Sonia(object):
             self.Y=self.Y[shuffle]
 
         computeL1_dist = computeL1(self)
-        callbacks = [computeL1_dist]
+        if monitor:callbacks = [computeL1_dist]
+        else: callbacks=[]
         self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
-                                          validation_split=0.2, verbose=0, callbacks=callbacks)
-        self.L1_converge_history = computeL1_dist.L1_history
+                                          validation_split=validation_split, verbose=0, callbacks=callbacks)
+        if monitor:
+            self.L1_converge_history = computeL1_dist.L1_history
+            self.model.set_weights(computeL1_dist.weights_cpt)
         self.update_model(auto_update_marginals=True)
 
     def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
@@ -391,20 +394,15 @@ class Sonia(object):
 
     def _loss(self, y_true, y_pred):
         """Loss function for keras training"""
-
         gamma=1e-1
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
         reg= K.exp(gen)-1.
-
         return gen-data+gamma*reg*reg
 
-
     def _likelihood(self, y_true, y_pred):
-
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-
         return gen-data
 
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
@@ -576,16 +574,12 @@ class Sonia(object):
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
                 data_seq_energies = self.compute_energy(self.data_seq_features)
-                #data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                #data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
                 data_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(-data_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
                 gen_seq_energies = self.compute_energy(self.gen_seq_features)
-#                gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-#                gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
@@ -700,28 +694,32 @@ class Sonia(object):
             print('Cannot find model file --  no model parameters loaded.')
 
 class computeL1(keras.callbacks.Callback):
-
+            
             def __init__(self, sonia):
                 self.data_marginals = sonia.data_marginals
                 self.sonia=sonia
                 self.len_features=len(sonia.features)
                 self.gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
                 self.encoded_data=self.sonia._encode_data(self.gen_enc)
-
+                self.previous_loss=0
+                
             def on_train_begin(self, logs={}):
                 self.L1_history = []
                 self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
+                self.weights_cpt=self.model.get_weights()
                 print("Initial L1 dist: ", self.L1_history[-1])
-
+                
             def return_model_marginals(self):
                 marginals = np.zeros(self.len_features)
                 Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])
                 for i in range(len(self.gen_enc)):
                     marginals[self.gen_enc[i]] += Qs[i]
                 return marginals / np.sum(Qs)
-
             def on_epoch_end(self, epoch, logs={}):
                 curr_loss = logs.get('loss')
                 curr_loss_val = logs.get('val_loss')
+                if self.previous_loss > curr_loss_val:
+                    self.previous_loss=curr_loss_val
+                    self.weights_cpt=self.model.get_weights()
                 self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
                 print("epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4))
