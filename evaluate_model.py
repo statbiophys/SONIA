@@ -57,6 +57,7 @@ class EvaluateModel(object):
 
 		if custom_olga_model is not None:
 			self.pgen_model = custom_olga_model
+			self.norm= self.pgen_model.compute_regex_CDR3_template_pgen('X{0,}')
 		else:
 			main_folder=os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.sonia_model.chain_type)
 
