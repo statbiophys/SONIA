@@ -393,7 +393,12 @@ class Sonia(object):
         return True
 
     def _loss(self, y_true, y_pred):
-        """Loss function for keras training"""
+        """Loss function for keras training. 
+            We assume a model of the form P(x)=exp(-E(x))P_0(x)/Z.
+            We minimize the neg-loglikelihood: <-logP> = log(Z) - <-E>.
+            Normalization of P gives Z=<exp(-E)>_{P_0}.
+            We fix the gauge by adding the constraint (Z-1)**2 to the likelihood.
+        """
         gamma=1e-1
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
@@ -401,6 +406,11 @@ class Sonia(object):
         return gen-data+gamma*reg*reg
 
     def _likelihood(self, y_true, y_pred):
+        """Loss function for keras training. 
+            We assume a model of the form P(x)=exp(-E(x))P_0(x)/Z.
+            We minimize the neg-loglikelihood: <-logP> = log(Z) - <-E>.
+            Normalization of P gives Z=<exp(-E)>_{P_0}.z
+        """
         data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
         gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
         return gen-data
