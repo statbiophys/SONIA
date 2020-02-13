@@ -60,7 +60,8 @@ class SoniaLeftposRightpos(Sonia):
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
-            genomic_data = olga_load_model.GenomicDataVDJ()
+            if self.chain_type.endswith('alpha'): genomic_data = olga_load_model.GenomicDataVJ()
+            else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             if include_indep_genes:
                 features += [[v] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
