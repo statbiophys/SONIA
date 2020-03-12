@@ -99,17 +99,9 @@ class Plotter(object):
         """
 
         min_for_plot = 1/(10.*np.power(10, np.ceil(np.log10(len(self.sonia_model.data_seqs)))))
-        fig = plt.figure(figsize =(14, 4))
-        fig.add_subplot(131)
-        fig.subplots_adjust(left=0.1, bottom = 0.13, top = 0.91, right = 0.97, wspace = 0.3, hspace = 0.15)
-        plt.loglog(range(1, len(self.sonia_model.L1_converge_history)+1), self.sonia_model.L1_converge_history, 'k', linewidth = 2)
-        plt.xlabel('Iteration', fontsize = 13)
-        plt.ylabel('L1 Distance', fontsize = 13)
-
-        plt.legend(frameon = False, loc = 2)
-        plt.title('L1 Distance convergence', fontsize = 15)
+        fig = plt.figure(figsize =(9, 4))
         
-        fig.add_subplot(132)
+        fig.add_subplot(121)
 
         plt.loglog(self.sonia_model.data_marginals, self.sonia_model.gen_marginals, 'r.', alpha = 0.2, markersize=1)
         plt.loglog(self.sonia_model.data_marginals, self.sonia_model.model_marginals, 'b.', alpha = 0.2, markersize=1)
@@ -125,7 +117,7 @@ class Plotter(object):
         plt.legend(loc = 2, fontsize = 10)
         plt.title('Marginal Scatter', fontsize = 15)
         
-        fig.add_subplot(133)
+        fig.add_subplot(122)
         plt.title('Likelihood', fontsize = 15)
         plt.plot(self.sonia_model.learning_history.history['_likelihood'],label='train',c='k')
         plt.plot(self.sonia_model.learning_history.history['val__likelihood'],label='validation',c='r')
