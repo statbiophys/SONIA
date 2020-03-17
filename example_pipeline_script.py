@@ -10,7 +10,7 @@ from __future__ import print_function
 import os
 from sonia_length_pos import SoniaLengthPos
 from evaluate_model import EvaluateModel
-
+from sequence_generation import SequenceGeneration
 
 work_folder = './' # where data files are and output folder should be
 
@@ -43,12 +43,12 @@ qm.save_model(output_folder + 'SONIA_model_example')
 
 #load evaluation class
 ev=EvaluateModel(sonia_model=qm)
-
+sq=SequenceGeneration(sonia_model=qm)
 # generate seqs pre
-print(ev.generate_sequences_pre(10))
+print(sq.generate_sequences_pre(10))
 
 # generate seqs post
-seqs= ev.generate_sequences_post(10)
+seqs= sq.generate_sequences_post(10)
 print(seqs)
 
 # evaluate energies, pgen and ppost of sequences
