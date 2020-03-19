@@ -137,12 +137,12 @@ import os
 import olga.load_model as load_model
 from optparse import OptionParser
 import olga.sequence_generation as sequence_generation
-from sonia_length_pos import SoniaLengthPos
-from sonia_leftpos_rightpos import SoniaLeftposRightpos
-from evaluate_model import EvaluateModel
-from sequence_generation import SequenceGeneration
+from sonia.sonia_length_pos import SoniaLengthPos
+from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
+from sonia.evaluate_model import EvaluateModel
+from sonia.sequence_generation import SequenceGeneration
 import time
-from utils import gene_to_num_str
+from sonia.utils import gene_to_num_str
 import olga.load_model as olga_load_model
 import numpy as np
 
