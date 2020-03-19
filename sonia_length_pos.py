@@ -204,7 +204,7 @@ class SoniaLengthPos(Sonia):
         """
 
         if attributes_to_save is None:
-            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'L1_converge_history']
+            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'log']
 
         if os.path.isdir(save_dir):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
@@ -229,8 +229,11 @@ class SoniaLengthPos(Sonia):
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
-        if 'L1_converge_history' in attributes_to_save:
-            with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
+        if 'log' in attributes_to_save: 
+            with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
+                L1_file.write('Z ='+str(self.Z)+'\n')
+                L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
+                L1_file.write('L1 history =\n')
                 L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
 
         if 'model' in attributes_to_save:

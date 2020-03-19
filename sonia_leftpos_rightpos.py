@@ -21,10 +21,10 @@ class SoniaLeftposRightpos(Sonia):
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
                  max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.):
-
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg)
         self.max_depth = max_depth
         self.max_L = max_L
+
         if any([x is not None for x in [load_dir, feature_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
         else:
@@ -59,7 +59,7 @@ class SoniaLeftposRightpos(Sonia):
             params_file_name = os.path.join(main_folder,'model_params.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-
+            
             if self.chain_type.endswith('alpha'): genomic_data = olga_load_model.GenomicDataVJ()
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
@@ -179,7 +179,7 @@ class SoniaLeftposRightpos(Sonia):
         """
 
         if attributes_to_save is None:
-            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'L1_converge_history']
+            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'log']
 
         if os.path.isdir(save_dir):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
@@ -191,21 +191,20 @@ class SoniaLeftposRightpos(Sonia):
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
                 data_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.data_seq_features)
-                #data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                #data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
                 data_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(-data_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
                 gen_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.gen_seq_features)
-                #gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                #gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
-        if 'L1_converge_history' in attributes_to_save:
-            with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
+        if 'log' in attributes_to_save: 
+            with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
+                L1_file.write('Z ='+str(self.Z)+'\n')
+                L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
+                L1_file.write('L1 history =\n')
                 L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
 
         if 'model' in attributes_to_save:

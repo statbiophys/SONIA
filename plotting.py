@@ -28,6 +28,12 @@ class Plotter(object):
 
     plot_marginals_length_corrected(min_L = 8, max_L = 16, log_scale = True)
         For LengthPos model only. Plot length normalized marginals.
+    
+    plot_vjl(save_name = None)
+        Plots marginals of V gene, J gene and cdr3 length
+    
+    plot_logQ(save_name=None)
+        Plots logQ of data and generated sequences
 
     """
 
@@ -288,8 +294,16 @@ class Plotter(object):
                                       min_val = -8, max_value = 0, title = 'model marginals', marginals = True)
             
             
-    def plot_vjl(self):
+    def plot_vjl(self,save_name=None):
         
+        """Plots marginals of V gene, J gene and cdr3 length
+
+        Parameters
+        ----------
+        save_name : str or None
+            File name to save output figure. If None (default) does not save.
+
+        """        
         initial=np.array([s[0][0] for s in self.sonia_model.features])
         l_length=len(np.arange(len(initial))[initial=='l'])
         a_length=len(np.arange(len(initial))[initial=='a'])
@@ -303,7 +317,7 @@ class Plotter(object):
         vj_data_marginals=np.array(self.sonia_model.data_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
         vj_gen_marginals=np.array(self.sonia_model.gen_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
         
-        plt.figure(figsize=(16,4))
+        fig=plt.figure(figsize=(16,4))
         plt.subplot(121)
         plt.plot(np.arange(l_length),self.sonia_model.model_marginals[:l_length],label='POST marginals',alpha=0.9)
         plt.plot(np.arange(l_length),self.sonia_model.data_marginals[:l_length],label='DATA marginals',alpha=0.9)
@@ -335,4 +349,37 @@ class Plotter(object):
         plt.grid()
         plt.legend()
         plt.title('V USAGE DISTRIBUTIONS',fontsize=20)
+        
+        if save_name is not None:
+            fig.savefig(save_name)
+        plt.show()
+        
+    def plot_logQ(self,save_name=None):
+        
+        """Plots logQ of data and generated sequences
+
+        Parameters
+        ----------
+        save_name : str or None
+            File name to save output figure. If None (default) does not save.
+
+        """
+        try:
+            self.sonia_model.energies_gen
+            self.sonia_model.energies_data
+        except:
+            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)
+            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
+        
+        fig=plt.figure(figsize=(8,4))
+        binning=np.linspace(-self.sonia_model.max_energy_clip,-self.sonia_model.min_energy_clip,100)
+        hist_gen,bins=np.histogram(-self.sonia_model.energies_gen,binning,density=True)
+        hist_data,bins=np.histogram(-self.sonia_model.energies_data,binning,density=True)
+        plt.plot(bins[:-1],hist_gen,label='generated')
+        plt.plot(bins[:-1],hist_data,label='data')
+        plt.ylabel('density',fontsize=20)
+        plt.xlabel('log Q',fontsize=20)
+        plt.legend(fontsize=20)
+        if save_name is not None:
+            fig.savefig(save_name)
         plt.show()

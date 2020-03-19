@@ -5,7 +5,6 @@ Created on Wed Jan 30 12:06:58 2019
 
 @author: zacharysethna
 """
-
 from __future__ import print_function, division
 import numpy as np
 import os
@@ -14,6 +13,7 @@ import tensorflow.keras.backend as K
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
 from copy import copy
+
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -122,12 +122,14 @@ class Sonia(object):
         self.l2_reg = l2_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
+        self.Z=1.
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
             print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.')
             return None
         self.chain_type = default_chain_types[chain_type]
-
+        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 'mouse_T_beta':0.27744730165886944}
+        self.norm_productive=norms[self.chain_type]
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
             if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
@@ -362,6 +364,11 @@ class Sonia(object):
         if monitor:
             self.L1_converge_history = computeL1_dist.L1_history
             self.model.set_weights(computeL1_dist.weights_cpt)
+        
+        # set Z    
+        self.energies_gen=self.compute_energy(self.gen_seq_features)
+        self.Z=np.sum(np.exp(-self.energies_gen))/len(self.energies_gen)
+        
         self.update_model(auto_update_marginals=True)
 
     def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
@@ -572,7 +579,7 @@ class Sonia(object):
         """
 
         if attributes_to_save is None:
-            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'L1_converge_history']
+            attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'log']
 
         if os.path.isdir(save_dir):
             if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
@@ -593,8 +600,11 @@ class Sonia(object):
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 
-        if 'L1_converge_history' in attributes_to_save:
-            with open(os.path.join(save_dir, 'L1_converge_history.tsv'), 'w') as L1_file:
+        if 'log' in attributes_to_save: 
+            with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
+                L1_file.write('Z ='+str(self.Z)+'\n')
+                L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
+                L1_file.write('L1 history =\n')
                 L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
 
         if 'model' in attributes_to_save:
@@ -624,7 +634,7 @@ class Sonia(object):
             if model_file is None: model_file = os.path.join(load_dir, 'model.h5')
             if data_seq_file is None: data_seq_file = os.path.join(load_dir, 'data_seqs.tsv')
             if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seqs.tsv')
-            if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'L1_converge_history.tsv')
+            if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'log.txt')
 
 
         self._load_features_and_model(feature_file, model_file, verbose)
@@ -662,10 +672,14 @@ class Sonia(object):
             self.L1_converge_history = []
         elif os.path.isfile(L1_hist_file):
             with open(L1_hist_file, 'r') as L1_file:
-                self.L1_converge_history = [float(line.strip()) for line in L1_file if len(line.strip())>0]
+                self.L1_converge_history=[]
+                for i,line in enumerate(L1_file):
+                    if i==0: self.Z=float(line.strip().split('=')[1])
+                    elif i==1: self.norm_productive=float(line.strip().split('=')[1])
+                    elif len(line.strip())>0 and i>2: self.L1_converge_history.append(float(line.strip()))
         else:
             self.L1_converge_history = []
-            if verbose: print('Cannot find L1_converge_history.tsv  --  no L1 convergence history loaded.')
+            if verbose: print('Cannot find log.tsv  --  no norms and convergence loaded.')
 
         return None
 
@@ -711,7 +725,7 @@ class computeL1(keras.callbacks.Callback):
                 self.len_features=len(sonia.features)
                 self.gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
                 self.encoded_data=self.sonia._encode_data(self.gen_enc)
-                self.previous_loss=0
+                self.previous_loss=1e8
                 
             def on_train_begin(self, logs={}):
                 self.L1_history = []
@@ -721,7 +735,7 @@ class computeL1(keras.callbacks.Callback):
                 
             def return_model_marginals(self):
                 marginals = np.zeros(self.len_features)
-                Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])
+                Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])  
                 for i in range(len(self.gen_enc)):
                     marginals[self.gen_enc[i]] += Qs[i]
                 return marginals / np.sum(Qs)
