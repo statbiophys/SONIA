@@ -6,7 +6,7 @@
 
 import os
 import numpy as np
-from sonia import Sonia
+from sonia.sonia import Sonia
 
 #Set input = raw_input for python 2
 try:

@@ -9,7 +9,7 @@ Created on Wed Mar  6 15:12:15 2019
 from __future__ import division
 import numpy as np
 import os
-from sonia import Sonia
+from sonia.sonia import Sonia
 
 #Set input = raw_input for python 2
 try:

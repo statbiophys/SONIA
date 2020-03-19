@@ -8,9 +8,9 @@ Created on Tue Mar 26 23:38:07 2019
 from __future__ import print_function
 
 import os
-from sonia_length_pos import SoniaLengthPos
-from evaluate_model import EvaluateModel
-from sequence_generation import SequenceGeneration
+from sonia.sonia_length_pos import SoniaLengthPos
+from sonia.evaluate_model import EvaluateModel
+from sonia.sequence_generation import SequenceGeneration
 
 work_folder = './' # where data files are and output folder should be
 
