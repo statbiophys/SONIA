@@ -103,6 +103,89 @@ After installing SONIA, we offer a quick demonstration of the console scripts. T
 5. ```$ sonia-infer --humanTRB -i example_seqs.txt -o sel_model```
   * This reads in the full file example_seqs.txt, infers a selection model and saves to the folder sel_model
 
+## Using the SONIA modules in a Python script (advanced users)
+In order to incorporate the core algorithm into an analysis pipeline (or to write your own script wrappers) all that is needed is to import the modules. Each module defines some classes that only a few methods get called on.
+
+The modules are:
+
+| Module name                                    | Classes                                          |    
+|------------------------------------------------|--------------------------------------------------|
+| evaluate_model.py                 | EvaluateModel|
+| sequence_generation.py        | SequenceGeneration|
+|plotting.py.                               |Plotter|
+| sonia_leftpos_rightpos.py        | SoniaLeftposRightpos|
+| sonia_length_pos.py                | SoniaLengthPos |
+| sonia.py                                       | Sonia  |
+| utils.py                                       | N/A (contains util functions)                    |
+
+The classes with methods that are of interest will be EvaluateModel (to evaluate seqs) and SequenceGeneration (to generate seqs), SoniaLeftposRightpos or SoniaLengthPos (to initialise and infer the models) and Plotter (to plot results).
+
+Here is an example usage to infer a human TRB selection model. 
+Data and gen files are included in the GitHub repository to demonstrate usage, however we recommend to expand both data and generated files for an accurate inference.
+
+```
+import os
+from sonia_leftpos_rightpos import SoniaLeftposRightpos
+from sonia.evaluate_model import EvaluateModel
+from sonia.sequence_generation import SequenceGeneration
+from sonia.plotting import Plotter
+work_folder = './' # where data files are and output folder should be
+
+data_file = work_folder + 'data_seqs.txt' # file with data sequences
+gen_file = work_folder + 'gen_seqs.txt' # file with generated sequences if not generated internally
+output_folder = work_folder + 'selection/' # location to save model
+
+# %%
+epochs = 30  # maximum epochs to run
+
+# %%  loading lists of sequences with gene specification
+with open(data_file) as f: # this assume data sequences are in semi-colon separated text file, with gene specification
+    data_seqs = [x.strip().split(';') for x in f]
+
+gen_seqs = []
+with open(gen_file) as f:  # this assume generated sequences are in semi-colon separated text file, with gene specification
+    gen_seqs = [x.strip().split(';') for x in f]
+
+# creates the model object, load up sequences and set the features to learn
+qm = SoniaLeftposRightpos(data_seqs=data_seqs, gen_seqs=gen_seqs)
+
+# %% inferring the model
+qm.infer_selection(epochs=epochs)
+
+# %% plot results
+pl=Plotter(sonia_model)
+pl.plot_model_learning( 'model_learning.png')
+pl.plot_vjl(os.path.join('marginals.png')
+pl.plot_logQ( 'log_Q.png')
+
+# %% saving the model
+if not os.path.isdir(output_folder):
+    os.mkdir(output_folder)
+qm.save_model(output_folder + 'SONIA_model_example')
+
+
+# %% load evaluation class
+ev=EvaluateModel(sonia_model=qm)
+sq=SequenceGeneration(sonia_model=qm)
+# generate seqs pre
+print(sq.generate_sequences_pre(10))
+
+# %% generate seqs post
+seqs= sq.generate_sequences_post(10)
+print(seqs)
+
+# %% evaluate energies, pgen and ppost of sequences
+energies,pgens,pposts= ev.evaluate_seqs(seqs)
+print(pgens)
+print(pposts)
+print(energies)
+
+
+```
+
+Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).
+
+
 ## Contact
 
 Any issues or questions should be addressed to [us](mailto:zachary.sethna@gmail.com,giulioisac@gmail.com).
