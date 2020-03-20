@@ -252,6 +252,9 @@ def main():
         print('')
 
         if options.ppost:
+            if options.V_mask is None: V_mask=['TRBVNONE']
+            if options.J_mask is None: J_mask=['TRBJNONE']
+
             v,j=V_mask[0],J_mask[0]
             Q,pgen,ppost=ev.evaluate_seqs([[seq,v,j]])
             print('Ppost of ' + seq + ' '+v+ ' '+j+ ': ' + str(ppost[0]))
@@ -366,12 +369,12 @@ def main():
         if options.outfile_name is not None: #OUTFILE SPECIFIED
             if options.ppost:
                 Q,pgen,ppost=ev.evaluate_seqs(zipped)
-                np.savetxt(options.outfile_name ,list(zip(Q,pgen,ppost)),fmt='%s')
+                np.savetxt(options.outfile_name ,list(zip(Q,pgen,ppost)),fmt='%s',header='Q Pgen Ppost')
             elif options.Q:
                 Q=ev.evaluate_selection_factors(zipped)
-                np.savetxt(options.outfile_name ,Q,fmt='%s')
+                np.savetxt(options.outfile_name ,Q,fmt='%s',header='Q')
             elif options.pgen:
-                pgens=compute_all_pgens(zipped,pgen_model=pgen_model)
+                pgens=compute_all_pgens(zipped,pgen_model=pgen_model,header='Pgen')
                 np.savetxt(options.outfile_name ,pgens,fmt='%s')
             else:
                 print('Specify and option: --ppost, --pgen or --Q')

@@ -75,7 +75,7 @@ SONIA/
 
 ## Command line console scripts and Examples
 
-There are two command line console scripts (the scripts can still be called as executables if OLGA is not installed):
+There are three command line console scripts (the scripts can still be called as executables if SONIA is not installed):
 1. sonia-evaluate
   * evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model.
 2. sonia-generate
@@ -84,6 +84,24 @@ There are two command line console scripts (the scripts can still be called as e
   * infers a selection model with respect to a generative V(D)J model
 
 For any of them you can execute with the -h or --help flags to get the options.
+
+### Quick Demo
+After installing SONIA, we offer a quick demonstration of the console scripts. This will demonstrate generating and evaluating sequences and infer a selection model from the default model for human TCR beta chains that ships with SONIA. 
+
+1. ```$ sonia-evaluate --humanTRB CASSTGNYGAFF --v_mask TRBV9 --j_mask TRBJ1-1 --ppost```
+  * This computes Ppost,Pgen and Q of the TCR CASSTGNYGAFF,TRBV9,TRBJ1-1 (you should get ~1.3e-11, ~9.2e-12 and ~1.4 respectively)
+
+2. ```$ sonia-generate --humanTRB -n 5 --pre```
+  * Generate 5 human TRB CDR3 sequences from the pre-selection repertoire and print to stdout along with the V and J genes used to generate them.
+
+3. ```$ sonia-generate --humanTRB -n 10000 --post -o example_seqs.txt```
+  * This generates a file example_seqs.tsv and writes 10000 generated human TRB CDR3 sequences from the post-selection repertoire.
+
+4. ```$ sonia-evaluate --humanTRB --ppost -i example_seqs.txt -m 5  -o example_evaluation.txt```
+  * This reads in the first 5 sequences from the file we just generated, example_seqs.tsv, evaluates them and writes the results them to the file example_pgens.tsv
+  
+5. ```$ sonia-infer --humanTRB -i example_seqs.txt -o sel_model```
+  * This reads in the full file example_seqs.txt, infers a selection model and saves to the folder sel_model
 
 ## Contact
 

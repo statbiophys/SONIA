@@ -308,7 +308,6 @@ def main():
 
         # combine sequences.
         zipped=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
-        print(zipped[:10])
         print('Initialise Model.')
 
         # choose sonia model type
