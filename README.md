@@ -19,8 +19,13 @@ SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloade
 SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script:
 
  ```$ python setup.py install```.
+## References
 
-Directory architecture:
+1. Sethna Z, Isacchini G, Dupic T, Mora T, Walczak AM, Elhanati Y, Population variability in the generation and thymic selection of T-cell repertoires, (2020) bioRxiv, https://doi.org/10.1101/2020.01.08.899682
+2. Isacchini G, Sethna Z, Elhanati Y ,Nourmohammad A, Mora T, Walczak AM, On generative models of T-cell receptor sequences,(2019) bioRxiv, https://doi.org/10.1101/857722
+3. Elhanati Y, Murugan A , Callan CGJ ,  Mora T , Walczak AM, Quantifying selection in immune receptor repertoires, PNAS July 8, 2014 111 (27) 9875-9880
+                                    
+## Directory architecture
 ```
 SONIA/
 ├── LICENSE
@@ -184,6 +189,13 @@ print(qs)
 
 Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).
 
+## Notes about CDR3 sequence definition
+
+This code is quite flexible, however it does demand a very consistent definition of CDR3 sequences.
+
+**CHECK THE DEFINITION OF THE CDR3 REGION OF THE SEQUENCES YOU INPUT.** This will likely be the most often problem that occurs.
+
+The default models/genomic data are set up to define the CDR3 region from the conserved cysteine C (INCLUSIVE) in the V region to the conserved F or W (INCLUSIVE) in the J. This corresponds to positions X and X according to IMGT. This can be changed by altering the anchor position files, however the user is strongly recommended against this.
 
 ## Contact
 
