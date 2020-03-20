@@ -11,8 +11,8 @@ setup(name='sonia',
       description='Infer and compute selection factors of CDR3 sequences',
       long_description='text/markdown',
       url='https://github.com/statbiopys/SONIA',
-      author='Zachary Sethna,Giulio Isacchini, Yuval Elhanati',
-      author_email='zachary.sethna@gmail.com',
+      author='Zachary Sethna, Giulio Isacchini, Yuval Elhanati',
+      author_email='zachary.sethna@gmail.com, giulioisac@gmail.com',
       license='GPLv3',
       classifiers=[
             'Development Status :: 3 - Alpha',
@@ -28,17 +28,18 @@ setup(name='sonia',
             'Programming Language :: Python :: 3.6',
             ],
       packages=find_packages(),
+      install_requires=['numpy','tensorflow','matplotlib','olga'],
       package_data = {
-#            'default_models': [],
-#            'default_models/human_T_alpha/': ['default_models/human_T_alpha/*'],
-#            'default_models/human_T_beta/': ['default_models/human_T_beta/*'],
-#            'default_models/mouse_T_beta/': ['default_models/mouse_T_beta/*'],
-#            'default_models/human_B_heavy/': ['default_models/human_B_heavy/*']
+            'default_models': [],
+            'default_models/human_T_alpha/': ['sonia/default_models/human_T_alpha/*'],
+            'default_models/human_T_beta/': ['sonia/default_models/human_T_beta/*'],
+            'default_models/mouse_T_beta/': ['sonia/default_models/mouse_T_beta/*'],
+            'default_models/human_B_heavy/': ['sonia/default_models/human_B_heavy/*']
             },
       data_files = data_files_to_include,
-      include_package_data=True,
+#      include_package_data=True,
       entry_points = {'console_scripts': [
-  #          'olga-compute_pgen=olga.compute_pgen:main',
-  #          'olga-generate_sequences=olga.generate_sequences:main'
-            ], },
+            'sonia-evaluate=sonia.evaluate:main',
+            'sonia-generate=sonia.generate:main',
+            'soia-infer=sonia.infer:main'], },
       zip_safe=False)
