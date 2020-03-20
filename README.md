@@ -153,7 +153,7 @@ qm = SoniaLeftposRightpos(data_seqs=data_seqs, gen_seqs=gen_seqs)
 qm.infer_selection(epochs=epochs)
 
 # %% plot results
-pl=Plotter(sonia_model)
+pl=Plotter(qm)
 pl.plot_model_learning( 'model_learning.png')
 pl.plot_vjl(os.path.join('marginals.png')
 pl.plot_logQ( 'log_Q.png')
@@ -162,7 +162,6 @@ pl.plot_logQ( 'log_Q.png')
 if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 qm.save_model(output_folder + 'SONIA_model_example')
-
 
 # %% load evaluation class
 ev=EvaluateModel(sonia_model=qm)
@@ -174,11 +173,11 @@ print(sq.generate_sequences_pre(10))
 seqs= sq.generate_sequences_post(10)
 print(seqs)
 
-# %% evaluate energies, pgen and ppost of sequences
-energies,pgens,pposts= ev.evaluate_seqs(seqs)
+# %% evaluate Q, pgen and ppost of sequences
+qs,pgens,pposts= ev.evaluate_seqs(seqs)
 print(pgens)
 print(pposts)
-print(energies)
+print(qs)
 
 
 ```
