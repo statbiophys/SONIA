@@ -132,9 +132,8 @@ string is 'FVW'.
 #in (which should contain all the modules imported).
 from __future__ import print_function, division
 import os
-#import olga.load_model as load_model
-#import olga.sequence_generation as sequence_generation
-import olga.load_model as load_model
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 from optparse import OptionParser
 import olga.sequence_generation as sequence_generation
 from sonia.sonia_length_pos import SoniaLengthPos
@@ -142,7 +141,6 @@ from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
 from sonia.evaluate_model import EvaluateModel
 from sonia.sequence_generation import SequenceGeneration
 import time
-from sonia.utils import gene_to_num_str
 import olga.load_model as olga_load_model
 import numpy as np
 
@@ -166,8 +164,8 @@ def main():
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
-    parser.add_option('--ppost', '--Ppost', action='store_true', dest='ppost', default=False, help='sample from Ppost')
-    parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='sample from Pgen')
+    parser.add_option('--post', '--ppost', action='store_true', dest='ppost', default=False, help='sample from post selected repertoire')
+    parser.add_option('--pre', '--pgen', action='store_true', dest='pgen', default=False, help='sample from pre selected repertoire ')
 
     # input output
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences to PATH/TO/FILE')
@@ -224,37 +222,28 @@ def main():
     #Load up model based on recomb_type
     #VDJ recomb case --- used for TCRB and IGH
     if recomb_type == 'VDJ':
-        genomic_data = load_model.GenomicDataVDJ()
+        genomic_data = olga_load_model.GenomicDataVDJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVDJ()
+        generative_model = olga_load_model.GenerativeModelVDJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         seqgen_model = sequence_generation.SequenceGenerationVDJ(generative_model, genomic_data)
     #VJ recomb case --- used for TCRA and light chain
     elif recomb_type == 'VJ':
-        genomic_data = load_model.GenomicDataVJ()
+        genomic_data = olga_load_model.GenomicDataVJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVJ()
+        generative_model = olga_load_model.GenerativeModelVJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         seqgen_model = sequence_generation.SequenceGenerationVJ(generative_model, genomic_data)
 
     if options.outfile_name is not None:
         outfile_name = options.outfile_name
-        if os.path.isfile(outfile_name):
-            if not input(outfile_name + ' already exists. Overwrite (y/n)? ').strip().lower() in ['y', 'yes']:
-                print('Exiting...')
-                return -1
+#        if os.path.isfile(outfile_name):
+#            if not input(outfile_name + ' already exists. Overwrite (y/n)? ').strip().lower() in ['y', 'yes']:
+#                print('Exiting...')
+#                return -1
 
-    # choose sonia model type
-    if options.model_type=='leftright': 
-        sonia_model=SoniaLeftposRightpos(load_model=os.path.join(model_folder,'left_right'))
-        sonia_model.add_generated_seqs(int(1e4)) 
-    elif options.model_type=='lengthpos':
-        sonia_model=SoniaLengthPos(load_model=os.path.join(model_folder,'length_pos'))
-        sonia_model.add_generated_seqs(int(1e4)) 
-    else:
-        print ('ERROR: give right option of model')
-        print -1
-
+    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'))
+    
     # load Evaluate model class
     seq_gen=SequenceGeneration(sonia_model,custom_olga_model=seqgen_model,custom_genomic_data=genomic_data)
 
@@ -265,7 +254,7 @@ def main():
         elif options.ppost:
             seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
         else: 
-            print ('ERROR: give option between pgen and ppost')
+            print ('ERROR: give option between --pre or --post')
             return -1
         np.savetxt(options.outfile_name,seqs,fmt='%s')
     else: #print to stdout
@@ -274,7 +263,7 @@ def main():
         elif options.ppost:
             seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
         else:
-            print ('ERROR: give option between pgen and ppost')
+            print ('ERROR: give option between --pre or --post')
             return -1
         for seq in seqs:
             print(seq[0],seq[1],seq[2])

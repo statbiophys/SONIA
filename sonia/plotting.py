@@ -135,8 +135,7 @@ class Plotter(object):
 
         if save_name is not None:
             fig.savefig(save_name)
-
-        plt.show()
+        else: plt.show()
 
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
@@ -338,8 +337,10 @@ class Plotter(object):
         plt.legend()
         plt.title('J USAGE DISTRIBUTIONS',fontsize=20)
 
+        if save_name is not None:
+            fig.savefig(save_name.split('.')[0]+'_jl.'+save_name.split('.')[1])
 
-        plt.figure(figsize=(16,4))
+        fig=plt.figure(figsize=(16,4))
         order=np.argsort(vj_model_marginals.mean(axis=1))[::-1]
         plt.scatter(np.array(v_genes)[order],vj_model_marginals.sum(axis=1)[order],label='POST marginals',alpha=0.9)
         plt.scatter(np.array(v_genes)[order],vj_data_marginals.sum(axis=1)[order],label='DATA marginals',alpha=0.9)
@@ -351,8 +352,8 @@ class Plotter(object):
         plt.title('V USAGE DISTRIBUTIONS',fontsize=20)
         
         if save_name is not None:
-            fig.savefig(save_name)
-        plt.show()
+            fig.savefig(save_name.split('.')[0]+'_v.'+save_name.split('.')[1])
+        else: plt.show()
         
     def plot_logQ(self,save_name=None):
         
@@ -382,4 +383,4 @@ class Plotter(object):
         plt.legend(fontsize=20)
         if save_name is not None:
             fig.savefig(save_name)
-        plt.show()
+        else: plt.show()

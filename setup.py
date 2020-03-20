@@ -37,9 +37,9 @@ setup(name='sonia',
             'default_models/human_B_heavy/': ['sonia/default_models/human_B_heavy/*']
             },
       data_files = data_files_to_include,
-#      include_package_data=True,
+      include_package_data=True,
       entry_points = {'console_scripts': [
             'sonia-evaluate=sonia.evaluate:main',
             'sonia-generate=sonia.generate:main',
-            'soia-infer=sonia.infer:main'], },
+            'sonia-infer=sonia.infer:main'], },
       zip_safe=False)

@@ -19,14 +19,14 @@ except (ImportError, AttributeError):
 class SoniaLeftposRightpos(Sonia):
 
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
-                 load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
+                 load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
                  max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.):
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg)
         self.max_depth = max_depth
         self.max_L = max_L
 
         if any([x is not None for x in [load_dir, feature_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
+            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
         else:
             self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes, custom_pgen_model = custom_pgen_model)
 
