@@ -8,17 +8,17 @@ SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence
 
 An example script is provided that reads in selected and pre-selected sequences from supplied text files and infer selection factors on any amino acid / position / CDR3 length combinations and V/J identity, saving the inferred model to a file. Then the model is loaded into the EvaluateModel to generate sequences before and after selection, and calculate probabilities and energies for the generated sequences.
 
-Free use of SONIA is granted under the terms of the GNU General Public License version 3 (GPLv3).
-
 ## Version
 Latest released version: 0.0.1
 
 ## Installation
-OLGA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
+SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
 
  ```pip install sonia```.
 
-OLGA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script: ```$ python setup.py install```.
+SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script:
+
+ ```$ python setup.py install```.
 
 Directory architecture:
 ```
@@ -77,9 +77,9 @@ SONIA/
 
 There are two command line console scripts (the scripts can still be called as executables if OLGA is not installed):
 1. sonia-evaluate
-  * evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model Q
+  * evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model.
 2. sonia-generate
-  * generates CDR3 sequences from before or after selection
+  * generates CDR3 sequences, before (like olga) or after selection
 3. sonia-infer
   * infers a selection model with respect to a generative V(D)J model
 
@@ -87,7 +87,7 @@ For any of them you can execute with the -h or --help flags to get the options.
 
 ## Contact
 
-Any issues or questions should be addressed to [us](mailto:zachary.sethna@gmail.com).
+Any issues or questions should be addressed to [us](mailto:zachary.sethna@gmail.com,giulioisac@gmail.com).
 
 ## License
 
