@@ -14,7 +14,9 @@ Free use of SONIA is granted under the terms of the GNU General Public License v
 Latest released version: 0.0.1
 
 ## Installation
-OLGA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip: ```pip install olga```.
+OLGA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
+
+ ```pip install sonia```.
 
 OLGA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script: ```$ python setup.py install```.
 
