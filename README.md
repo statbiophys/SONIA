@@ -187,6 +187,11 @@ print(qs)
 
 Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).
 
+## Notes about training data preparation
+
+Sonia shines when trained on top of independent rearrangement events, thus you should throw away the read count information.
+If you have a sample from an individual, you should keep the unique nucleotide rearrangements. This means that in principle there could be few aminoacid CDR3,V,J combination that are not unique after the mapping from nucleotide to aminoacid, but that's fine. Moreover if you pool data from multiple people you can still keep rearrangements that are found in multiple individuals because you are sure that correspond to independent recombination events.
+
 ## Notes about CDR3 sequence definition
 
 This code is quite flexible, however it does demand a very consistent definition of CDR3 sequences.
