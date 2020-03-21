@@ -3,7 +3,7 @@
 """
 @author: zacharysethna
 """
-
+from __future__ import division,absolute_import
 import os
 import numpy as np
 from sonia.sonia import Sonia

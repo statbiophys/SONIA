@@ -6,7 +6,7 @@ Created on Wed Mar  6 15:12:15 2019
 @author: administrator
 """
 
-from __future__ import division
+from __future__ import division,absolute_import
 import numpy as np
 import os
 from sonia.sonia import Sonia

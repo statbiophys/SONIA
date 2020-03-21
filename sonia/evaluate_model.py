@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author: Giulio Isacchini
 
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 
 import numpy as np
 import os

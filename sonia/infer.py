@@ -20,7 +20,7 @@
 This program will evaluate pgen and ppost of sequences
 """
 
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 

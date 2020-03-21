@@ -130,7 +130,7 @@ string is 'FVW'.
 
 #Function assumes that it is in the same directory that the folder app/ is
 #in (which should contain all the modules imported).
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
