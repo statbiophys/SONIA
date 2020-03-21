@@ -117,7 +117,7 @@ class Sonia(object):
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
-                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None):
+                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -131,6 +131,7 @@ class Sonia(object):
         self.l2_reg = l2_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
+        self.vj=vj
         self.Z=1.
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
@@ -553,7 +554,7 @@ class Sonia(object):
         if not os.path.isfile(J_anchor_pos_file):
             J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
 
-        if self.chain_type.endswith('TRA'):
+        if self.chain_type.endswith('TRA') or self.vj:
             genomic_data = olga_load_model.GenomicDataVJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             generative_model = olga_load_model.GenerativeModelVJ()

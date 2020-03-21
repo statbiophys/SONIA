@@ -22,9 +22,9 @@ class SoniaLengthPos(Sonia):
 
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None,
-                 min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.):
+                 min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,vj=False):
 
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_re,vj=vj)
         self.min_L = min_L
         self.max_L = max_L
         if any([x is not None for x in [load_dir, feature_file]]):
@@ -64,7 +64,8 @@ class SoniaLengthPos(Sonia):
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
-            genomic_data = olga_load_model.GenomicDataVDJ()
+            if self.chain_type.endswith('alpha') or self.vj: genomic_data = olga_load_model.GenomicDataVJ()
+            else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 
             if include_indep_genes:
