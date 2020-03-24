@@ -369,8 +369,8 @@ class Plotter(object):
             self.sonia_model.energies_gen
             self.sonia_model.energies_data
         except:
-            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)
-            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
+            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)+self.sonia_model.Z
+            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+self.sonia_model.Z
         
         fig=plt.figure(figsize=(8,4))
         binning=np.linspace(-self.sonia_model.max_energy_clip,-self.sonia_model.min_energy_clip,100)

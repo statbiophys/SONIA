@@ -132,6 +132,7 @@ class Sonia(object):
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
         self.vj=vj
+        self.gamma=1.
         self.Z=1.
         default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
@@ -416,11 +417,10 @@ class Sonia(object):
             Normalization of P gives Z=<exp(-E)>_{P_0}.
             We fix the gauge by adding the constraint (Z-1)**2 to the likelihood.
         """
-        gamma=1e-1
         data= ksum((-y_pred)*(1.-y_true))/ksum(1.-y_true)
         gen= klog(ksum(kexp(-y_pred)*y_true))-klog(ksum(y_true))
         reg= kexp(gen)-1.
-        return gen-data+gamma*reg*reg
+        return gen-data+self.gamma*reg*reg
 
     def _likelihood(self, y_true, y_pred):
         """Loss function for keras training. 

@@ -47,8 +47,15 @@ class SequenceGeneration(object):
 
         # define olga sequence_generation model
         if custom_olga_model is not None:
+            if type(custom_olga_model)==str: 
+                print('ERROR: you need to pass a olga object for the seq_gen model')
+                return
+
             if custom_genomic_data is None:
                 print('ERROR: you need to pass also the custom_genomic_data')
+                return
+            if type(custom_genomic_data)==str: 
+                print('ERROR: you need to pass a olga object for the genomic_data')
                 return
             self.genomic_data = custom_genomic_data
             self.seq_gen_model = custom_olga_model
