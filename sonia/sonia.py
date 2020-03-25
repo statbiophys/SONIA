@@ -554,7 +554,7 @@ class Sonia(object):
         if not os.path.isfile(J_anchor_pos_file):
             J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
 
-        if self.chain_type.endswith('TRA') or self.vj:
+        if self.chain_type.endswith('alpha') or self.vj:
             genomic_data = olga_load_model.GenomicDataVJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             generative_model = olga_load_model.GenerativeModelVJ()

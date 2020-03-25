@@ -47,7 +47,6 @@ class EvaluateModel(object):
 
         self.sonia_model=sonia_model
         self.include_genes=include_genes
-
         if processes is None: self.processes = mp.cpu_count()
         else: self.processes = processes
 
@@ -67,13 +66,14 @@ class EvaluateModel(object):
                 genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
                 generative_model = olga_load_model.GenerativeModelVDJ()
                 generative_model.load_and_process_igor_model(marginals_file_name)
+                self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
+
             else:
                 genomic_data = olga_load_model.GenomicDataVJ()
                 genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
                 generative_model = olga_load_model.GenerativeModelVJ()
                 generative_model.load_and_process_igor_model(marginals_file_name)
-
-            self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
+                self.pgen_model = pgen.GenerationProbabilityVJ(generative_model, genomic_data)
 
     def evaluate_seqs(self,seqs=[]):
         '''Returns selection factors, pgen and pposts of sequences.
