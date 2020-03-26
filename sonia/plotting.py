@@ -395,7 +395,7 @@ class Plotter(object):
             self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+np.log(self.sonia_model.Z)
         
         fig=plt.figure(figsize=(8,4))
-        binning=np.linspace(-self.sonia_model.max_energy_clip,-self.sonia_model.min_energy_clip,100)
+        binning=np.linspace(-self.sonia_model.max_energy_clip-1,-self.sonia_model.min_energy_clip+1,100)
         hist_gen,bins=np.histogram(-self.sonia_model.energies_gen,binning,density=True)
         hist_data,bins=np.histogram(-self.sonia_model.energies_data,binning,density=True)
         plt.plot(bins[:-1],hist_gen,label='generated')
