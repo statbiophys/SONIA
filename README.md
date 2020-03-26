@@ -45,7 +45,7 @@ SONIA/
     ├── sonia_leftpos_rightpos.py
     ├── sonia_length_pos.py
     ├── utils.py
-    └──  default_models
+    └── default_models
         ├── human_B_heavy
         │   ├── J_gene_CDR3_anchors.csv
         │   ├── V_gene_CDR3_anchors.csv
