@@ -29,41 +29,12 @@ SONIA/
 ├── LICENSE
 ├── MANIFEST.in
 ├── README.md
+├── data_infer.txt
 ├── data_seqs.txt
-├── example_pipeline_script.py
 ├── gen_seqs.txt
 ├── setup.py
 └── sonia
     ├── __init__.py
-    ├── default_models
-    │   ├── human_B_heavy
-    │   │   ├── J_gene_CDR3_anchors.csv
-    │   │   ├── V_gene_CDR3_anchors.csv
-    │   │   ├── features.tsv
-    │   │   ├── log.txt
-    │   │   ├── model_marginals.txt
-    │   │   └── model_params.txt
-    │   ├── human_T_alpha
-    │   │   ├── J_gene_CDR3_anchors.csv
-    │   │   ├── V_gene_CDR3_anchors.csv
-    │   │   ├── features.tsv
-    │   │   ├── log.txt
-    │   │   ├── model_marginals.txt
-    │   │   └── model_params.txt
-    │   ├── human_T_beta
-    │   │   ├── J_gene_CDR3_anchors.csv
-    │   │   ├── V_gene_CDR3_anchors.csv
-    │   │   ├── features.tsv
-    │   │   ├── log.txt
-    │   │   ├── model_marginals.txt
-    │   │   └── model_params.txt
-    │   └── mouse_T_beta
-    │       ├── J_gene_CDR3_anchors.csv
-    │       ├── V_gene_CDR3_anchors.csv
-    │       ├── features.tsv
-    │       ├── log.txt
-    │       ├── model_marginals.txt
-    │       └── model_params.txt
     ├── evaluate.py
     ├── evaluate_model.py
     ├── generate.py
@@ -73,7 +44,51 @@ SONIA/
     ├── sonia.py
     ├── sonia_leftpos_rightpos.py
     ├── sonia_length_pos.py
-    └── utils.py
+    ├── utils.py
+    └──  default_models
+        ├── human_B_heavy
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_kappa
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_lambda
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_alpha
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_beta
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        └── mouse_T_beta
+            ├── J_gene_CDR3_anchors.csv
+            ├── V_gene_CDR3_anchors.csv
+            ├── features.tsv
+            ├── log.txt
+            ├── model_marginals.txt
+            └── model_params.txt
+
 ```
 
 ## Command line console scripts and Examples
@@ -115,8 +130,8 @@ All of the console scripts require specifying a V(D)J model. SONIA ships with 6 
 | **--humanTRB**                                 | Default human T cell beta chain model (VDJ)      |
 | **--mouseTRB**                                 | Default mouse T cell beta chain model (VDJ)      |
 | **--humanIGH**                                 | Default human B cell heavy chain model (VDJ)     |
-| **--humanIGL**                                 | Default human B cell light kappa chain model (VJ)     |
-| **--humanIGK**                                 | Default human B cell light lambda chain model (VJ)     |
+| **--humanIGK**                                 | Default human B cell light kappa chain model (VJ)     |
+| **--humanIGL**                                 | Default human B cell light lambda chain model (VJ)     |
 | **--set_custom_model_VJ** PATH/TO/MODEL_FOLDER/ | Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VJ generative model      |
 | **--set_custom_model_VDJ** PATH/TO/MODEL_FOLDER/| Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VDJ generative model     |
 
