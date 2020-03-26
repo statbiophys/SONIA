@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>."""
-    
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -328,8 +328,11 @@ class Plotter(object):
         vj_length=len(np.arange(len(initial))[initial=='v'])
 
         vj_features=np.array(self.sonia_model.features[-vj_length:])
-        v_genes=np.unique([feat[0] for feat in vj_features])
-        j_genes=np.unique([feat[1] for feat in vj_features])
+        v_genes=[]
+        j_genes=[]
+        for feat in vj_features:
+            if not feat[1] in j_genes: j_genes.append(feat[1])
+            if not feat[0] in v_genes: v_genes.append(feat[0])
 
         vj_model_marginals=np.array(self.sonia_model.model_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
         vj_data_marginals=np.array(self.sonia_model.data_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
@@ -388,8 +391,8 @@ class Plotter(object):
             self.sonia_model.energies_gen
             self.sonia_model.energies_data
         except:
-            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)+self.sonia_model.Z
-            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+self.sonia_model.Z
+            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)+np.log(self.sonia_model.Z)
+            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+np.log(self.sonia_model.Z)
         
         fig=plt.figure(figsize=(8,4))
         binning=np.linspace(-self.sonia_model.max_energy_clip,-self.sonia_model.min_energy_clip,100)
