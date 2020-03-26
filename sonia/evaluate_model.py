@@ -54,26 +54,26 @@ class EvaluateModel(object):
         if custom_olga_model is not None:
             self.pgen_model = custom_olga_model
         else:
-            main_folder=os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.sonia_model.chain_type)
+            main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
 
             params_file_name = os.path.join(main_folder,'model_params.txt')
             marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
-            if self.sonia_model.chain_type!='human_T_alpha':
+            if self.sonia_model.vj:
+                genomic_data = olga_load_model.GenomicDataVJ()
+                genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+                generative_model = olga_load_model.GenerativeModelVJ()
+                generative_model.load_and_process_igor_model(marginals_file_name)
+                self.pgen_model = pgen.GenerationProbabilityVJ(generative_model, genomic_data)
+            else:
                 genomic_data = olga_load_model.GenomicDataVDJ()
                 genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
                 generative_model = olga_load_model.GenerativeModelVDJ()
                 generative_model.load_and_process_igor_model(marginals_file_name)
                 self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
 
-            else:
-                genomic_data = olga_load_model.GenomicDataVJ()
-                genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-                generative_model = olga_load_model.GenerativeModelVJ()
-                generative_model.load_and_process_igor_model(marginals_file_name)
-                self.pgen_model = pgen.GenerationProbabilityVJ(generative_model, genomic_data)
 
     def evaluate_seqs(self,seqs=[]):
         '''Returns selection factors, pgen and pposts of sequences.

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Command line script to evaluate sequences.
 
-    Copyright (C) 2018 Zachary Sethna
+    Copyright (C) 2020 Isacchini Giulio
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,8 @@ def main():
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
     parser.add_option('--humanIGH', '--human_B_heavy', action='store_true', dest='humanIGH', default=False, help='use default human IGH model (B cell heavy chain)')
+    parser.add_option('--humanIGK', '--human_B_kappa', action='store_true', dest='humanIGK', default=False, help='use default human IGK model (B cell light kappa chain)')
+    parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
@@ -84,12 +86,14 @@ def main():
 
     default_models = {}
     default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
+    default_models['humanIGK'] = [os.path.join(main_folder, 'default_models', 'human_B_kappa'),  'VJ']
+    default_models['humanIGL'] = [os.path.join(main_folder, 'default_models', 'human_B_lambda'),  'VJ']
     default_models['humanTRB'] = [os.path.join(main_folder, 'default_models', 'human_T_beta'), 'VDJ']
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
-
+    recompute_productive_norm=False
     if num_models_specified == 1: #exactly one model specified
         try:
             d_model = [x for x in default_models.keys() if getattr(options, x)][0]
@@ -97,9 +101,11 @@ def main():
             recomb_type = default_models[d_model][1]
         except IndexError:
             if options.vdj_model_folder: #custom VDJ model specified
+                recompute_productive_norm=True
                 model_folder = options.vdj_model_folder
                 recomb_type = 'VDJ'
             elif options.vj_model_folder: #custom VJ model specified
+                recompute_productive_norm=True
                 model_folder = options.vj_model_folder
                 recomb_type = 'VJ'
     elif num_models_specified == 0:
@@ -211,8 +217,7 @@ def main():
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
     #print(V_mask_index,J_mask_index,seq_in_index,gene_mask_delimiter,delimiter)
     # choose sonia model type
-    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'))
-
+    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ',custom_pgen_model=model_folder)
     # load Evaluate model class
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)
 

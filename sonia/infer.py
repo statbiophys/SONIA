@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Command line script to infer sonia model.
 
-    Copyright (C) 2018 Zachary Sethna
+    Copyright (C) 2020 Isacchini Giulio
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-This program will evaluate pgen and ppost of sequences
+This program will infer a seleciton model
 """
 
 from __future__ import print_function, division,absolute_import
@@ -51,10 +51,12 @@ def main():
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
     parser.add_option('--humanIGH', '--human_B_heavy', action='store_true', dest='humanIGH', default=False, help='use default human IGH model (B cell heavy chain)')
+    parser.add_option('--humanIGK', '--human_B_kappa', action='store_true', dest='humanIGK', default=False, help='use default human IGK model (B cell light kappa chain)')
+    parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
-    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help=' number of epochs for inference')
+    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help=' number of epochs for inference, default is 30')
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
@@ -85,6 +87,8 @@ def main():
 
     default_models = {}
     default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
+    default_models['humanIGK'] = [os.path.join(main_folder, 'default_models', 'human_B_kappa'),  'VJ']
+    default_models['humanIGL'] = [os.path.join(main_folder, 'default_models', 'human_B_lambda'),  'VJ']
     default_models['humanTRB'] = [os.path.join(main_folder, 'default_models', 'human_T_beta'), 'VDJ']
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
@@ -94,6 +98,29 @@ def main():
         return
 
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
+    recompute_productive_norm=False
+    if num_models_specified == 1: #exactly one model specified
+        try:
+            d_model = [x for x in default_models.keys() if getattr(options, x)][0]
+            model_folder = default_models[d_model][0]
+            recomb_type = default_models[d_model][1]
+        except IndexError:
+            if options.vdj_model_folder: #custom VDJ model specified
+                recompute_productive_norm=True
+                model_folder = options.vdj_model_folder
+                recomb_type = 'VDJ'
+            elif options.vj_model_folder: #custom VJ model specified
+                recompute_productive_norm=True
+                model_folder = options.vj_model_folder
+                recomb_type = 'VJ'
+    elif num_models_specified == 0:
+        print('Need to indicate generative model.')
+        print('Exiting...')
+        return -1
+    elif num_models_specified > 1:
+        print('Only specify one model')
+        print('Exiting...')
+        return -1
 
     if num_models_specified == 1: #exactly one model specified
         try:
@@ -312,13 +339,16 @@ def main():
 
         # choose sonia model type
         if options.model_type=='leftright': 
-            sonia_model=SoniaLeftposRightpos(data_seqs=zipped)
-            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)])) 
+            sonia_model=SoniaLeftposRightpos(data_seqs=zipped,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)]),custom_model_folder=model_folder) 
         elif options.model_type=='lengthpos':
-            sonia_model=SoniaLengthPos(data_seqs=zipped)
-            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)])) 
+            sonia_model=SoniaLengthPos(data_seqs=zipped,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)]),custom_model_folder=model_folder) 
         else:
             print('ERROR: choose a model.')
+        
+        if recompute_productive_norm: sonia_model.norm_productive=pgen_model.compute_regex_CDR3_template_pgen('X{0,}')
+        
         print('Model initialised. Start inference')
         sonia_model.infer_selection(epochs=options.epochs)
         print('Save Model')

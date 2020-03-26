@@ -57,14 +57,14 @@ class SoniaLengthPos(Sonia):
         if include_indep_genes or include_joint_genes:
             import olga.load_model as olga_load_model
             if custom_pgen_model is None:
-                main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+                main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
             else:
                 main_folder = custom_pgen_model
             params_file_name = os.path.join(main_folder,'model_params.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
-            if self.chain_type.endswith('alpha') or self.vj: genomic_data = olga_load_model.GenomicDataVJ()
+            if self.vj: genomic_data = olga_load_model.GenomicDataVJ()
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 
@@ -217,16 +217,12 @@ class SoniaLengthPos(Sonia):
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
                 data_seq_energies = self.compute_energy(self.data_seq_features)
-                #data_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                #data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(data_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
                 data_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(-data_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
                 gen_seq_energies = self.compute_energy(self.gen_seq_features)
-                #gen_seqs_file.write('Sequence;Genes\tEnergy\tFeatures\n')
-                #gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(gen_seq_energies[i]) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 

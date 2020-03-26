@@ -61,7 +61,7 @@ class SequenceGeneration(object):
             self.seq_gen_model = custom_olga_model
         else:
 
-            main_folder=os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.sonia_model.chain_type)
+            main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
 
             params_file_name = os.path.join(main_folder,'model_params.txt')
             marginals_file_name = os.path.join(main_folder,'model_marginals.txt')

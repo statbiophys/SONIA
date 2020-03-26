@@ -70,7 +70,7 @@ class Sonia(object):
     chain_type : str
         Type of receptor. This specification is used to determine gene names
         and allow integrated OLGA sequence generation. Options: 'humanTRA',
-        'humanTRB' (default), 'humanIGH', and 'mouseTRB'.
+        'humanTRB' (default), 'humanIGH', 'humanIGL', 'humanIGK' and 'mouseTRB'.
     l2_reg : float or None
         L2 regularization. If None (default) then no regularization.
 
@@ -131,15 +131,24 @@ class Sonia(object):
         self.l2_reg = l2_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
-        self.vj=vj
+
         self.gamma=1.
         self.Z=1.
-        default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
+        default_chain_types = { 'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 
+                                'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 
+                                'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 
+                                'humanIGK': 'human_B_kappa', 'human_B_kappa': 'human_B_kappa', 
+                                'humanIGL': 'human_B_lambda', 'human_B_lambda': 'human_B_lambda', 
+                                'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
-            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.')
+            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, humanIGK, humanIGL or mouseTRB.')
             return None
         self.chain_type = default_chain_types[chain_type]
-        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 'mouse_T_beta':0.27744730165886944}
+        self.vj=vj
+        if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda']: self.vj=True
+
+        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 
+                'human_B_lambda':0.2948949972739931, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.27744730165886944}
         self.norm_productive=norms[self.chain_type]
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
@@ -536,7 +545,7 @@ class Sonia(object):
 
         #Load generative model
         if custom_model_folder is None:
-            main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+            main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
         else:
             main_folder = custom_model_folder
 
@@ -554,7 +563,7 @@ class Sonia(object):
         if not os.path.isfile(J_anchor_pos_file):
             J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
 
-        if self.chain_type.endswith('alpha') or self.vj:
+        if self.vj:
             genomic_data = olga_load_model.GenomicDataVJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             generative_model = olga_load_model.GenerativeModelVJ()
@@ -689,7 +698,7 @@ class Sonia(object):
                     elif len(line.strip())>0 and i>2: self.L1_converge_history.append(float(line.strip()))
         else:
             self.L1_converge_history = []
-            if verbose: print('Cannot find log.tsv  --  no norms and convergence loaded.')
+            if verbose: print('Cannot find log.txt  --  no norms and convergence loaded.')
 
         return None
 
