@@ -144,22 +144,22 @@ def main():
 
     if options.outfile_name is not None: #OUTFILE SPECIFIED
         if options.pgen:
-            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate)
+            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate,nucleotide=True)
         elif options.ppost:
-            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
+            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate,nucleotide=True)
         else: 
             print ('ERROR: give option between --pre or --post')
             return -1
         np.savetxt(options.outfile_name,seqs,fmt='%s')
     else: #print to stdout
         if options.pgen:
-            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate)
+            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate,nucleotide=True)
         elif options.ppost:
-            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate)
+            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate,nucleotide=True)
         else:
             print ('ERROR: give option between --pre or --post')
             return -1
         for seq in seqs:
-            print(seq[0],seq[1],seq[2])
+            print(seq[0],seq[1],seq[2],seq[3])
 
 if __name__ == '__main__': main()

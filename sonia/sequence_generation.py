@@ -83,7 +83,7 @@ class SequenceGeneration(object):
 
                 self.seq_gen_model = seq_gen.SequenceGenerationVJ(generative_model, self.genomic_data)
 
-    def generate_sequences_pre(self, num_seqs = 1):
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=False):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -104,10 +104,11 @@ class SequenceGeneration(object):
         
         #Generate sequences
         seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3() for i in range(int(num_seqs))]
-        seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
+        if nucleotide: seqs= [[seq[0],seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
+        else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
     
-    def generate_sequences_post(self,num_seqs,upper_bound=10):
+    def generate_sequences_post(self,num_seqs,upper_bound=10,nucleotide=False):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.
 
         Parameters
@@ -125,21 +126,22 @@ class SequenceGeneration(object):
             MonteCarlo sequences drawn from a VDJ recomb model that pass selection.
 
         """
-        seqs_post=[['a','b','c']] # initialize
+        if nucleotide:seqs_post=[['a','b','c','d']]
+        else: seqs_post=[['a','b','c']] # initialize
 
         while len(seqs_post)<num_seqs:
 
             # generate sequences from pre
-            seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs))
+            seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs),nucleotide=True)
 
             # compute features and energies 
-            seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs]
+            seq_features = [self.sonia_model.find_seq_features(seq) for seq in list(np.array(seqs)[:,1:])]
             energies = self.sonia_model.compute_energy(seq_features)
 
             #do rejection
             rejection_selection=self.rejection_sampling(upper_bound=upper_bound,energies=energies)
-            seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
-
+            if nucleotide: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
+            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,1:]])
         return seqs_post[1:num_seqs+1]
 
     def rejection_sampling(self,upper_bound=10,energies=None):
