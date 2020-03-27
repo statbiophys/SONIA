@@ -104,7 +104,7 @@ class SequenceGeneration(object):
         
         #Generate sequences
         seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3() for i in range(int(num_seqs))]
-        if nucleotide: seqs= [[seq[0],seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
+        if nucleotide: seqs= [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]] for seq in seqs_generated]
         else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
     
@@ -135,7 +135,7 @@ class SequenceGeneration(object):
             seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs),nucleotide=True)
 
             # compute features and energies 
-            seq_features = [self.sonia_model.find_seq_features(seq) for seq in list(np.array(seqs)[:,1:])]
+            seq_features = [self.sonia_model.find_seq_features(seq) for seq in list(np.array(seqs)[:,:-1])]
             energies = self.sonia_model.compute_energy(seq_features)
 
             #do rejection
