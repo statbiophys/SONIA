@@ -94,11 +94,11 @@ SONIA/
 ## Command line console scripts and Examples
 
 There are three command line console scripts (the scripts can still be called as executables if SONIA is not installed):
-1. sonia-evaluate
+1. ```sonia-evaluate```
   * evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model.
-2. sonia-generate
+2. ```sonia-generate```
   * generates CDR3 sequences, before (like olga) or after selection
-3. sonia-infer
+3. ```sonia-infer```
   * infers a selection model with respect to a generative V(D)J model
 
 For any of them you can execute with the -h or --help flags to get the options.
