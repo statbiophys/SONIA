@@ -141,7 +141,7 @@ class SequenceGeneration(object):
             #do rejection
             rejection_selection=self.rejection_sampling(upper_bound=upper_bound,energies=energies)
             if nucleotide: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
-            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,1:]])
+            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,:-1]])
         return seqs_post[1:num_seqs+1]
 
     def rejection_sampling(self,upper_bound=10,energies=None):
