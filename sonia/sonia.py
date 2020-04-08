@@ -8,7 +8,7 @@ Created on Wed Jan 30 12:06:58 2019
 from __future__ import print_function, division,absolute_import
 import numpy as np
 import os
-
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from tensorflow.keras.models import Model,load_model
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Input,Dense,Lambda

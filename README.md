@@ -169,7 +169,7 @@ Data and gen files are included in the GitHub repository to demonstrate usage, h
 
 ```
 import os
-from sonia_leftpos_rightpos import SoniaLeftposRightpos
+from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
 from sonia.evaluate_model import EvaluateModel
 from sonia.sequence_generation import SequenceGeneration
 from sonia.plotting import Plotter
