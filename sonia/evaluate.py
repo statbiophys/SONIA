@@ -257,8 +257,8 @@ def main():
         print('')
 
         if options.ppost:
-            if options.V_mask is None: V_mask=['TRBVNONE']
-            if options.J_mask is None: J_mask=['TRBJNONE']
+            if options.V_mask is None: V_mask=['']
+            if options.J_mask is None: J_mask=['']
 
             v,j=V_mask[0],J_mask[0]
             Q,pgen,ppost=ev.evaluate_seqs([[seq,v,j]])
@@ -267,13 +267,15 @@ def main():
             print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
             print('')
         elif options.Q:
+            if options.V_mask is None: V_mask=['']
+            if options.J_mask is None: J_mask=['']
             v,j=V_mask[0],J_mask[0]
             Q=ev.evaluate_selection_factors([[seq,v,j]])
             print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
         elif options.pgen:
             pgen=pgen_model.compute_aa_CDR3_pgen(seq,V_mask,J_mask)
-            if J_mask is None: J_mask= [str(J_mask)]
-            if V_mask is None: V_mask= [str(V_mask)]
+            if J_mask is None: J_mask= ''
+            if V_mask is None: V_mask= ''
             print('Pgen of ' + seq + ' '+','.join(V_mask)+ ' '+','.join(J_mask)+ ': ' + str(pgen))
 
         else:
