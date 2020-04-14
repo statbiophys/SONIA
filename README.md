@@ -17,6 +17,13 @@ SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloade
 SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script:
 
  ```$ python setup.py install```.
+ 
+Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:
+ ```pip install tensorflow
+pip install matplotlib
+pip install olga
+pip install sonia```
+
 ## References
 
 1. Sethna Z, Isacchini G, Dupic T, Mora T, Walczak AM, Elhanati Y, Population variability in the generation and thymic selection of T-cell repertoires, (2020) bioRxiv, https://doi.org/10.1101/2020.01.08.899682
