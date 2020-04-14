@@ -22,7 +22,7 @@ Sometimes pip fails to install the dependencies correctly. Thus, if you get any 
  ```pip install tensorflow
 pip install matplotlib
 pip install olga
-pip install sonia```
+pip install sonia ```
 
 ## References
 
