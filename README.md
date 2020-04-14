@@ -24,7 +24,6 @@ pip install tensorflow
 pip install matplotlib
 pip install olga
 pip install sonia 
-
  ```
 
 ## References
