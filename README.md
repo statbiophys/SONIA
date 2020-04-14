@@ -16,7 +16,7 @@ SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloade
 
 SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script:
 
- ```$ python setup.py install```.
+ ```python setup.py install```.
  
 Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:
  ```
