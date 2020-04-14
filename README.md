@@ -19,10 +19,13 @@ SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The c
  ```$ python setup.py install```.
  
 Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:
- ```pip install tensorflow
+ ```
+pip install tensorflow
 pip install matplotlib
 pip install olga
-pip install sonia ```
+pip install sonia 
+
+ ```
 
 ## References
 
