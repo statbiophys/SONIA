@@ -133,16 +133,16 @@ After installing SONIA, we offer a quick demonstration of the console scripts. T
 ### Specifying a default V(D)J model (or a custom model folder)
 All of the console scripts require specifying a V(D)J model. SONIA ships with 6 default models that can be indicated by flags, or a custom model folder can be indicated.
 
-| Options                                        | Description                                      |
-|------------------------------------------------|--------------------------------------------------|
-| **--humanTRA**                                 | Default human T cell alpha chain model (VJ)      |
-| **--humanTRB**                                 | Default human T cell beta chain model (VDJ)      |
-| **--mouseTRB**                                 | Default mouse T cell beta chain model (VDJ)      |
-| **--humanIGH**                                 | Default human B cell heavy chain model (VDJ)     |
-| **--humanIGK**                                 | Default human B cell light kappa chain model (VJ)     |
-| **--humanIGL**                                 | Default human B cell light lambda chain model (VJ)     |
-| **--set_custom_model_VJ** PATH/TO/MODEL_FOLDER/ | Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VJ generative model      |
-| **--set_custom_model_VDJ** PATH/TO/MODEL_FOLDER/| Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VDJ generative model     |
+| Options                                         | Description                                      |
+|-------------------------------------------------|--------------------------------------------------|
+| **--humanTRA**                                  | Default human T cell alpha chain model (VJ)      |
+| **--humanTRB**                                  | Default human T cell beta chain model (VDJ)      |
+| **--mouseTRB**                                  | Default mouse T cell beta chain model (VDJ)      |
+| **--humanIGH**                                  | Default human B cell heavy chain model (VDJ)     |
+| **--humanIGK**                                  | Default human B cell light kappa chain model (VJ)|
+| **--humanIGL**                                  | Default human B cell light lambda chain model (VJ)|
+| **--set_custom_model_VJ** PATH/TO/MODEL_FOLDER/ | Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VJ generative model|
+| **--set_custom_model_VDJ** PATH/TO/MODEL_FOLDER/| Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VDJ generative model|
 
 Note, if specifying a folder for a custom VJ recombination model
 (e.g. an alpha or light chain model) or a custom VDJ recombination model
@@ -153,6 +153,8 @@ with the exact naming convention:
 * model_marginals.txt 
 * V_gene_CDR3_anchors.csv (V anchor residue position and functionality file)
 * J_gene_CDR3_anchors.csv (J anchor residue position and functionality file)
+* features.tsv (if you want to load the selection model as well (not required for in the sonia-infer command)
+* log.txt (if you want to load the selection model as well (not required in the sonia-infer command) 
 
 The console scripts can only read files of the assumed anchor.csv/[IGoR](https://github.com/qmarcou/IGoR) syntaxes. See the default models in the sonia directory for examples.
 
@@ -163,11 +165,11 @@ The modules are:
 
 | Module name                                    | Classes                                          |    
 |------------------------------------------------|--------------------------------------------------|
-| evaluate_model.py                 | EvaluateModel|
-| sequence_generation.py        | SequenceGeneration|
-|plotting.py.                               |Plotter|
-| sonia_leftpos_rightpos.py        | SoniaLeftposRightpos|
-| sonia_length_pos.py                | SoniaLengthPos |
+| evaluate_model.py                              | EvaluateModel|
+| sequence_generation.py                         | SequenceGeneration|
+|plotting.py.                                    |Plotter|
+| sonia_leftpos_rightpos.py                      | SoniaLeftposRightpos|
+| sonia_length_pos.py                            | SoniaLengthPos |
 | sonia.py                                       | Sonia  |
 | utils.py                                       | N/A (contains util functions)                    |
 
