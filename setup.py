@@ -15,7 +15,7 @@ setup(name='sonia',
       author_email='zachary.sethna@gmail.com, giulioisac@gmail.com',
       license='GPLv3',
       classifiers=[
-            'Development Status :: 0 - Alpha',
+            'Development Status :: 3 - Alpha',
             'Intended Audience :: Developers',
             'Intended Audience :: Healthcare Industry',
             'Intended Audience :: Science/Research',
