@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Command line script to evaluate sequences.
 
-    Copyright (C) 2018 Zachary Sethna
+    Copyright (C) 2020 Isacchini Giulio
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,21 +20,18 @@
 This program will evaluate pgen and ppost of sequences
 """
 
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 import os
-
-import olga.load_model as load_model
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from optparse import OptionParser
-import olga.sequence_generation as sequence_generation
-from sonia_length_pos import SoniaLengthPos
-from sonia_leftpos_rightpos import SoniaLeftposRightpos
-from evaluate_model import EvaluateModel
-import time
-from utils import gene_to_num_str
+from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
+from sonia.evaluate_model import EvaluateModel
+from sonia.utils import gene_to_num_str
 import olga.load_model as olga_load_model
 import olga.generation_probability as generation_probability
 import numpy as np
-
+import time
+from sonia.evaluate_model import compute_all_pgens
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -51,12 +48,14 @@ def main():
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
     parser.add_option('--humanIGH', '--human_B_heavy', action='store_true', dest='humanIGH', default=False, help='use default human IGH model (B cell heavy chain)')
+    parser.add_option('--humanIGK', '--human_B_kappa', action='store_true', dest='humanIGK', default=False, help='use default human IGK model (B cell light kappa chain)')
+    parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
-    parser.add_option('--skip_ppost', '--Ppost', action='store_true', dest='skip_ppost', default=False, help='skip Ppost, default False')
-    parser.add_option('--skip_pgen', '--Pgen', action='store_true', dest='skip_pgen', default=False, help='skip Pgen, default False')
-    parser.add_option('--skip_Q', '--selection_factor', action='store_true', dest='skip_Q', default=False, help='skip selection factor, default False')
+    parser.add_option('--ppost', '--Ppost', action='store_true', dest='ppost', default=False, help='compute Ppost, also computes pgen and Q')
+    parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='compute pgen')
+    parser.add_option('--Q', '--selection_factor', action='store_true', dest='Q', default=False, help='compute Q')
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
@@ -68,8 +67,6 @@ def main():
     parser.add_option('-i', '--infile', dest = 'infile_name',metavar='PATH/TO/FILE', help='read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE')
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences and pgens to PATH/TO/FILE')
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
-    parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', help='specifies V_masks are found in column INDEX in the input file. Default is no V mask.')
-    parser.add_option('--j_in', '--j_mask_index', type='int', metavar='INDEX', dest='J_mask_index', help='specifies J_masks are found in column INDEX in the input file. Default is no J mask.')
     parser.add_option('-m', '--max_number_of_seqs', type='int',metavar='N', dest='max_number_of_seqs', help='evaluate for at most N sequences.')
     parser.add_option('--lines_to_skip', type='int',metavar='N', dest='lines_to_skip', default = 0, help='skip the first N lines of the file. Default is 0.')
     
@@ -89,12 +86,14 @@ def main():
 
     default_models = {}
     default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
+    default_models['humanIGK'] = [os.path.join(main_folder, 'default_models', 'human_B_kappa'),  'VJ']
+    default_models['humanIGL'] = [os.path.join(main_folder, 'default_models', 'human_B_lambda'),  'VJ']
     default_models['humanTRB'] = [os.path.join(main_folder, 'default_models', 'human_T_beta'), 'VDJ']
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
-
+    recompute_productive_norm=False
     if num_models_specified == 1: #exactly one model specified
         try:
             d_model = [x for x in default_models.keys() if getattr(options, x)][0]
@@ -102,9 +101,11 @@ def main():
             recomb_type = default_models[d_model][1]
         except IndexError:
             if options.vdj_model_folder: #custom VDJ model specified
+                recompute_productive_norm=True
                 model_folder = options.vdj_model_folder
                 recomb_type = 'VDJ'
             elif options.vj_model_folder: #custom VJ model specified
+                recompute_productive_norm=True
                 model_folder = options.vj_model_folder
                 recomb_type = 'VJ'
     elif num_models_specified == 0:
@@ -133,16 +134,16 @@ def main():
     #Load up model based on recomb_type
     #VDJ recomb case --- used for TCRB and IGH
     if recomb_type == 'VDJ':
-        genomic_data = load_model.GenomicDataVDJ()
+        genomic_data = olga_load_model.GenomicDataVDJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVDJ()
+        generative_model = olga_load_model.GenerativeModelVDJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         pgen_model = generation_probability.GenerationProbabilityVDJ(generative_model, genomic_data)
     #VJ recomb case --- used for TCRA and light chain
     elif recomb_type == 'VJ':
-        genomic_data = load_model.GenomicDataVJ()
+        genomic_data = olga_load_model.GenomicDataVJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVJ()
+        generative_model = olga_load_model.GenerativeModelVJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         pgen_model = generation_probability.GenerationProbabilityVJ(generative_model, genomic_data)
 
@@ -156,10 +157,10 @@ def main():
 
     if options.outfile_name is not None:
         outfile_name = options.outfile_name
-        if os.path.isfile(outfile_name):
-            if not input(outfile_name + ' already exists. Overwrite (y/n)? ').strip().lower() in ['y', 'yes']:
-                print('Exiting...')
-                return -1
+#        if os.path.isfile(outfile_name):
+#            if not input(outfile_name + ' already exists. Overwrite (y/n)? ').strip().lower() in ['y', 'yes']:
+#                print('Exiting...')
+#                return -1
 
     #Parse delimiter
     delimiter = options.delimiter
@@ -207,7 +208,6 @@ def main():
         except KeyError:
             pass #Other string passed as the delimiter.
 
-
     #More options
     seq_in_index = options.seq_in_index #where in the line the sequence is after line.split(delimiter)
     lines_to_skip = options.lines_to_skip #one method of skipping header
@@ -215,18 +215,13 @@ def main():
     max_number_of_seqs = options.max_number_of_seqs
     V_mask_index = options.V_mask_index #Default is not conditioning on V identity
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
-
+    #print(V_mask_index,J_mask_index,seq_in_index,gene_mask_delimiter,delimiter)
     # choose sonia model type
-    if options.model_type=='leftright': 
-        sonia_model=SoniaLeftposRightpos(load_model=os.path.join(model_folder,'left_right'))
-        sonia_model.add_generated_seqs(int(1e4)) 
-    elif options.model_type=='lengthpos':
-        sonia_model=SoniaLengthPos(load_model=os.path.join(model_folder,'length_pos'))
-        sonia_model.add_generated_seqs(int(1e4)) 
-
+    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ',custom_pgen_model=model_folder)
     # load Evaluate model class
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)
-    if options.infile_name is None: #No infile specified -- args should be the input seqs
+
+    if options.infile_name is None: #No infile specified -- args should be the input seq
         print_warnings = True
         if len(args)>1 : 
             print('ERROR: can process only one sequence at the time. Submit thourgh file instead.')
@@ -261,19 +256,35 @@ def main():
 
         print('')
 
-        if (not options.skip_ppost) or (not options.skip_pgen):
+        if options.ppost:
+            if options.V_mask is None: V_mask=['']
+            if options.J_mask is None: J_mask=['']
+
             v,j=V_mask[0],J_mask[0]
             Q,pgen,ppost=ev.evaluate_seqs([[seq,v,j]])
-            if not options.skip_ppost: print('Ppost of ' + seq + ' '+v+ ' '+j+ ': ' + str(ppost[0]))
-            if not options.skip_pgen: print('Pgen of ' + seq + ' '+v+ ' '+j+ ': ' + str(pgen[0]))
-            if not options.skip_Q: print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
+            print('Ppost of ' + seq + ' '+v+ ' '+j+ ': ' + str(ppost[0]))
+            print('Pgen of ' + seq + ' '+v+ ' '+j+ ': ' + str(pgen[0]))
+            print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
             print('')
-
-        else:
+        elif options.Q:
+            if options.V_mask is None: V_mask=['']
+            if options.J_mask is None: J_mask=['']
             v,j=V_mask[0],J_mask[0]
             Q=ev.evaluate_selection_factors([[seq,v,j]])
             print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
+        elif options.pgen:
+            pgen=pgen_model.compute_aa_CDR3_pgen(seq,V_mask,J_mask)
+            if J_mask is None: J_mask= ''
+            if V_mask is None: V_mask= ''
+            print('Pgen of ' + seq + ' '+','.join(V_mask)+ ' '+','.join(J_mask)+ ': ' + str(pgen))
+
+        else:
+            print('Specify and option: --ppost, --pgen or --Q')
+
+
     else:
+        print('Load file')
+
         seqs = []
         V_usage_masks = []
         J_usage_masks = []
@@ -360,23 +371,36 @@ def main():
         # combine sequences.
         zipped=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
 
-        print('Continuing to Ppost computation.')
+        print('Evaluate')
 
         if options.outfile_name is not None: #OUTFILE SPECIFIED
-            if (not options.skip_ppost) or (not options.skip_pgen):
+            if options.ppost:
                 Q,pgen,ppost=ev.evaluate_seqs(zipped)
-                np.savetxt(options.outfile_name ,zip(Q,pgen,ppost),fmt='%s')
-            else:
+                np.savetxt(options.outfile_name ,list(zip(Q,pgen,ppost)),fmt='%s',header='Q Pgen Ppost')
+            elif options.Q:
                 Q=ev.evaluate_selection_factors(zipped)
-                np.savetxt(options.outfile_name ,Q,fmt='%s')
+                np.savetxt(options.outfile_name ,Q,fmt='%s',header='Q')
+            elif options.pgen:
+                pgens=compute_all_pgens(zipped,pgen_model=pgen_model,header='Pgen')
+                np.savetxt(options.outfile_name ,pgens,fmt='%s')
+            else:
+                print('Specify and option: --ppost, --pgen or --Q')
+
         else: #print to stdout
-            if (not options.skip_ppost) or (not options.skip_pgen):
+            if options.ppost:
                 Q,pgen,ppost=ev.evaluate_seqs(zipped)
+                print ('Q, Pgen, Ppost')
                 for i in range(len(Q)):print(Q[i],pgen[i],ppost[i])
-            else:
+            elif options.Q:
                 Q=ev.evaluate_selection_factors(zipped)
-                for q in Q:
-                    print(q) 
+                print ('Q')
+                print(Q)
+            elif options.pgen:
+                pgens=compute_all_pgens(zipped,model=pgen_model)
+                print ('Pgen')
+                print(pgens)
+            else:
+                print('Specify and option: --ppost, --pgen or --Q')
 
 
 if __name__ == '__main__': main()

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Command line script to infer sonia model.
 
-    Copyright (C) 2018 Zachary Sethna
+    Copyright (C) 2020 Isacchini Giulio
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,20 +17,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-This program will evaluate pgen and ppost of sequences
+This program will infer a seleciton model
 """
 
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import olga.load_model as load_model
 from optparse import OptionParser
 import olga.sequence_generation as sequence_generation
-from sonia_length_pos import SoniaLengthPos
-from sonia_leftpos_rightpos import SoniaLeftposRightpos
-from evaluate_model import EvaluateModel
+from sonia.sonia_length_pos import SoniaLengthPos
+from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
+from sonia.evaluate_model import EvaluateModel
 import time
-from utils import gene_to_num_str
+from sonia.utils import gene_to_num_str
 import olga.load_model as olga_load_model
 import olga.generation_probability as generation_probability
 import numpy as np
@@ -51,25 +51,25 @@ def main():
     parser.add_option('--humanTRB', '--human_T_beta', action='store_true', dest='humanTRB', default=False, help='use default human TRB model (T cell beta chain)')
     parser.add_option('--mouseTRB', '--mouse_T_beta', action='store_true', dest='mouseTRB', default=False, help='use default mouse TRB model (T cell beta chain)')
     parser.add_option('--humanIGH', '--human_B_heavy', action='store_true', dest='humanIGH', default=False, help='use default human IGH model (B cell heavy chain)')
+    parser.add_option('--humanIGK', '--human_B_kappa', action='store_true', dest='humanIGK', default=False, help='use default human IGK model (B cell light kappa chain)')
+    parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
     parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
-    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help=' number of epochs for inference')
+    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help=' number of epochs for inference, default is 30')
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
     parser.add_option('--j_in', '--j_mask_index', type='int', metavar='INDEX', dest='J_mask_index', default=2, help='specifies J_masks are found in column INDEX in the input file. Default is 2.')
-    parser.add_option('--v_mask', type='string', dest='V_mask', help='specify V usage to condition as arguments.')
-    parser.add_option('--j_mask', type='string', dest='J_mask', help='specify J usage to condition as arguments.')
 
     # input output
     parser.add_option('-i', '--infile', dest = 'infile_name',metavar='PATH/TO/FILE', help='read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE')
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences and pgens to PATH/TO/FILE')
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
-    parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', help='specifies V_masks are found in column INDEX in the input file. Default is no V mask.')
-    parser.add_option('--j_in', '--j_mask_index', type='int', metavar='INDEX', dest='J_mask_index', help='specifies J_masks are found in column INDEX in the input file. Default is no J mask.')
     parser.add_option('-m', '--max_number_of_seqs', type='int',metavar='N', dest='max_number_of_seqs', help='evaluate for at most N sequences.')
     parser.add_option('--lines_to_skip', type='int',metavar='N', dest='lines_to_skip', default = 0, help='skip the first N lines of the file. Default is 0.')
+
+    parser.add_option('--report', '--plot_report', action='store_true', dest='plot_report', default=True, help='plots of the inferred model')
     
     #delimeters
     parser.add_option('-d', '--delimiter', type='choice', dest='delimiter',  choices=['tab', 'space', ',', ';', ':'], help="declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':'")
@@ -87,11 +87,40 @@ def main():
 
     default_models = {}
     default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
+    default_models['humanIGK'] = [os.path.join(main_folder, 'default_models', 'human_B_kappa'),  'VJ']
+    default_models['humanIGL'] = [os.path.join(main_folder, 'default_models', 'human_B_lambda'),  'VJ']
     default_models['humanTRB'] = [os.path.join(main_folder, 'default_models', 'human_T_beta'), 'VDJ']
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
+    if np.sum([1 for x in ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])>0:
+        print ('error, custom generative model not yet implemented')
+        return
+
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
+    recompute_productive_norm=False
+    if num_models_specified == 1: #exactly one model specified
+        try:
+            d_model = [x for x in default_models.keys() if getattr(options, x)][0]
+            model_folder = default_models[d_model][0]
+            recomb_type = default_models[d_model][1]
+        except IndexError:
+            if options.vdj_model_folder: #custom VDJ model specified
+                recompute_productive_norm=True
+                model_folder = options.vdj_model_folder
+                recomb_type = 'VDJ'
+            elif options.vj_model_folder: #custom VJ model specified
+                recompute_productive_norm=True
+                model_folder = options.vj_model_folder
+                recomb_type = 'VJ'
+    elif num_models_specified == 0:
+        print('Need to indicate generative model.')
+        print('Exiting...')
+        return -1
+    elif num_models_specified > 1:
+        print('Only specify one model')
+        print('Exiting...')
+        return -1
 
     if num_models_specified == 1: #exactly one model specified
         try:
@@ -131,16 +160,16 @@ def main():
     #Load up model based on recomb_type
     #VDJ recomb case --- used for TCRB and IGH
     if recomb_type == 'VDJ':
-        genomic_data = load_model.GenomicDataVDJ()
+        genomic_data = olga_load_model.GenomicDataVDJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVDJ()
+        generative_model = olga_load_model.GenerativeModelVDJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         pgen_model = generation_probability.GenerationProbabilityVDJ(generative_model, genomic_data)
     #VJ recomb case --- used for TCRA and light chain
     elif recomb_type == 'VJ':
-        genomic_data = load_model.GenomicDataVJ()
+        genomic_data = olga_load_model.GenomicDataVJ()
         genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-        generative_model = load_model.GenerativeModelVJ()
+        generative_model = olga_load_model.GenerativeModelVJ()
         generative_model.load_and_process_igor_model(marginals_file_name)
         pgen_model = generation_probability.GenerationProbabilityVJ(generative_model, genomic_data)
 
@@ -215,52 +244,8 @@ def main():
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
 
     if options.infile_name is None: #No infile specified -- args should be the input seqs
-        print_warnings = True
-        if len(args)>1 : 
-            print('ERROR: can process only one sequence at the time. Submit thourgh file instead.')
-            return -1
-        seq=args[0]
-
-        #Format V and J masks -- uniform for all argument input sequences
- 
-        try:
-            V_mask = options.V_mask.split(',')
-            unrecognized_v_genes = [v for v in V_mask if gene_to_num_str(v, 'V') not in pgen_model.V_mask_mapping.keys()]
-            V_mask = [v for v in V_mask if gene_to_num_str(v, 'V') in pgen_model.V_mask_mapping.keys()]
-            if len(unrecognized_v_genes) > 0:
-                print('These V genes/alleles are not recognized: ' + ', '.join(unrecognized_v_genes))
-            if len(V_mask) == 0:
-                print('No recognized V genes/alleles in the provided V_mask. Continuing without conditioning on V usage.')
-                V_mask = None
-        except AttributeError:
-            V_mask = options.V_mask #Default is None, i.e. not conditioning on V identity
-
-        try:
-            J_mask = options.J_mask.split(',')
-            unrecognized_j_genes = [j for j in J_mask if gene_to_num_str(j, 'J') not in pgen_model.J_mask_mapping.keys()]
-            J_mask = [j for j in J_mask if gene_to_num_str(j, 'J') in pgen_model.J_mask_mapping.keys()]
-            if len(unrecognized_j_genes) > 0:
-                print('These J genes/alleles are not recognized: ' + ', '.join(unrecognized_j_genes))
-            if len(J_mask) == 0:
-                print('No recognized J genes/alleles in the provided J_mask. Continuing without conditioning on J usage.')
-                J_mask = None
-        except AttributeError:
-            J_mask = options.J_mask #Default is None, i.e. not conditioning on J identity
-
-        print('')
-
-        if (not options.skip_ppost) or (not options.skip_pgen):
-            v,j=V_mask[0],J_mask[0]
-            Q,pgen,ppost=ev.evaluate_seqs([[seq,v,j]])
-            if not options.skip_ppost: print('Ppost of ' + seq + ' '+v+ ' '+j+ ': ' + str(ppost[0]))
-            if not options.skip_pgen: print('Pgen of ' + seq + ' '+v+ ' '+j+ ': ' + str(pgen[0]))
-            if not options.skip_Q: print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
-            print('')
-
-        else:
-            v,j=V_mask[0],J_mask[0]
-            Q=ev.evaluate_selection_factors([[seq,v,j]])
-            print('Q of ' + seq + ' '+v+ ' '+j+ ': ' + str(Q[0]))
+        print('ERROR: specify input file.')
+        return -1
     else:
         seqs = []
         V_usage_masks = []
@@ -311,11 +296,12 @@ def main():
                     else:
                         print(str(V_usage_mask) + " is not a usable V_usage_mask composed exclusively of recognized V gene/allele names")
                         print('Unrecognized V gene/allele names: ' + ', '.join([v for v in V_usage_mask if gene_to_num_str(v, 'V') not in pgen_model.V_mask_mapping.keys()]))
-                        print('Exiting...')
-                        infile.close()
-                        return -1
+                        print('Continuing but but inference might be biased...')
+                        V_usage_masks.append(V_usage_mask)
+                        #infile.close()
+                        #return -1
                 except IndexError: #no index match for V_mask_index
-                    print('V_mask_index is out of range')
+                    print('V_mask_index is out of range, check the delimeter.')
                     print('Exiting...')
                     infile.close()
                     return -1
@@ -332,11 +318,13 @@ def main():
                     else:
                         print(str(J_usage_mask) + " is not a usable J_usage_mask composed exclusively of recognized J gene/allele names")
                         print('Unrecognized J gene/allele names: ' + ', '.join([j for j in J_usage_mask if gene_to_num_str(j, 'J') not in pgen_model.J_mask_mapping.keys()]))
-                        print('Exiting...')
-                        infile.close()
-                        return -1
+                        print('Continuing but but inference might be biased...')
+                        J_usage_masks.append(J_usage_mask)
+
+                        #infile.close()
+                        #return -1
                 except IndexError: #no index match for J_mask_index
-                    print('J_mask_index is out of range')
+                    print('J_mask_index is out of range, check the delimeter.')
                     print('Exiting...')
                     infile.close()
                     return -1
@@ -347,22 +335,39 @@ def main():
 
         # combine sequences.
         zipped=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
+        print('Initialise Model.')
 
-                # choose sonia model type
+        # choose sonia model type
         if options.model_type=='leftright': 
-            sonia_model=SoniaLeftposRightpos(data_seqs=zipped)
-            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)])) 
+            sonia_model=SoniaLeftposRightpos(data_seqs=zipped,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)]),custom_model_folder=model_folder) 
         elif options.model_type=='lengthpos':
-            sonia_model=SoniaLengthPos(data_seqs=zipped)
-            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)])) 
-
+            sonia_model=SoniaLengthPos(data_seqs=zipped,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model.add_generated_seqs(np.min([int(3e5),3*len(zipped)]),custom_model_folder=model_folder) 
+        else:
+            print('ERROR: choose a model.')
+        
+        if recompute_productive_norm: sonia_model.norm_productive=pgen_model.compute_regex_CDR3_template_pgen('X{0,}')
+        
+        print('Model initialised. Start inference')
+        sonia_model.infer_selection(epochs=options.epochs)
+        print('Save Model')
         if options.outfile_name is not None: #OUTFILE SPECIFIED
-            print('Model initialised. Start inference')
-            sonia_model.infer_selection(epochs=options.epochs)
             sonia_model.save_model(options.outfile_name)
+            if options.plot_report:
+                from sonia.plotting import Plotter
+                pl=Plotter(sonia_model)
+                pl.plot_model_learning(os.path.join(options.outfile_name, 'model_learning.png'))
+                pl.plot_vjl(os.path.join(options.outfile_name, 'marginals.png'))
+                pl.plot_logQ(os.path.join(options.outfile_name, 'log_Q.png'))
 
         else: #print to stdout
-            print ('ERROR: define directory name for saving')
-
+            sonia_model.save_model('sonia_model')
+            if options.plot_report:
+                from sonia.plotting import Plotter
+                pl=Plotter(sonia_model)
+                pl.plot_model_learning(os.path.join('sonia_model', 'model_learning.png'))
+                pl.plot_vjl(os.path.join('sonia_model', 'marginals.png'))
+                pl.plot_logQ(os.path.join('sonia_model', 'log_Q.png'))
 
 if __name__ == '__main__': main()

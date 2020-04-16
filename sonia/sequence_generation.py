@@ -47,14 +47,21 @@ class SequenceGeneration(object):
 
         # define olga sequence_generation model
         if custom_olga_model is not None:
+            if type(custom_olga_model)==str: 
+                print('ERROR: you need to pass a olga object for the seq_gen model')
+                return
+
             if custom_genomic_data is None:
                 print('ERROR: you need to pass also the custom_genomic_data')
+                return
+            if type(custom_genomic_data)==str: 
+                print('ERROR: you need to pass a olga object for the genomic_data')
                 return
             self.genomic_data = custom_genomic_data
             self.seq_gen_model = custom_olga_model
         else:
 
-            main_folder=os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.sonia_model.chain_type)
+            main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
 
             params_file_name = os.path.join(main_folder,'model_params.txt')
             marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
@@ -76,7 +83,7 @@ class SequenceGeneration(object):
 
                 self.seq_gen_model = seq_gen.SequenceGenerationVJ(generative_model, self.genomic_data)
 
-    def generate_sequences_pre(self, num_seqs = 1):
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -97,10 +104,11 @@ class SequenceGeneration(object):
         
         #Generate sequences
         seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3() for i in range(int(num_seqs))]
-        seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
+        if nucleotide: seqs= [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]] for seq in seqs_generated]
+        else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
     
-    def generate_sequences_post(self,num_seqs,upper_bound=10):
+    def generate_sequences_post(self,num_seqs,upper_bound=10,nucleotide=True):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.
 
         Parameters
@@ -118,21 +126,22 @@ class SequenceGeneration(object):
             MonteCarlo sequences drawn from a VDJ recomb model that pass selection.
 
         """
-        seqs_post=[['a','b','c']] # initialize
+        if nucleotide:seqs_post=[['a','b','c','d']]
+        else: seqs_post=[['a','b','c']] # initialize
 
         while len(seqs_post)<num_seqs:
 
             # generate sequences from pre
-            seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs))
+            seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs),nucleotide=True)
 
             # compute features and energies 
-            seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs]
+            seq_features = [self.sonia_model.find_seq_features(seq) for seq in list(np.array(seqs)[:,:-1])]
             energies = self.sonia_model.compute_energy(seq_features)
 
             #do rejection
             rejection_selection=self.rejection_sampling(upper_bound=upper_bound,energies=energies)
-            seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
-
+            if nucleotide: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
+            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,:-1]])
         return seqs_post[1:num_seqs+1]
 
     def rejection_sampling(self,upper_bound=10,energies=None):

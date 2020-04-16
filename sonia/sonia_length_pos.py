@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@author: zacharysethna
+Created on Wed Mar  6 15:12:15 2019
+
+@author: administrator
 """
 
-import os
+from __future__ import division,absolute_import
 import numpy as np
-from sonia import Sonia
+import os
+from sonia.sonia import Sonia
 
 #Set input = raw_input for python 2
 try:
@@ -15,23 +18,22 @@ try:
 except (ImportError, AttributeError):
     pass
 
-
-class SoniaLeftposRightpos(Sonia):
+class SoniaLengthPos(Sonia):
 
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
-                 load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
-                 max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.):
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg)
-        self.max_depth = max_depth
-        self.max_L = max_L
+                 load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None,
+                 min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,vj=False):
 
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_re,vj=vj)
+        self.min_L = min_L
+        self.max_L = max_L
         if any([x is not None for x in [load_dir, feature_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
+            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file)
         else:
             self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes, custom_pgen_model = custom_pgen_model)
 
     def add_features(self, include_indep_genes = False, include_joint_genes = True, custom_pgen_model=None):
-        """Generates a list of feature_lsts for L/R pos model.
+        """Generates a list of feature_lsts for a length dependent L pos model.
 
         Parameters
         ----------
@@ -43,26 +45,29 @@ class SoniaLeftposRightpos(Sonia):
             path to folder of custom olga model.
 
         """
+
         features = []
-        L_features = [['l' + str(L)] for L in range(1, self.max_L + 1)]
+        L_features = [['l' + str(L)] for L in range(self.min_L, self.max_L + 1)]
         features += L_features
-        for aa in self.amino_acids:
-            features += [['a' + aa + str(L)] for L in range(self.max_depth)]
-            features += [['a' + aa + str(L)] for L in range(-self.max_depth, 0)]
+        for L in range(self.min_L, self.max_L + 1):
+            for i in range(L):
+                for aa in self.amino_acids:
+                     features.append(['l' + str(L), 'a' + aa + str(i)])
 
         if include_indep_genes or include_joint_genes:
             import olga.load_model as olga_load_model
             if custom_pgen_model is None:
-                main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+                main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
             else:
                 main_folder = custom_pgen_model
             params_file_name = os.path.join(main_folder,'model_params.txt')
             V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-            
-            if self.chain_type.endswith('alpha'): genomic_data = olga_load_model.GenomicDataVJ()
+
+            if self.vj: genomic_data = olga_load_model.GenomicDataVJ()
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+
             if include_indep_genes:
                 features += [[v] for v in set(['v' + genV[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
                 features += [[j] for j in set(['j' + genJ[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
@@ -74,8 +79,7 @@ class SoniaLeftposRightpos(Sonia):
     def find_seq_features(self, seq, features = None):
         """Finds which features match seq
 
-
-        If no features are provided, the left/right indexing amino acid model
+        If no features are provided, the length dependent amino acid model
         features will be assumed.
 
         Parameters
@@ -94,8 +98,7 @@ class SoniaLeftposRightpos(Sonia):
         """
         if features is None:
             seq_feature_lsts = [['l' + str(len(seq[0]))]]
-            seq_feature_lsts += [['a' + aa + str(i)] for i, aa in enumerate(seq[0])]
-            seq_feature_lsts += [['a' + aa + str(-1-i)] for i, aa in enumerate(seq[0][::-1])]
+            seq_feature_lsts += [['l' + str(len(seq[0])), 'a' + aa + str(i)] for i, aa in enumerate(seq[0])]
             v_genes = [gene for gene in seq[1:] if 'v' in gene.lower()]
             j_genes = [gene for gene in seq[1:] if 'j' in gene.lower()]
             #Allow for just the gene family match
@@ -117,11 +120,34 @@ class SoniaLeftposRightpos(Sonia):
 
         return seq_features
 
+
     def get_energy_parameters(self, return_as_dict = False):
-        """Extract energy terms from keras model.
+        """Extract energy terms from keras model and gauge.
+
+        For the length dependent position model, the gauge is set so that at a
+        given position, for a given length, we have:
+
+        <q_i,aa;L>_gen|L = 1
+
+
+        Parameters
+        ----------
+        min_L : int
+            Minimum length CDR3 sequence, if not given taken from class attribute
+        max_L : int
+            Maximum length CDR3 sequence, if not given taken from class attribute
 
         """
         model_energy_parameters = self.model.get_weights()[0].flatten()
+        for l in range(self.min_L, self.max_L + 1):
+            if self.gen_marginals[self.feature_dict[('l' + str(l),)]]>0:
+                for i in range(l):
+                    G = sum([(self.gen_marginals[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]]
+                                    /self.gen_marginals[self.feature_dict[('l' + str(l),)]]) *
+                                    np.exp(-model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]])
+                                    for aa in self.amino_acids])
+                    for aa in self.amino_acids:
+                        model_energy_parameters[self.feature_dict[('l' + str(l), 'a' + aa + str(i))]] += np.log(G)
 
         if return_as_dict:
             return {f: model_energy_parameters[self.feature_dict[f]] for f in self.feature_dict}
@@ -190,13 +216,13 @@ class SoniaLeftposRightpos(Sonia):
 
         if 'data_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'data_seqs.tsv'), 'w') as data_seqs_file:
-                data_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.data_seq_features)
+                data_seq_energies = self.compute_energy(self.data_seq_features)
                 data_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 data_seqs_file.write('\n'.join([';'.join(seq) + '\t' + str(-data_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.data_seq_features[i]]) for i, seq in enumerate(self.data_seqs)]))
 
         if 'gen_seqs' in attributes_to_save:
             with open(os.path.join(save_dir, 'gen_seqs.tsv'), 'w') as gen_seqs_file:
-                gen_seq_energies = self.compute_seq_energy_from_parameters(seqs_features = self.gen_seq_features)
+                gen_seq_energies = self.compute_energy(self.gen_seq_features)
                 gen_seqs_file.write('Sequence;Genes\tLog_10(Q)\tFeatures\n')
                 gen_seqs_file.write('\n'.join([';'.join(seq) + '\t' +  str(-gen_seq_energies[i]/np.log(10)) + '\t' + ';'.join([','.join(self.features[f]) for f in self.gen_seq_features[i]]) for i, seq in enumerate(self.gen_seqs)]))
 

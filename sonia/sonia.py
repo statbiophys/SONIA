@@ -5,11 +5,20 @@ Created on Wed Jan 30 12:06:58 2019
 
 @author: zacharysethna
 """
-from __future__ import print_function, division
+from __future__ import print_function, division,absolute_import
 import numpy as np
 import os
-from tensorflow import keras
-import tensorflow.keras.backend as K
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+from tensorflow.keras.models import Model,load_model
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import Input,Dense,Lambda
+from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.backend import sum as ksum
+from tensorflow.keras.backend import log as klog
+from tensorflow.keras.backend import exp as kexp
+from tensorflow.keras.backend import clip as kclip
+
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
 from copy import copy
@@ -61,7 +70,7 @@ class Sonia(object):
     chain_type : str
         Type of receptor. This specification is used to determine gene names
         and allow integrated OLGA sequence generation. Options: 'humanTRA',
-        'humanTRB' (default), 'humanIGH', and 'mouseTRB'.
+        'humanTRB' (default), 'humanIGH', 'humanIGL', 'humanIGK' and 'mouseTRB'.
     l2_reg : float or None
         L2 regularization. If None (default) then no regularization.
 
@@ -107,8 +116,8 @@ class Sonia(object):
     """
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
-                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, load_seqs = True,
-                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None):
+                 load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
+                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -122,16 +131,27 @@ class Sonia(object):
         self.l2_reg = l2_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
+
+        self.gamma=1.
         self.Z=1.
-        default_chain_types = {'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
+        default_chain_types = { 'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 
+                                'humanTRB': 'human_T_beta', 'human_T_beta': 'human_T_beta', 
+                                'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 
+                                'humanIGK': 'human_B_kappa', 'human_B_kappa': 'human_B_kappa', 
+                                'humanIGL': 'human_B_lambda', 'human_B_lambda': 'human_B_lambda', 
+                                'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
         if chain_type not in default_chain_types.keys():
-            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, or mouseTRB.')
+            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, humanIGK, humanIGL or mouseTRB.')
             return None
         self.chain_type = default_chain_types[chain_type]
-        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 'mouse_T_beta':0.27744730165886944}
+        self.vj=vj
+        if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda']: self.vj=True
+
+        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 
+                'human_B_lambda':0.2948949972739931, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.27744730165886944}
         self.norm_productive=norms[self.chain_type]
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, L1_hist_file = L1_hist_file, load_seqs = load_seqs)
+            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
             if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
             if len(self.gen_seqs) == 0: self.update_model(add_data_seqs = gen_seqs)
         else:
@@ -388,14 +408,14 @@ class Sonia(object):
         max_clip=copy(self.max_energy_clip)
         l2_reg=copy(self.l2_reg)
         if initialize:
-            input_layer = keras.layers.Input(shape=(length_input,))
-            output_layer = keras.layers.Dense(1,use_bias=False,activation='linear', activity_regularizer=keras.regularizers.l2(l2_reg))(input_layer) #normal glm model
+            input_layer = Input(shape=(length_input,))
+            output_layer = Dense(1,use_bias=False,activation='linear', activity_regularizer=l2(l2_reg))(input_layer) #normal glm model
 
         # Define model
-        clipped_out=keras.layers.Lambda(lambda x: K.clip(x,min_clip,max_clip))(output_layer)
-        self.model = keras.models.Model(inputs=input_layer, outputs=clipped_out)
+        clipped_out=Lambda(lambda x: kclip(x,min_clip,max_clip))(output_layer)
+        self.model = Model(inputs=input_layer, outputs=clipped_out)
 
-        self.optimizer = keras.optimizers.RMSprop()
+        self.optimizer = RMSprop()
         self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         return True
 
@@ -406,11 +426,10 @@ class Sonia(object):
             Normalization of P gives Z=<exp(-E)>_{P_0}.
             We fix the gauge by adding the constraint (Z-1)**2 to the likelihood.
         """
-        gamma=1e-1
-        data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-        gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
-        reg= K.exp(gen)-1.
-        return gen-data+gamma*reg*reg
+        data= ksum((-y_pred)*(1.-y_true))/ksum(1.-y_true)
+        gen= klog(ksum(kexp(-y_pred)*y_true))-klog(ksum(y_true))
+        reg= kexp(gen)-1.
+        return gen-data+self.gamma*reg*reg
 
     def _likelihood(self, y_true, y_pred):
         """Loss function for keras training. 
@@ -418,8 +437,8 @@ class Sonia(object):
             We minimize the neg-loglikelihood: <-logP> = log(Z) - <-E>.
             Normalization of P gives Z=<exp(-E)>_{P_0}.z
         """
-        data= K.sum((-y_pred)*(1.-y_true))/K.sum(1.-y_true)
-        gen= K.log(K.sum(K.exp(-y_pred)*y_true))-K.log(K.sum(y_true))
+        data= ksum((-y_pred)*(1.-y_true))/ksum(1.-y_true)
+        gen= klog(ksum(kexp(-y_pred)*y_true))-klog(ksum(y_true))
         return gen-data
 
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
@@ -526,7 +545,7 @@ class Sonia(object):
 
         #Load generative model
         if custom_model_folder is None:
-            main_folder = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type)
+            main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
         else:
             main_folder = custom_model_folder
 
@@ -544,7 +563,7 @@ class Sonia(object):
         if not os.path.isfile(J_anchor_pos_file):
             J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
 
-        if self.chain_type.endswith('TRA'):
+        if self.vj:
             genomic_data = olga_load_model.GenomicDataVJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             generative_model = olga_load_model.GenerativeModelVJ()
@@ -615,7 +634,7 @@ class Sonia(object):
 
         return None
 
-    def load_model(self, load_dir = None, load_seqs = True, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, L1_hist_file = None, verbose = True):
+    def load_model(self, load_dir = None, load_seqs = True, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, verbose = True):
         """Loads model from directory.
 
         Parameters
@@ -634,7 +653,7 @@ class Sonia(object):
             if model_file is None: model_file = os.path.join(load_dir, 'model.h5')
             if data_seq_file is None: data_seq_file = os.path.join(load_dir, 'data_seqs.tsv')
             if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seqs.tsv')
-            if L1_hist_file is None: L1_hist_file = os.path.join(load_dir, 'log.txt')
+            if log_file is None: log_file = os.path.join(load_dir, 'log.txt')
 
 
         self._load_features_and_model(feature_file, model_file, verbose)
@@ -668,10 +687,10 @@ class Sonia(object):
 
         self.update_model(auto_update_marginals = True)
 
-        if L1_hist_file is None:
+        if log_file is None:
             self.L1_converge_history = []
-        elif os.path.isfile(L1_hist_file):
-            with open(L1_hist_file, 'r') as L1_file:
+        elif os.path.isfile(log_file):
+            with open(log_file, 'r') as L1_file:
                 self.L1_converge_history=[]
                 for i,line in enumerate(L1_file):
                     if i==0: self.Z=float(line.strip().split('=')[1])
@@ -679,7 +698,7 @@ class Sonia(object):
                     elif len(line.strip())>0 and i>2: self.L1_converge_history.append(float(line.strip()))
         else:
             self.L1_converge_history = []
-            if verbose: print('Cannot find log.tsv  --  no norms and convergence loaded.')
+            if verbose: print('Cannot find log.txt  --  no norms and convergence loaded.')
 
         return None
 
@@ -711,13 +730,13 @@ class Sonia(object):
         if model_file is None and verbose:
             print('No model file provided -- no model parameters loaded.')
         elif os.path.isfile(model_file):
-            self.model = keras.models.load_model(model_file, custom_objects={'loss': self._loss,'likelihood': self._likelihood}, compile = False)
-            self.optimizer = keras.optimizers.RMSprop()
+            self.model = load_model(model_file, custom_objects={'loss': self._loss,'likelihood': self._likelihood}, compile = False)
+            self.optimizer = RMSprop()
             self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         elif verbose:
             print('Cannot find model file --  no model parameters loaded.')
 
-class computeL1(keras.callbacks.Callback):
+class computeL1(Callback):
             
             def __init__(self, sonia):
                 self.data_marginals = sonia.data_marginals

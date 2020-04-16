@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Command line script to generate sequences.
+
+    Copyright (C) 2020 Isacchini Giulio
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>."""
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -43,7 +62,7 @@ class Plotter(object):
             return
         self.sonia_model=sonia_model
 
-    def plot_pgen(self,pgen_data=[],pgen_gen=[],pgen_model=[],n_bins=100,save_name=None):
+    def plot_prob(self, data=[],gen=[],model=[],n_bins=30,save_name=None,bin_min=-20,bin_max=-5,ptype='P_{pre}',figsize=(6,4)):
         '''Histogram plot of Pgen
 
         Parameters
@@ -52,16 +71,17 @@ class Plotter(object):
             number of bins of the histogram
 
         '''
-        plt.figure(figsize=(12,8))
-        binning_=np.linspace(-20,-5,n_bins)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_data)),binning_,density=True)
+        fig=plt.figure(figsize=figsize)
+
+        binning_=np.linspace(bin_min,bin_max,n_bins)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(data)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='data',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_gen)),binning_,density=True)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(gen)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_sel)),binning_,density=True)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(model)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='post-sel',linewidth=2)
 
-        plt.xlabel('$log_{10} P_{pre}$',fontsize=20)
+        plt.xlabel('$log_{10}'+ptype+'$',fontsize=20)
         plt.ylabel('density',fontsize=20)
         plt.legend()
         fig.tight_layout()
@@ -70,29 +90,6 @@ class Plotter(object):
             fig.savefig(save_name)
         plt.show()
         
-    def plot_ppost(self,ppost_data=[],ppost_gen=[],pppst_model=[],n_bins=100,save_name=None):
-        '''Histogram plot of Ppost
-
-        Parameters
-        ----------
-        n_bins: int
-            number of bins of the histogram
-
-        '''
-        plt.figure(figsize=(12,8))
-        binning_=np.linspace(-20,-5,n_bins)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_data)),binning_,density=True)
-        plt.plot(l[:-1],k,label='data',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_gen)),binning_,density=True)
-        plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_sel)),binning_,density=True)
-        plt.plot(l[:-1],k,label='post-sel',linewidth=2)
-
-        plt.xlabel('$log_{10} P_{post}$',fontsize=20)
-        plt.ylabel('density',fontsize=20)
-        plt.legend()
-        plt.show()
-
     def plot_model_learning(self, save_name = None):
 
         """Plots L1 convergence curve and marginal scatter.
@@ -135,8 +132,7 @@ class Plotter(object):
 
         if save_name is not None:
             fig.savefig(save_name)
-
-        plt.show()
+        else: plt.show()
 
     def plot_onepoint_values(self, onepoint = None ,onepoint_dict = None,  min_L = None, max_L = None, min_val = None, max_value = None, 
                              title = '', cmap = 'seismic', bad_color = 'black', aa_color = 'white', marginals = False):
@@ -310,8 +306,11 @@ class Plotter(object):
         vj_length=len(np.arange(len(initial))[initial=='v'])
 
         vj_features=np.array(self.sonia_model.features[-vj_length:])
-        v_genes=np.unique([feat[0] for feat in vj_features])
-        j_genes=np.unique([feat[1] for feat in vj_features])
+        v_genes=[]
+        j_genes=[]
+        for feat in vj_features:
+            if not feat[1] in j_genes: j_genes.append(feat[1])
+            if not feat[0] in v_genes: v_genes.append(feat[0])
 
         vj_model_marginals=np.array(self.sonia_model.model_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
         vj_data_marginals=np.array(self.sonia_model.data_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
@@ -338,8 +337,10 @@ class Plotter(object):
         plt.legend()
         plt.title('J USAGE DISTRIBUTIONS',fontsize=20)
 
+        if save_name is not None:
+            fig.savefig(save_name.split('.')[0]+'_jl.'+save_name.split('.')[1])
 
-        plt.figure(figsize=(16,4))
+        fig=plt.figure(figsize=(16,4))
         order=np.argsort(vj_model_marginals.mean(axis=1))[::-1]
         plt.scatter(np.array(v_genes)[order],vj_model_marginals.sum(axis=1)[order],label='POST marginals',alpha=0.9)
         plt.scatter(np.array(v_genes)[order],vj_data_marginals.sum(axis=1)[order],label='DATA marginals',alpha=0.9)
@@ -351,8 +352,8 @@ class Plotter(object):
         plt.title('V USAGE DISTRIBUTIONS',fontsize=20)
         
         if save_name is not None:
-            fig.savefig(save_name)
-        plt.show()
+            fig.savefig(save_name.split('.')[0]+'_v.'+save_name.split('.')[1])
+        else: plt.show()
         
     def plot_logQ(self,save_name=None):
         
@@ -368,11 +369,11 @@ class Plotter(object):
             self.sonia_model.energies_gen
             self.sonia_model.energies_data
         except:
-            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)
-            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)
+            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)+np.log(self.sonia_model.Z)
+            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+np.log(self.sonia_model.Z)
         
         fig=plt.figure(figsize=(8,4))
-        binning=np.linspace(-self.sonia_model.max_energy_clip,-self.sonia_model.min_energy_clip,100)
+        binning=np.linspace(-self.sonia_model.max_energy_clip-1,-self.sonia_model.min_energy_clip+1,100)
         hist_gen,bins=np.histogram(-self.sonia_model.energies_gen,binning,density=True)
         hist_data,bins=np.histogram(-self.sonia_model.energies_data,binning,density=True)
         plt.plot(bins[:-1],hist_gen,label='generated')
@@ -382,4 +383,4 @@ class Plotter(object):
         plt.legend(fontsize=20)
         if save_name is not None:
             fig.savefig(save_name)
-        plt.show()
+        else: plt.show()
