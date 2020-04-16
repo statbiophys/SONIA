@@ -221,14 +221,14 @@ ev=sonia.evaluate_model.EvaluateModel(sonia_model=qm)
 sq=sonia.sequence_generation.SequenceGeneration(sonia_model=qm)
 
 # generate seqs pre
-print(sq.generate_sequences_pre(10))
+print(sq.generate_sequences_pre(10)
 
 # generate seqs post
 seqs= sq.generate_sequences_post(10)
 print(seqs)
 
 # evaluate Q, pgen and ppost of sequences 
-# NB: data has to be in format: list(array(n_seqs,3 or more)). Check output of generate_sequences_post method for an example (4th column is not used in the evaluate_seqs method).
+# NB: data has to be in format: list(array((n_seqs,3 or more))). Check output of generate_sequences_post method for an example (4th column is not used in the evaluate_seqs method).
 qs,pgens,pposts= ev.evaluate_seqs(seqs)
 print(pgens,pposts,qs)
 ```
