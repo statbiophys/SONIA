@@ -153,8 +153,8 @@ with the exact naming convention:
 * model_marginals.txt 
 * V_gene_CDR3_anchors.csv (V anchor residue position and functionality file)
 * J_gene_CDR3_anchors.csv (J anchor residue position and functionality file)
-* features.tsv (if you want to load the selection model as well (not required for in the sonia-infer command)
-* log.txt (if you want to load the selection model as well (not required in the sonia-infer command) 
+* features.tsv (if you want to load the selection model as well: not required for in the sonia-infer command)
+* log.txt (if you want to load the selection model as well: not required in the sonia-infer command) 
 
 The console scripts can only read files of the assumed anchor.csv/[IGoR](https://github.com/qmarcou/IGoR) syntaxes. See the default models in the sonia directory for examples.
 
