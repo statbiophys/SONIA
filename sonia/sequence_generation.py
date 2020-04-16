@@ -83,7 +83,7 @@ class SequenceGeneration(object):
 
                 self.seq_gen_model = seq_gen.SequenceGenerationVJ(generative_model, self.genomic_data)
 
-    def generate_sequences_pre(self, num_seqs = 1, nucleotide=False):
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -108,7 +108,7 @@ class SequenceGeneration(object):
         else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
     
-    def generate_sequences_post(self,num_seqs,upper_bound=10,nucleotide=False):
+    def generate_sequences_post(self,num_seqs,upper_bound=10,nucleotide=True):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.
 
         Parameters

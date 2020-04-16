@@ -62,7 +62,7 @@ class Plotter(object):
             return
         self.sonia_model=sonia_model
 
-    def plot_pgen(self,pgen_data=[],pgen_gen=[],pgen_model=[],n_bins=100,save_name=None):
+    def plot_prob(self, data=[],gen=[],model=[],n_bins=30,save_name=None,bin_min=-20,bin_max=-5,ptype='P_{pre}',figsize=(6,4)):
         '''Histogram plot of Pgen
 
         Parameters
@@ -71,16 +71,17 @@ class Plotter(object):
             number of bins of the histogram
 
         '''
-        plt.figure(figsize=(12,8))
-        binning_=np.linspace(-20,-5,n_bins)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_data)),binning_,density=True)
+        fig=plt.figure(figsize=figsize)
+
+        binning_=np.linspace(bin_min,bin_max,n_bins)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(data)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='data',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_gen)),binning_,density=True)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(gen)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(pgen_sel)),binning_,density=True)
+        k,l=np.histogram(np.nan_to_num(np.log10(np.array(model)+1e-300)),binning_,density=True)
         plt.plot(l[:-1],k,label='post-sel',linewidth=2)
 
-        plt.xlabel('$log_{10} P_{pre}$',fontsize=20)
+        plt.xlabel('$log_{10}'+ptype+'$',fontsize=20)
         plt.ylabel('density',fontsize=20)
         plt.legend()
         fig.tight_layout()
@@ -89,29 +90,6 @@ class Plotter(object):
             fig.savefig(save_name)
         plt.show()
         
-    def plot_ppost(self,ppost_data=[],ppost_gen=[],pppst_model=[],n_bins=100,save_name=None):
-        '''Histogram plot of Ppost
-
-        Parameters
-        ----------
-        n_bins: int
-            number of bins of the histogram
-
-        '''
-        plt.figure(figsize=(12,8))
-        binning_=np.linspace(-20,-5,n_bins)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_data)),binning_,density=True)
-        plt.plot(l[:-1],k,label='data',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_gen)),binning_,density=True)
-        plt.plot(l[:-1],k,label='pre-sel',linewidth=2)
-        k,l=np.histogram(np.nan_to_num(np.log10(self.ppost_sel)),binning_,density=True)
-        plt.plot(l[:-1],k,label='post-sel',linewidth=2)
-
-        plt.xlabel('$log_{10} P_{post}$',fontsize=20)
-        plt.ylabel('density',fontsize=20)
-        plt.legend()
-        plt.show()
-
     def plot_model_learning(self, save_name = None):
 
         """Plots L1 convergence curve and marginal scatter.
