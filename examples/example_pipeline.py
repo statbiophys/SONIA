@@ -25,7 +25,7 @@ qm = SoniaLeftposRightpos(data_seqs=data_seqs, gen_seqs=gen_seqs)
 qm.infer_selection()
 
 # plot results
-pl=sonia.plotting.Plotter(qm)
+pl=Plotter(qm)
 pl.plot_model_learning('model_learning.png')
 pl.plot_vjl('marginals.png')
 pl.plot_logQ('log_Q.png')
