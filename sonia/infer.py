@@ -93,9 +93,9 @@ def main():
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
-    if np.sum([1 for x in ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])>0:
-        print ('error, custom generative model not yet implemented')
-        return
+    #if np.sum([1 for x in ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])>0:
+    #    print ('error, custom generative model not yet implemented')
+    #    return
 
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
     recompute_productive_norm=False
@@ -296,7 +296,7 @@ def main():
                     else:
                         print(str(V_usage_mask) + " is not a usable V_usage_mask composed exclusively of recognized V gene/allele names")
                         print('Unrecognized V gene/allele names: ' + ', '.join([v for v in V_usage_mask if gene_to_num_str(v, 'V') not in pgen_model.V_mask_mapping.keys()]))
-                        print('Continuing but but inference might be biased...')
+                        print('Continuing but inference might be biased...')
                         V_usage_masks.append(V_usage_mask)
                         #infile.close()
                         #return -1
@@ -318,7 +318,7 @@ def main():
                     else:
                         print(str(J_usage_mask) + " is not a usable J_usage_mask composed exclusively of recognized J gene/allele names")
                         print('Unrecognized J gene/allele names: ' + ', '.join([j for j in J_usage_mask if gene_to_num_str(j, 'J') not in pgen_model.J_mask_mapping.keys()]))
-                        print('Continuing but but inference might be biased...')
+                        print('Continuing but inference might be biased...')
                         J_usage_masks.append(J_usage_mask)
 
                         #infile.close()
