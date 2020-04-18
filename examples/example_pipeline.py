@@ -26,9 +26,9 @@ qm.infer_selection()
 
 # plot results
 pl=sonia.plotting.Plotter(qm)
-pl.plot_model_learning( 'model_learning.png')
-pl.plot_vjl(os.path.join('marginals.png')
-pl.plot_logQ( 'log_Q.png')
+pl.plot_model_learning('model_learning.png')
+pl.plot_vjl('marginals.png')
+pl.plot_logQ('log_Q.png')
 
 # save the model
 if not os.path.isdir(output_folder):
