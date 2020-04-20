@@ -158,6 +158,22 @@ with the exact naming convention:
 
 The console scripts can only read files of the assumed anchor.csv/[IGoR](https://github.com/qmarcou/IGoR) syntaxes. See the default models in the sonia directory for examples.
 
+### Additional options common to all commands
+
+| Options                                         | Description                                      |
+|-------------------------------------------------|--------------------------------------------------|
+|  -h, --help                                     |     show command options                          |
+|  --sonia_model=MODEL_TYPE                       | specify model type: leftright or lengthpos. Default is leftright |
+|  -i PATH/TO/FILE, --infile=PATH/TO/FILE         | read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE|
+|  -o PATH/TO/FILE, --outfile=PATH/TO/FILE        | output to PATH/TO/FILE                           |
+|  --seq_in=INDEX, --seq_index=INDEX              | specifies sequences to be read in are in column INDEX. Default is index 0 (the first column). |
+|  -m N, --max_number_of_seqs=N                   | read at most N sequences.                        |
+|  --lines_to_skip=N                              | skip the first N lines of the file. Default is 0.|
+|  --delimiter_out=DELIMITER_OUT                  | declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':' |
+
+for command specifc options use the --help flag.
+
+
 ## Using the SONIA modules in a Python script (advanced users)
 In order to incorporate the core algorithm into an analysis pipeline (or to write your own script wrappers) all that is needed is to import the modules. Each module defines some classes that only a few methods get called on.
 

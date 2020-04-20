@@ -28,7 +28,7 @@ setup(name='sonia',
             'Programming Language :: Python :: 3.6',
             ],
       packages=find_packages(),
-      install_requires=['numpy','tensorflow','matplotlib','olga'],
+      install_requires=['numpy','tensorflow','matplotlib','olga>=1.1.3'],
       package_data = {
             'default_models': [],
             'default_models/human_T_alpha/': ['sonia/default_models/human_T_alpha/*'],
