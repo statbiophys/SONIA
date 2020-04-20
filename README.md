@@ -162,13 +162,16 @@ The console scripts can only read files of the assumed anchor.csv/[IGoR](https:/
 
 | Options                                         | Description                                      |
 |-------------------------------------------------|--------------------------------------------------|
-|  -h, --help                                     |     show command options                          |
+|  -h, --help                                     |     show command options                         |
 |  --sonia_model=MODEL_TYPE                       | specify model type: leftright or lengthpos. Default is leftright |
 |  -i PATH/TO/FILE, --infile=PATH/TO/FILE         | read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE|
 |  -o PATH/TO/FILE, --outfile=PATH/TO/FILE        | output to PATH/TO/FILE                           |
 |  --seq_in=INDEX, --seq_index=INDEX              | specifies sequences to be read in are in column INDEX. Default is index 0 (the first column). |
+|  --v_in=INDEX, --v_mask_index=INDEX             | specifies V_masks are found in column INDEX in the input file. Default is 1. |
+|  --j_in=INDEX, --j_mask_index=INDEX             | specifies J_masks are found in column INDEX in the input file. Default is 2. |
 |  -m N, --max_number_of_seqs=N                   | read at most N sequences.                        |
 |  --lines_to_skip=N                              | skip the first N lines of the file. Default is 0.|
+|  -d DELIMITER, --delimiter=DELIMITER            | declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':' |
 |  --delimiter_out=DELIMITER_OUT                  | declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':' |
 
 for command specifc options use the --help flag.
@@ -183,7 +186,7 @@ The modules are:
 |------------------------------------------------|--------------------------------------------------|
 | evaluate_model.py                              | EvaluateModel                                    |
 | sequence_generation.py                         | SequenceGeneration                               |
-|plotting.py.                                    | Plotter                                          |
+| plotting.py.                                   | Plotter                                          |
 | sonia_leftpos_rightpos.py                      | SoniaLeftposRightpos                             |
 | sonia_length_pos.py                            | SoniaLengthPos                                   |
 | sonia.py                                       | Sonia                                            |
