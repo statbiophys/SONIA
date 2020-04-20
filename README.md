@@ -158,7 +158,7 @@ with the exact naming convention:
 
 The console scripts can only read files of the assumed anchor.csv/[IGoR](https://github.com/qmarcou/IGoR) syntaxes. See the default models in the sonia directory for examples.
 
-### Additional options common to all commands
+### Options common to all commands
 
 | Options                                         | Description                                      |
 |-------------------------------------------------|--------------------------------------------------|
@@ -174,7 +174,7 @@ The console scripts can only read files of the assumed anchor.csv/[IGoR](https:/
 |  -d DELIMITER, --delimiter=DELIMITER            | declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':' |
 |  --delimiter_out=DELIMITER_OUT                  | declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':' |
 
-for command specifc options use the --help flag.
+for command specific options use the --help flag.
 
 
 ## Using the SONIA modules in a Python script (advanced users)
