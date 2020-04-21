@@ -69,10 +69,10 @@ class SoniaLengthPos(Sonia):
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
 
             if include_indep_genes:
-                features += [[v] for v in set(['v' + genV.lower()[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
-                features += [[j] for j in set(['j' + genJ.lower()[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
+                features += [[v] for v in set(['v' + genV[0].lower().split('*')[0].split('V')[-1] for genV in genomic_data.genV])]
+                features += [[j] for j in set(['j' + genJ[0].lower().split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
             if include_joint_genes:
-                features += [[v, j] for v in set(['v' + genV.lower()[0].split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ.lower()[0].split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
+                features += [[v, j] for v in set(['v' + genV[0].lower().split('*')[0].split('V')[-1] for genV in genomic_data.genV]) for j in set(['j' + genJ[0].lower().split('*')[0].split('J')[-1] for genJ in genomic_data.genJ])]
 
         self.update_model(add_features=features)
 
