@@ -216,8 +216,10 @@ def main():
     V_mask_index = options.V_mask_index #Default is not conditioning on V identity
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
     #print(V_mask_index,J_mask_index,seq_in_index,gene_mask_delimiter,delimiter)
+    
     # choose sonia model type
-    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ',custom_pgen_model=model_folder,chain_type=self.chain_type)
+    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ',custom_pgen_model=model_folder)
+    
     # load Evaluate model class
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)
 

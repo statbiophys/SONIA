@@ -106,9 +106,9 @@ class SoniaLengthPos(Sonia):
             j_genes += [gene.split('*')[0].split('-')[0] for gene in seq[1:] if 'j' in gene.lower()]
 
             try:
-                seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
-                seq_feature_lsts += [['j' + '-'.join([str(int(y)) for y in gene.lower().split('j')[-1].split('-')])] for gene in j_genes]
-                seq_feature_lsts += [['v' + '-'.join([str(int(y)) for y in v_gene.lower().split('v')[-1].split('-')]), 'j' + '-'.join([str(int(y)) for y in j_gene.lower().split('j')[-1].split('-')])] for v_gene in v_genes for j_gene in j_genes]
+                seq_feature_lsts += [['v' + '-'.join([y.lstrip('0') for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
+                seq_feature_lsts += [['j' + '-'.join([y.lstrip('0') for y in gene.lower().split('j')[-1].split('-')])] for gene in j_genes]
+                seq_feature_lsts += [['v' + '-'.join([y.lstrip('0') for y in v_gene.lower().split('v')[-1].split('-')]), 'j' + '-'.join([y.lstrip('0') for y in j_gene.lower().split('j')[-1].split('-')])] for v_gene in v_genes for j_gene in j_genes]
             except ValueError:
                 pass
             seq_features = list(set([self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]))

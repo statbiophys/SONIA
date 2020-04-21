@@ -18,9 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>."""
 
 import numpy as np
-import os
-import matplotlib
-matplotlib.use('TkAgg')   
+import os  
 import matplotlib.pyplot as plt
 
 class Plotter(object):
