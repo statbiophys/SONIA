@@ -30,9 +30,9 @@ from sonia.sonia_length_pos import SoniaLengthPos
 from sonia.sonia_leftpos_rightpos import SoniaLeftposRightpos
 from sonia.evaluate_model import EvaluateModel
 from sonia.sequence_generation import SequenceGeneration
-import time
 import olga.load_model as olga_load_model
 import numpy as np
+from tqdm import tqdm
 
 #Set input = raw_input for python 2
 try:
@@ -40,6 +40,10 @@ try:
     input = getattr(__builtin__, 'raw_input')
 except (ImportError, AttributeError):
     pass
+
+def chuncks(n,size):
+    if n%size: return int(n/size)*[size]+[n%size]
+    else : return int(n/size)*[size]
 
 def main():
     """ Generate sequences."""
@@ -55,9 +59,11 @@ def main():
     parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
-    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
+    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos, default is leftright')
     parser.add_option('--post', '--ppost', action='store_true', dest='ppost', default=False, help='sample from post selected repertoire')
     parser.add_option('--pre', '--pgen', action='store_true', dest='pgen', default=False, help='sample from pre selected repertoire ')
+    parser.add_option('--delimiter_out','-d', type='choice', dest='delimiter_out',  choices=['tab', 'space', ',', ';', ':'], help="declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':'")
+    parser.add_option('-s','--chunk_size', type='int',metavar='N', dest='chunck_size', default = int(1e3), help='Number of sequences to generate at each iteration')
 
     # input output
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences to PATH/TO/FILE')
@@ -98,7 +104,22 @@ def main():
         print('Only specify one model')
         print('Exiting...')
         return -1
-
+    
+    #Parse delimiter_out
+    delimiter_out = options.delimiter_out
+    if delimiter_out is None: #Default case
+        delimiter_out = ','    
+        if options.outfile_name is None:
+            pass
+        elif options.outfile_name.endswith('.tsv'): #output TAB separated value file
+            delimiter_out = '\t'
+        elif options.outfile_name.endswith('.csv'): #output COMMA separated value file
+            delimiter_out = ','
+    else:
+        try:
+            delimiter_out = {'tab': '\t', 'space': ' ', ',': ',', ';': ';', ':': ':'}[delimiter_out]
+        except KeyError:
+            pass #Other string passed as the delimiter.
     #Generative model specification -- note we'll probably change this syntax to
     #allow for arbitrary model file specification
     params_file_name = os.path.join(model_folder,'model_params.txt')
@@ -129,37 +150,35 @@ def main():
         generative_model.load_and_process_igor_model(marginals_file_name)
         seqgen_model = sequence_generation.SequenceGenerationVJ(generative_model, genomic_data)
 
-    if options.outfile_name is not None:
-        outfile_name = options.outfile_name
-#        if os.path.isfile(outfile_name):
-#            if not input(outfile_name + ' already exists. Overwrite (y/n)? ').strip().lower() in ['y', 'yes']:
-#                print('Exiting...')
-#                return -1
-
     sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ')
     
     # load Evaluate model class
     seq_gen=SequenceGeneration(sonia_model,custom_olga_model=seqgen_model,custom_genomic_data=genomic_data)
 
-
     if options.outfile_name is not None: #OUTFILE SPECIFIED
-        if options.pgen:
-            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate,nucleotide=True)
-        elif options.ppost:
-            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate,nucleotide=True)
-        else: 
-            print ('ERROR: give option between --pre or --post')
-            return -1
-        np.savetxt(options.outfile_name,seqs,fmt='%s')
+        with open(options.outfile_name,'w') as file:
+            to_generate=chuncks(options.num_seqs_to_generate,options.chunck_size)
+            for t in tqdm(to_generate):
+                if options.pgen:
+                    seqs=seq_gen.generate_sequences_pre(num_seqs=t,nucleotide=True)
+                elif options.ppost:
+                    seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True)
+                else: 
+                    print ('ERROR: give option between --pre or --post')
+                    return -1
+                for seq in seqs: file.write(seq[0]+delimiter_out+seq[1]+delimiter_out+seq[2]+delimiter_out+seq[3]+'\n')
+       # np.savetxt(options.outfile_name,seqs,fmt='%s')
     else: #print to stdout
-        if options.pgen:
-            seqs=seq_gen.generate_sequences_pre(num_seqs=options.num_seqs_to_generate,nucleotide=True)
-        elif options.ppost:
-            seqs=seq_gen.generate_sequences_post(num_seqs=options.num_seqs_to_generate,nucleotide=True)
-        else:
-            print ('ERROR: give option between --pre or --post')
-            return -1
-        for seq in seqs:
-            print(seq[0],seq[1],seq[2],seq[3])
+        to_generate=chuncks(options.num_seqs_to_generate,options.chunck_size)
+        for t in to_generate:
+            if options.pgen:
+                seqs=seq_gen.generate_sequences_pre(num_seqs=t,nucleotide=True)
+            elif options.ppost:
+                seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True)
+            else:
+                print ('ERROR: give option between --pre or --post')
+                return -1
+            for seq in seqs:
+                print(seq[0],seq[1],seq[2],seq[3])
 
 if __name__ == '__main__': main()

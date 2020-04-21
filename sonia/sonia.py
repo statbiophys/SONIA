@@ -9,6 +9,7 @@ from __future__ import print_function, division,absolute_import
 import numpy as np
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 from tensorflow.keras.models import Model,load_model
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Input,Dense,Lambda
@@ -22,7 +23,7 @@ from tensorflow.keras.backend import clip as kclip
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
 from copy import copy
-
+from tqdm import tqdm
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -339,7 +340,7 @@ class Sonia(object):
             marginals = marginals / Z
         return marginals
 
-    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None,validation_split=0.2, monitor=False):
+    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None,validation_split=0.2, monitor=False,verbose=0):
         """Infer model parameters, i.e. energies for each model feature.
 
         Parameters
@@ -380,7 +381,7 @@ class Sonia(object):
         if monitor:callbacks = [computeL1_dist]
         else: callbacks=[]
         self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
-                                          validation_split=validation_split, verbose=0, callbacks=callbacks)
+                                          validation_split=validation_split, verbose=verbose, callbacks=callbacks)
         if monitor:
             self.L1_converge_history = computeL1_dist.L1_history
             self.model.set_weights(computeL1_dist.weights_cpt)
@@ -502,16 +503,16 @@ class Sonia(object):
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 
-        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
-            self.data_seq_features = [self.find_seq_features(seq) for seq in self.data_seqs]
+        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
+            print('Encode data.')
+            self.data_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.data_seqs)]
 
         if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals > 0) and len(self.features)>0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
-            #self.inv_I = np.linalg.inv(self.compute_data_fisher_info())
-            #self.floating_features = self.data_marginals > 0
 
-        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0:
-            self.gen_seq_features = [self.find_seq_features(seq) for seq in self.gen_seqs]
+        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
+            print('Encode gen.')
+            self.gen_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)]
 
 
         if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
@@ -577,7 +578,8 @@ class Sonia(object):
             sg_model = seq_gen.SequenceGenerationVDJ(generative_model, genomic_data)
 
         #Generate sequences
-        seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3() for _ in range(int(num_gen_seqs))]]
+        print('Generate sequences.')
+        seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3() for _ in tqdm(range(int(num_gen_seqs)))]]
 
         if reset_gen_seqs: #reset gen_seqs if needed
             self.gen_seqs = []

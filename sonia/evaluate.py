@@ -32,12 +32,18 @@ import olga.generation_probability as generation_probability
 import numpy as np
 import time
 from sonia.evaluate_model import compute_all_pgens
+from tqdm import tqdm
+import multiprocessing as mp
+
 #Set input = raw_input for python 2
 try:
     import __builtin__
     input = getattr(__builtin__, 'raw_input')
 except (ImportError, AttributeError):
     pass
+
+def chunks(lst, n):
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
 
 def main():
     """ Evaluate sequences."""
@@ -52,10 +58,11 @@ def main():
     parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
-    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos')
+    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos, default is leftright')
     parser.add_option('--ppost', '--Ppost', action='store_true', dest='ppost', default=False, help='compute Ppost, also computes pgen and Q')
     parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='compute pgen')
     parser.add_option('--Q', '--selection_factor', action='store_true', dest='Q', default=False, help='compute Q')
+    parser.add_option('-s','--chunk_size', type='int',metavar='N', dest='chunck_size', default = mp.cpu_count()*int(5e2), help='Number of sequences to evaluate at each iteration')
 
     #vj genes
     parser.add_option('--v_in', '--v_mask_index', type='int', metavar='INDEX', dest='V_mask_index', default=1, help='specifies V_masks are found in column INDEX in the input file. Default is 1.')
@@ -69,6 +76,7 @@ def main():
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
     parser.add_option('-m', '--max_number_of_seqs', type='int',metavar='N', dest='max_number_of_seqs', help='evaluate for at most N sequences.')
     parser.add_option('--lines_to_skip', type='int',metavar='N', dest='lines_to_skip', default = 0, help='skip the first N lines of the file. Default is 0.')
+
     
     #delimeters
     parser.add_option('-d', '--delimiter', type='choice', dest='delimiter',  choices=['tab', 'space', ',', ';', ':'], help="declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':'")
@@ -376,33 +384,40 @@ def main():
         print('Evaluate')
 
         if options.outfile_name is not None: #OUTFILE SPECIFIED
-            if options.ppost:
-                Q,pgen,ppost=ev.evaluate_seqs(zipped)
-                np.savetxt(options.outfile_name ,list(zip(Q,pgen,ppost)),fmt='%s',header='Q Pgen Ppost')
-            elif options.Q:
-                Q=ev.evaluate_selection_factors(zipped)
-                np.savetxt(options.outfile_name ,Q,fmt='%s',header='Q')
-            elif options.pgen:
-                pgens=compute_all_pgens(zipped,pgen_model=pgen_model,header='Pgen')
-                np.savetxt(options.outfile_name ,pgens,fmt='%s')
-            else:
-                print('Specify and option: --ppost, --pgen or --Q')
+            with open(options.outfile_name,'w') as file:
+                if options.ppost:file.write('Q'+delimiter_out+'Pgen'+delimiter_out+'Ppost\n')
+                elif options.Q:file.write('Q\n')
+                elif options.pgen:file.write('Pgen\n')
+                else:
+                    print('Specify one option: --ppost, --pgen or --Q')
+                    return -1
+                for t in tqdm(chunks(zipped,options.chunck_size)):
+                    if options.ppost:
+                        Q,pgen,ppost=ev.evaluate_seqs(t)
+                        for i in range(len(Q)):file.write(str(Q[i])+delimiter_out+str(pgen[i])+delimiter_out+str(ppost[i])+'\n')
+                    elif options.Q:
+                        Q=ev.evaluate_selection_factors(t)
+                        for i in range(len(Q)):file.write(str(Q[i])+'\n')
+                    elif options.pgen:
+                        pgens=compute_all_pgens(t,model=pgen_model)
+                        for i in range(len(pgens)):file.write(str(pgens[i])+'\n')
 
         else: #print to stdout
-            if options.ppost:
-                Q,pgen,ppost=ev.evaluate_seqs(zipped)
-                print ('Q, Pgen, Ppost')
-                for i in range(len(Q)):print(Q[i],pgen[i],ppost[i])
-            elif options.Q:
-                Q=ev.evaluate_selection_factors(zipped)
-                print ('Q')
-                print(Q)
-            elif options.pgen:
-                pgens=compute_all_pgens(zipped,model=pgen_model)
-                print ('Pgen')
-                print(pgens)
-            else:
-                print('Specify and option: --ppost, --pgen or --Q')
+            for t in chunks(zipped,options.chunck_size):
+                if options.ppost:
+                    Q,pgen,ppost=ev.evaluate_seqs(t)
+                    print ('Q, Pgen, Ppost')
+                    for i in range(len(Q)):print(Q[i],pgen[i],ppost[i])
+                elif options.Q:
+                    Q=ev.evaluate_selection_factors(t)
+                    print ('Q')
+                    print(Q)
+                elif options.pgen:
+                    pgens=compute_all_pgens(t,model=pgen_model)
+                    print ('Pgen')
+                    print(pgens)
+                else:
+                    print('Specify one option: --ppost, --pgen or --Q')
 
 
 if __name__ == '__main__': main()

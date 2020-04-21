@@ -106,7 +106,7 @@ class SequenceGeneration(object):
         else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
     
-    def generate_sequences_post(self,num_seqs,upper_bound=10,nucleotide=True):
+    def generate_sequences_post(self,num_seqs = 1,upper_bound=10,nucleotide=True):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.
 
         Parameters
@@ -126,9 +126,7 @@ class SequenceGeneration(object):
         """
         if nucleotide:seqs_post=[['a','b','c','d']]
         else: seqs_post=[['a','b','c']] # initialize
-
-        while len(seqs_post)<num_seqs:
-
+        while len(seqs_post)<num_seqs+1:
             # generate sequences from pre
             seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs),nucleotide=True)
 
