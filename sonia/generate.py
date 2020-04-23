@@ -108,7 +108,7 @@ def main():
     #Parse delimiter_out
     delimiter_out = options.delimiter_out
     if delimiter_out is None: #Default case
-        delimiter_out = ','    
+        delimiter_out = '\t'    
         if options.outfile_name is None:
             pass
         elif options.outfile_name.endswith('.tsv'): #output TAB separated value file
@@ -150,7 +150,8 @@ def main():
         generative_model.load_and_process_igor_model(marginals_file_name)
         seqgen_model = sequence_generation.SequenceGenerationVJ(generative_model, genomic_data)
 
-    sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ')
+    if options.pgen:sonia_model=SoniaLeftposRightpos()
+    else:sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ')
     
     # load Evaluate model class
     seq_gen=SequenceGeneration(sonia_model,custom_olga_model=seqgen_model,custom_genomic_data=genomic_data)

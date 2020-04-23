@@ -101,7 +101,7 @@ class SequenceGeneration(object):
         """
         
         #Generate sequences
-        seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3() for i in range(int(num_seqs))]
+        seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for i in range(int(num_seqs))]
         if nucleotide: seqs= [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]] for seq in seqs_generated]
         else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
         return seqs
@@ -162,4 +162,4 @@ class SequenceGeneration(object):
         Q=np.exp(-energies)/self.sonia_model.Z
         random_samples=np.random.uniform(size=len(energies)) # sample from uniform distribution
 
-        return random_samples < np.clip(Q,0,upper_bound)/float(upper_bound)
+        return random_samples < Q/float(upper_bound)

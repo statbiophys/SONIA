@@ -579,7 +579,7 @@ class Sonia(object):
 
         #Generate sequences
         print('Generate sequences.')
-        seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3() for _ in tqdm(range(int(num_gen_seqs)))]]
+        seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
 
         if reset_gen_seqs: #reset gen_seqs if needed
             self.gen_seqs = []
@@ -630,8 +630,8 @@ class Sonia(object):
 
         if 'model' in attributes_to_save:
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
-                feature_file.write('Feature\n')
-                feature_file.write('\n'.join([';'.join(f) for f in self.features]))
+                feature_file.write('Feature,marginal_data,marginal_model,marginal_gen\n')
+                for i in range(len(self.features)):feature_file.write(';'.join(self.features[i])+','+str(self.data_marginals[i])+','+str(self.model_marginals[i])+','+str(self.gen_marginals[i])+'\n')
             self.model.save(os.path.join(save_dir, 'model.h5'))
 
         return None
@@ -687,7 +687,7 @@ class Sonia(object):
         elif load_seqs and verbose:
             print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
 
-        self.update_model(auto_update_marginals = True)
+        #self.update_model(auto_update_marginals = True) # to check
 
         if log_file is None:
             self.L1_converge_history = []
@@ -716,16 +716,23 @@ class Sonia(object):
             print('No feature file provided --  no features loaded.')
         elif os.path.isfile(feature_file):
             features = []
+            data_marginals=[]
+            gen_marginals=[]
+            model_marginals=[]
             with open(feature_file, 'r') as features_file:
-                for i, line in enumerate(features_file):
-                    if i == 0: #skip header
-                        continue
-                    try:
-                        features.append(line.strip().split('\t')[0].split(';'))
-                    except:
-                        pass
+                all_lines = features_file.read().strip().split('\n')[1:] #skip header
+                splitted=[l.split(',') for l in all_lines]
+                features = np.array([l[0].split(';') for l in splitted])
+                data_marginals=[float(l[1]) for l in splitted]
+                model_marginals=[float(l[2]) for l in splitted]
+                gen_marginals=[float(l[3]) for l in splitted]
+            
             self.features = np.array(features)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+            self.data_marginals=data_marginals
+            self.model_marginals=model_marginals
+            self.gen_marginals=gen_marginals
+
         elif verbose:
             print('Cannot find features file or model file --  no features loaded.')
 
@@ -738,6 +745,28 @@ class Sonia(object):
         elif verbose:
             print('Cannot find model file --  no model parameters loaded.')
 
+    def gene_to_num_str(self,gene_name, gene_type):
+        """Strips excess gene name info to number string.
+
+        Parameters
+        ----------
+        gene_name : str
+            Gene or allele name
+        gene_type : char
+            Genomic cassette type. (i.e. V, D, or J)
+        Returns
+        -------
+        num_str : str
+            Reduced gene or allele name with leading zeros and excess
+            characters removed.
+
+        """
+        # get rid of allele and root
+        num_strs = gene_name.split('*')[0].lower().split(gene_type.lower())[1:]
+        # simplify numbering
+        num_strs = ['-'.join([g.lstrip('0') for g in n.split('-')]) for n in num_strs]
+        return gene_type.lower() + ''.join(num_strs)
+        
 class computeL1(Callback):
             
             def __init__(self, sonia):

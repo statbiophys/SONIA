@@ -64,10 +64,10 @@ class SoniaLeftposRightpos(Sonia):
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             if include_indep_genes:
-                features += [[v] for v in set(['v' + genV[0].split('*')[0].split('V')[-1].lower() for genV in genomic_data.genV])]
-                features += [[j] for j in set(['j' + genJ[0].split('*')[0].split('J')[-1].lower() for genJ in genomic_data.genJ])]
+                features += [[v] for v in set([self.gene_to_num_str(genV[0],'V') for genV in genomic_data.genV])]
+                features += [[j] for j in set([self.gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
             if include_joint_genes:
-                features += [[v, j] for v in set(['v' + genV[0].split('*')[0].split('V')[-1].lower() for genV in genomic_data.genV]) for j in set(['j' + genJ[0].split('*')[0].split('J')[-1].lower() for genJ in genomic_data.genJ])]
+                features += [[v, j] for v in set([self.gene_to_num_str(genV[0],'V') for genV in genomic_data.genV]) for j in set([self.gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
 
         self.update_model(add_features=features)
 
@@ -96,16 +96,18 @@ class SoniaLeftposRightpos(Sonia):
             seq_feature_lsts = [['l' + str(len(seq[0]))]]
             seq_feature_lsts += [['a' + aa + str(i)] for i, aa in enumerate(seq[0])]
             seq_feature_lsts += [['a' + aa + str(-1-i)] for i, aa in enumerate(seq[0][::-1])]
+            
             v_genes = [gene.split('*')[0] for gene in seq[1:] if 'v' in gene.lower()]
             j_genes = [gene.split('*')[0] for gene in seq[1:] if 'j' in gene.lower()]
+            
             #Allow for just the gene family match
             v_genes += [gene.split('*')[0].split('-')[0] for gene in seq[1:] if 'v' in gene.lower()]
             j_genes += [gene.split('*')[0].split('-')[0] for gene in seq[1:] if 'j' in gene.lower()]
 
             try:
-                seq_feature_lsts += [['v' + '-'.join([y.lstrip('0') for y in gene.lower().split('v')[-1].split('-')])] for gene in v_genes]
-                seq_feature_lsts += [['j' + '-'.join([y.lstrip('0') for y in gene.lower().split('j')[-1].split('-')])] for gene in j_genes]
-                seq_feature_lsts += [['v' + '-'.join([y.lstrip('0') for y in v_gene.lower().split('v')[-1].split('-')]), 'j' + '-'.join([y.lstrip('0') for y in j_gene.lower().split('j')[-1].split('-')])] for v_gene in v_genes for j_gene in j_genes]
+                seq_feature_lsts += [[self.gene_to_num_str(gene,'V')] for gene in v_genes]
+                seq_feature_lsts += [[self.gene_to_num_str(gene,'J')] for gene in j_genes]
+                seq_feature_lsts += [[self.gene_to_num_str(v_gene,'V'), self.gene_to_num_str(j_gene,'J')] for v_gene in v_genes for j_gene in j_genes]
             except ValueError:
                 pass
             seq_features = list(set([self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]))
@@ -210,8 +212,9 @@ class SoniaLeftposRightpos(Sonia):
         if 'model' in attributes_to_save:
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
-                feature_file.write('Feature\tEnergy\n')
-                feature_file.write('\n'.join([';'.join(f) + '\t' + str(model_energy_dict[tuple(f)]) for f in self.features]))
+                feature_file.write('Feature,Energy,Marginal_data,Marginal_model,Marginal_gen\n')
+                for i in range(len(self.features)):
+                    feature_file.write(';'.join(self.features[i])+','+ str(model_energy_dict[tuple(self.features[i])])+','+str(self.data_marginals[i])+','+str(self.model_marginals[i])+','+str(self.gen_marginals[i])+'\n')
             #self.model.save(os.path.join(save_dir, 'model.h5'))
 
         return None
@@ -227,10 +230,17 @@ class SoniaLeftposRightpos(Sonia):
         elif os.path.isfile(feature_file):
             with open(feature_file, 'r') as features_file:
                 all_lines = features_file.read().strip().split('\n')[1:] #skip header
-                features = np.array([l.split('\t')[0].split(';') for l in all_lines])
-                feature_energies = np.array([float(l.split('\t')[-1]) for l in all_lines]).reshape((len(features), 1))
+                splitted=[l.split(',') for l in all_lines]
+                features = np.array([l[0].split(';') for l in splitted])
+                feature_energies = np.array([float(l[1]) for l in splitted]).reshape((len(features), 1))
+                data_marginals=[float(l[2])  for l in splitted]
+                model_marginals=[float(l[3])  for l in splitted]
+                gen_marginals=[float(l[4])  for l in splitted]
             self.features = features
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+            self.data_marginals=data_marginals
+            self.model_marginals=model_marginals
+            self.gen_marginals=gen_marginals
             self.update_model_structure(initialize=True)
             self.model.set_weights([feature_energies])
         elif verbose:

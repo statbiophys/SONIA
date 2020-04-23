@@ -56,8 +56,10 @@ def main():
     parser.add_option('--humanIGL', '--human_B_lambda', action='store_true', dest='humanIGL', default=False, help='use default human IGL model (B cell light lambda chain)')
     parser.add_option('--set_custom_model_VDJ', dest='vdj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VDJ generative model')
     parser.add_option('--set_custom_model_VJ', dest='vj_model_folder', metavar='PATH/TO/FOLDER/', help='specify PATH/TO/FOLDER/ for a custom VJ generative model')
-    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help=' specify model type: leftright or lengthpos, default is leftright')
-    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help=' number of epochs for inference, default is 30')
+    parser.add_option('--sonia_model', type='string', default = 'leftright', dest='model_type' ,help='specify model type: leftright or lengthpos, default is leftright')
+    parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help='number of epochs for inference, default is 30')
+    parser.add_option('--batch_size', type='int', default = 5000, dest='batch_size' ,help='size of batch for the stochastic gradient descent')
+    parser.add_option('--validation_split', type='float', default = 0.2, dest='validation_split' ,help='fraction of sequences used for validation.')
 
     #location of seqs
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
@@ -342,7 +344,7 @@ def main():
         generate_sequences=False
         if options.infile_gen is None:
             generate_sequences=True
-            if n_gen_seqs is 0: n_gen_seqs=np.max([int(3e5),3*len(zipped)])
+            if n_gen_seqs is 0: n_gen_seqs=np.max([int(3e5),3*len(data_seqs)])
         else:
             seqs = []
             V_usage_masks = []
@@ -440,10 +442,10 @@ def main():
 
         if generate_sequences: sonia_model.add_generated_seqs(n_gen_seqs,custom_model_folder=model_folder) 
 
-        if recompute_productive_norm: sonia_model.norm_productive=pgen_model.compute_regex_CDR3_template_pgen('X{0,}')
+        if recompute_productive_norm: sonia_model.norm_productive=pgen_model.compute_regex_CDR3_template_pgen('CX{0,}')
         
         print('Model initialised. Start inference')
-        sonia_model.infer_selection(epochs=options.epochs,verbose=1)
+        sonia_model.infer_selection(epochs=options.epochs,verbose=1,batch_size=options.batch_size,validation_split=options.validation_split)
         print('Save Model')
         if options.outfile_name is not None: #OUTFILE SPECIFIED
             sonia_model.save_model(options.outfile_name)
@@ -453,6 +455,7 @@ def main():
                 pl.plot_model_learning(os.path.join(options.outfile_name, 'model_learning.png'))
                 pl.plot_vjl(os.path.join(options.outfile_name, 'marginals.png'))
                 pl.plot_logQ(os.path.join(options.outfile_name, 'log_Q.png'))
+                pl.plot_ratioQ(os.path.join(options.outfile_name, 'Q_ratio.png'))
 
         else: #print to stdout
             sonia_model.save_model('sonia_model')
@@ -462,5 +465,6 @@ def main():
                 pl.plot_model_learning(os.path.join('sonia_model', 'model_learning.png'))
                 pl.plot_vjl(os.path.join('sonia_model', 'marginals.png'))
                 pl.plot_logQ(os.path.join('sonia_model', 'log_Q.png'))
+                pl.plot_ratioQ(os.path.join('sonia_model', 'Q_ratio.png'))
 
 if __name__ == '__main__': main()

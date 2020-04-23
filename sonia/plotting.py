@@ -54,6 +54,9 @@ class Plotter(object):
     plot_logQ(save_name=None)
         Plots logQ of data and generated sequences
 
+    plot_ratioQ(self,save_name=None)
+        Plots the ratio of P(Q) in data and pre-selected pool. Useful for model validation. 
+
     """
 
     def __init__(self,sonia_model=None):
@@ -336,7 +339,7 @@ class Plotter(object):
         plt.grid()
         plt.legend()
         plt.title('J USAGE DISTRIBUTIONS',fontsize=20)
-
+        plt.tight_layout()
         if save_name is not None:
             fig.savefig(save_name.split('.')[0]+'_jl.'+save_name.split('.')[1])
 
@@ -350,7 +353,7 @@ class Plotter(object):
         plt.grid()
         plt.legend()
         plt.title('V USAGE DISTRIBUTIONS',fontsize=20)
-        
+        plt.tight_layout()        
         if save_name is not None:
             fig.savefig(save_name.split('.')[0]+'_v.'+save_name.split('.')[1])
         else: plt.show()
@@ -381,6 +384,45 @@ class Plotter(object):
         plt.ylabel('density',fontsize=20)
         plt.xlabel('log Q',fontsize=20)
         plt.legend(fontsize=20)
+        plt.tight_layout()
+        if save_name is not None:
+            fig.savefig(save_name)
+        else: plt.show()
+
+
+    def plot_ratioQ(self,save_name=None):
+        """Plots the ratio of P(Q) in data and pre-selected pool. Useful for model validation. 
+
+        Parameters
+        ----------
+        save_name : str or None
+            File name to save output figure. If None (default) does not save.
+        """
+
+        try:
+            self.sonia_model.energies_gen
+            self.sonia_model.energies_data
+        except:
+            self.sonia_model.energies_gen=self.sonia_model.compute_energy(self.sonia_model.gen_seq_features)+np.log(self.sonia_model.Z)
+            self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+np.log(self.sonia_model.Z)
+
+        fig=plt.figure(figsize=(8,8))
+        binning=np.logspace(-3,3,100)
+        a,b=np.histogram(np.exp(-self.sonia_model.energies_gen),binning,density=True)
+        c,d=np.histogram(np.exp(-self.sonia_model.energies_data),binning,density=True)
+        plt.plot([-1,1000],[-1,1000],c='k')
+        plt.xlim([0.001,500])
+        plt.ylim([0.001,500])
+        plt.plot(binning[:-1],c/(np.array(a)+1e-30),c='r',linewidth=3,alpha=0.9)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.xlabel('Q',fontsize=30)
+        plt.ylabel('$P_{data}(Q)/P_{pre}(Q)$',fontsize=30)
+        plt.grid()
+
+        plt.tight_layout()
         if save_name is not None:
             fig.savefig(save_name)
         else: plt.show()
