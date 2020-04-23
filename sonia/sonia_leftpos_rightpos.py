@@ -24,6 +24,8 @@ class SoniaLeftposRightpos(Sonia):
         Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,vj=vj)
         self.max_depth = max_depth
         self.max_L = max_L
+        self.include_indep_genes=include_indep_genes
+        self.include_joint_genes=include_joint_genes
 
         if any([x is not None for x in [load_dir, feature_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)

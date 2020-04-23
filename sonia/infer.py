@@ -60,6 +60,7 @@ def main():
     parser.add_option('--epochs', type='int', default = 30, dest='epochs' ,help='number of epochs for inference, default is 30')
     parser.add_option('--batch_size', type='int', default = 5000, dest='batch_size' ,help='size of batch for the stochastic gradient descent')
     parser.add_option('--validation_split', type='float', default = 0.2, dest='validation_split' ,help='fraction of sequences used for validation.')
+    parser.add_option('--independent_genes', '--include_indep_genes', action='store_true', dest='independent_genes', default=False, help='Independent gene selection factors q_v*q_j. Deafult is joint q_vj')
 
     #location of seqs
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
@@ -97,9 +98,12 @@ def main():
     default_models['mouseTRB'] = [os.path.join(main_folder, 'default_models', 'mouse_T_beta'), 'VDJ']
     default_models['humanIGH'] = [os.path.join(main_folder, 'default_models', 'human_B_heavy'), 'VDJ']
 
-    #if np.sum([1 for x in ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])>0:
-    #    print ('error, custom generative model not yet implemented')
-    #    return
+    if options.independent_genes:
+        independent_genes=True
+        joint_genes=False
+    else:
+        independent_genes=False
+        joint_genes=True
 
     num_models_specified = sum([1 for x in list(default_models.keys()) + ['vj_model_folder', 'vdj_model_folder'] if getattr(options, x)])
     recompute_productive_norm=False
@@ -435,9 +439,19 @@ def main():
 
         # choose sonia model type
         if options.model_type=='leftright': 
-            sonia_model=SoniaLeftposRightpos(data_seqs=data_seqs,gen_seqs=gen_seqs,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model=SoniaLeftposRightpos(data_seqs=data_seqs,
+                                             gen_seqs=gen_seqs,
+                                             custom_pgen_model=model_folder,
+                                             vj=recomb_type == 'VJ',
+                                             include_joint_genes=joint_genes,
+                                             include_indep_genes=independent_genes)
         elif options.model_type=='lengthpos':
-            sonia_model=SoniaLengthPos(data_seqs=data_seqs,gen_seqs=gen_seqs,custom_pgen_model=model_folder,vj=recomb_type == 'VJ')
+            sonia_model=SoniaLengthPos(data_seqs=data_seqs,
+                                       gen_seqs=gen_seqs,
+                                       custom_pgen_model=model_folder,
+                                       vj=recomb_type == 'VJ',
+                                       include_joint_genes=joint_genes,
+                                       include_indep_genes=independent_genes)
         else:
             print('ERROR: choose a model between leftright or lengthpos')
 

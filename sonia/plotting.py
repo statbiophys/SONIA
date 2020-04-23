@@ -305,20 +305,35 @@ class Plotter(object):
         """        
         initial=np.array([s[0][0] for s in self.sonia_model.features])
         l_length=len(np.arange(len(initial))[initial=='l'])
-        a_length=len(np.arange(len(initial))[initial=='a'])
-        vj_length=len(np.arange(len(initial))[initial=='v'])
 
-        vj_features=np.array(self.sonia_model.features[-vj_length:])
-        v_genes=[]
-        j_genes=[]
-        for feat in vj_features:
-            if not feat[1] in j_genes: j_genes.append(feat[1])
-            if not feat[0] in v_genes: v_genes.append(feat[0])
+        if self.sonia_model.include_joint_genes: 
+            vj_features=np.array(self.sonia_model.features[initial=='v'])
 
-        vj_model_marginals=np.array(self.sonia_model.model_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
-        vj_data_marginals=np.array(self.sonia_model.data_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
-        vj_gen_marginals=np.array(self.sonia_model.gen_marginals[-vj_length:]).reshape(len(v_genes),len(j_genes))
-        
+            v_genes=[]
+            j_genes=[]
+            for feat in vj_features:
+                if not feat[1] in j_genes: j_genes.append(feat[1])
+                if not feat[0] in v_genes: v_genes.append(feat[0])
+
+            v_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            v_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            v_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            j_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
+            j_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
+            j_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
+        else:
+            v_genes=np.array([g[0] for g in self.sonia_model.features[initial=='v']])
+            j_genes=np.array([g[0] for g in self.sonia_model.features[initial=='j']])
+            v_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v'])
+            v_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v'])
+            v_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v'])
+            j_model_marginals=np.array(self.sonia_model.model_marginals[initial=='j'])
+            j_data_marginals=np.array(self.sonia_model.data_marginals[initial=='j'])
+            j_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='j'])
+
+
+
+            
         fig=plt.figure(figsize=(16,4))
         plt.subplot(121)
         plt.plot(np.arange(l_length),self.sonia_model.model_marginals[:l_length],label='POST marginals',alpha=0.9)
@@ -330,10 +345,10 @@ class Plotter(object):
         plt.legend()
         plt.title('CDR3 LENGTH DISTRIBUTIONS',fontsize=20)
         plt.subplot(122)
-        order=np.argsort(vj_model_marginals.mean(axis=0))[::-1]
-        plt.scatter(np.array(j_genes)[order],vj_model_marginals.sum(axis=0)[order],label='POST marginals',alpha=0.9)
-        plt.scatter(np.array(j_genes)[order],vj_data_marginals.sum(axis=0)[order],label='DATA marginals',alpha=0.9)
-        plt.scatter(np.array(j_genes)[order],vj_gen_marginals.sum(axis=0)[order],label='GEN marginals',alpha=0.9)
+        order=np.argsort(j_model_marginals)[::-1]
+        plt.scatter(np.array(j_genes)[order],j_model_marginals[order],label='POST marginals',alpha=0.9)
+        plt.scatter(np.array(j_genes)[order],j_data_marginals[order],label='DATA marginals',alpha=0.9)
+        plt.scatter(np.array(j_genes)[order],j_gen_marginals[order],label='GEN marginals',alpha=0.9)
 
         plt.xticks(rotation='vertical')
         plt.grid()
@@ -344,10 +359,10 @@ class Plotter(object):
             fig.savefig(save_name.split('.')[0]+'_jl.'+save_name.split('.')[1])
 
         fig=plt.figure(figsize=(16,4))
-        order=np.argsort(vj_model_marginals.mean(axis=1))[::-1]
-        plt.scatter(np.array(v_genes)[order],vj_model_marginals.sum(axis=1)[order],label='POST marginals',alpha=0.9)
-        plt.scatter(np.array(v_genes)[order],vj_data_marginals.sum(axis=1)[order],label='DATA marginals',alpha=0.9)
-        plt.scatter(np.array(v_genes)[order],vj_gen_marginals.sum(axis=1)[order],label='GEN marginals',alpha=0.9)
+        order=np.argsort(v_model_marginals)[::-1]
+        plt.scatter(np.array(v_genes)[order],v_model_marginals[order],label='POST marginals',alpha=0.9)
+        plt.scatter(np.array(v_genes)[order],v_data_marginals[order],label='DATA marginals',alpha=0.9)
+        plt.scatter(np.array(v_genes)[order],v_gen_marginals[order],label='GEN marginals',alpha=0.9)
 
         plt.xticks(rotation='vertical')
         plt.grid()
@@ -407,13 +422,13 @@ class Plotter(object):
             self.sonia_model.energies_data=self.sonia_model.compute_energy(self.sonia_model.data_seq_features)+np.log(self.sonia_model.Z)
 
         fig=plt.figure(figsize=(8,8))
-        binning=np.logspace(-3,3,100)
+        binning=np.logspace(-11,5,300)
         a,b=np.histogram(np.exp(-self.sonia_model.energies_gen),binning,density=True)
         c,d=np.histogram(np.exp(-self.sonia_model.energies_data),binning,density=True)
         plt.plot([-1,1000],[-1,1000],c='k')
-        plt.xlim([0.001,500])
-        plt.ylim([0.001,500])
-        plt.plot(binning[:-1],c/(np.array(a)+1e-30),c='r',linewidth=3,alpha=0.9)
+        plt.xlim([0.001,200])
+        plt.ylim([0.001,200])
+        plt.plot(binning[:-1],np.array(c+1e-30)/np.array(a+1e-30),c='r',linewidth=3,alpha=0.9)
         plt.xscale('log')
         plt.yscale('log')
         plt.xticks(fontsize=20)
