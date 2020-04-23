@@ -148,8 +148,8 @@ class Sonia(object):
         self.vj=vj
         if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda']: self.vj=True
 
-        norms={'human_T_beta':0.24566713516135608,'human_T_alpha':0.2877415063096418,'human_B_heavy': 0.15107851669614455, 
-                'human_B_lambda':0.2948949972739931, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.27744730165886944}
+        norms={'human_T_beta':0.2442847269027897,'human_T_alpha':0.2847166577727317,'human_B_heavy': 0.1499265655936305, 
+                'human_B_lambda':0.29489499727399304, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.2727148540013573}
         self.norm_productive=norms[self.chain_type]
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
