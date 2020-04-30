@@ -9,6 +9,7 @@ import os
 import multiprocessing as mp
 import olga.load_model as olga_load_model
 import olga.generation_probability as pgen
+from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals
 
 class EvaluateModel(object):
     """Class used to evaluate sequences with the sonia model: Ppost=Q*Pgen
@@ -98,7 +99,7 @@ class EvaluateModel(object):
         seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs] #find seq features
         energies =self.sonia_model.compute_energy(seq_features) # compute energies
         Q= np.exp(-energies)/self.sonia_model.Z # compute Q
-        pgens=np.array(compute_all_pgens(seqs,self.pgen_model,self.processes,self.include_genes))/self.sonia_model.norm_productive # compute pgen
+        pgens=self.compute_all_pgens(seqs)/self.sonia_model.norm_productive # compute pgen
         pposts=pgens*Q # compute ppost
 
         return Q, pgens, pposts
@@ -123,40 +124,139 @@ class EvaluateModel(object):
 
         return np.exp(-energies)/self.sonia_model.Z
 
-# some parallel utils for pgen computation
-def compute_pgen_expand(x):
-    return x[1].compute_aa_CDR3_pgen(x[0][0],x[0][1],x[0][2])
+    def joint_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False):
+        '''Returns joint marginals P(i,j) with i and j features of sonia (l3, aA6, etc..), index of features attribute is preserved.
+           Matrix is upper-triangular.
 
-def compute_pgen_expand_novj(x):
-    return x[1].compute_aa_CDR3_pgen(x[0][0])
+        Parameters
+        ----------
+        features: list
+            custom feature list 
+        seq_model_features: list
+            encoded sequences
+        seqs: list
+            seqs to encode.
+        use_flat_distribution: bool
+            for data and generated seqs is True, for model is False (weights with Q)
 
-def compute_all_pgens(seqs,model=None,processes=None,include_genes=True):
-    '''Compute Pgen of sequences using OLGA in parallel
+        Returns
+        -------
+        joint_marginals: array
+            matrix (i,j) of joint marginals
 
-    Parameters
-    ----------
-    model: object
-        olga model for evaluation of pgen.
-    processes: int
-        number of parallel processes (default all).
-    include_genes: bool
-        condition of v,j usage
+        '''
 
-    Returns
-    -------
-    pgens: array
-        generation probabilities of the sequences.
+        if seq_model_features is None:  # if model features are not given
+            if seqs is not None:  # if sequences are given, get model features from them
+                seq_model_features = [self.sonia_model.find_seq_features(seq) for seq in seqs]
+            else:   # if no sequences are given, sequences features is empty
+                seq_model_features = []
 
-    '''
+        if len(seq_model_features) == 0:  # if no model features are given, return empty array
+            return np.array([])
 
-    final_models = [model for i in range(len(seqs))]    # every process needs to access this vector.
-    pool = mp.Pool(processes=processes)
+        if features is not None and seqs is not None:  # if a different set of features for the marginals is given
+            seq_compute_features = [self.sonia_model.find_seq_features(seq, features = features) for seq in seqs]
+        else:  # if no features or no sequences are provided, compute marginals using model features
+            seq_compute_features = seq_model_features
+            features = self.sonia_model.features
+        l=len(features)
+        two_points_marginals=np.zeros((l,l)) 
+        n=len(seq_model_features)
+        procs = mp.cpu_count()
+        sizeSegment = int(n/procs)
+        
+        if not use_flat_distribution:
+            energies = self.sonia_model.compute_energy(seq_model_features)
+            Qs= np.exp(-energies)
+        else:
+            Qs=np.ones(len(seq_compute_features))
+            
+        # Create size segments list
+        jobs = []
+        for i in range(0, procs):
+            jobs.append([seq_model_features[i*sizeSegment+1:(i+1)*sizeSegment],Qs[i*sizeSegment+1:(i+1)*sizeSegment],np.zeros((l,l))])
 
-    if include_genes:
-        f=pool.map(compute_pgen_expand, zip(seqs,final_models))
-        pool.close()
-        return f
-    else:
-        f=pool.map(compute_pgen_expand_novj, zip(seqs,final_models))
-        pool.close()
-        return f
+        pool = mp.Pool(procs).map(partial_joint_marginals, jobs)
+
+        Z=np.array(pool)[:,1].sum()
+        marg=np.array(pool)[:,0]
+        for m in marg: two_points_marginals=two_points_marginals+m
+        two_points_marginals= two_points_marginals/Z
+        return two_points_marginals
+    
+    def joint_marginals_independent(self,marginals):
+        '''Returns independent joint marginals P(i,j)=P(i)*P(j) with i and j features of sonia (l3, aA6, etc..), index of features attribute is preserved.
+        Matrix is upper-triangular.
+
+        Parameters
+        ----------
+        marginals: list
+            marginals.
+
+        Returns
+        -------
+        joint_marginals: array
+            matrix (i,j) of joint marginals
+
+        '''
+
+        joint_marginals=np.zeros((len(marginals),len(marginals)))
+        for i in range(len(marginals)):
+            for j in range(len(marginals)):
+                if i>j:marginals[i,j]:joint_marginals[i,j]=marginals[i]*marginals[j]
+                else: joint_marginals[j,i]=marginals[i]*marginals[j]
+        return joint_marginals    
+
+    def compute_joint_marginals(self):
+        '''Computes joint marginals for all.
+
+        Attributes Set
+        -------
+        gen_marginals_two: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        data_marginals_two: array
+            matrix (i,j) of joint marginals for data
+        model_marginals_two: array
+            matrix (i,j) of joint marginals for post-selection distribution
+        gen_marginals_two_independent: array
+            matrix (i,j) of independent joint marginals for pre-selection distribution
+        data_marginals_two_independent: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        model_marginals_two_independent: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        '''
+
+        self.gen_marginals_two = self.joint_marginals(seq_model_features = self.sonia_model.gen_seq_features, use_flat_distribution = True)
+        self.data_marginals_two = self.joint_marginals(seq_model_features = self.sonia_model.data_seq_features, use_flat_distribution = True)
+        self.model_marginals_two = self.joint_marginals(seq_model_features = self.sonia_model.gen_seq_features)
+        self.gen_marginals_two_independent = self.joint_marginals_independent(self.sonia_model.gen_marginals)
+        self.data_marginals_two_independent = self.joint_marginals_independent(self.sonia_model.data_marginals)
+        self.model_marginals_two_independent = self.joint_marginals_independent(self.sonia_model.model_marginals)
+
+    def compute_all_pgens(self,seqs):
+        '''Compute Pgen of sequences using OLGA in parallel
+
+        Parameters
+        ----------
+        seqs: list
+            list of sequences to evaluate.
+
+        Returns
+        -------
+        pgens: array
+            generation probabilities of the sequences.
+
+        '''
+
+        final_models = [self.pgen_model for i in range(len(seqs))]    # every process needs to access this vector.
+        pool = mp.Pool(processes=self.processes)
+
+        if self.include_genes:
+            f=pool.map(compute_pgen_expand, zip(seqs,final_models))
+            pool.close()
+            return np.array(f)
+        else:
+            f=pool.map(compute_pgen_expand_novj, zip(seqs,final_models))
+            pool.close()
+            return np.array(f)

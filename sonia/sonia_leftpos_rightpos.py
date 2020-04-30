@@ -7,7 +7,7 @@ from __future__ import division,absolute_import
 import os
 import numpy as np
 from sonia.sonia import Sonia
-from olga.utils import gene_to_num_str
+from sonia.utils import gene_to_num_str
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -66,10 +66,10 @@ class SoniaLeftposRightpos(Sonia):
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
             if include_indep_genes:
-                features += [[v] for v in set([self.gene_to_num_str(genV[0],'V') for genV in genomic_data.genV])]
-                features += [[j] for j in set([self.gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
+                features += [[v] for v in set([gene_to_num_str(genV[0],'V') for genV in genomic_data.genV])]
+                features += [[j] for j in set([gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
             if include_joint_genes:
-                features += [[v, j] for v in set([self.gene_to_num_str(genV[0],'V') for genV in genomic_data.genV]) for j in set([self.gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
+                features += [[v, j] for v in set([gene_to_num_str(genV[0],'V') for genV in genomic_data.genV]) for j in set([gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
 
         self.update_model(add_features=features)
 
@@ -107,9 +107,9 @@ class SoniaLeftposRightpos(Sonia):
             j_genes += [gene.split('*')[0].split('-')[0] for gene in seq[1:] if 'j' in gene.lower()]
 
             try:
-                seq_feature_lsts += [[self.gene_to_num_str(gene,'V')] for gene in v_genes]
-                seq_feature_lsts += [[self.gene_to_num_str(gene,'J')] for gene in j_genes]
-                seq_feature_lsts += [[self.gene_to_num_str(v_gene,'V'), self.gene_to_num_str(j_gene,'J')] for v_gene in v_genes for j_gene in j_genes]
+                seq_feature_lsts += [[gene_to_num_str(gene,'V')] for gene in v_genes]
+                seq_feature_lsts += [[gene_to_num_str(gene,'J')] for gene in j_genes]
+                seq_feature_lsts += [[gene_to_num_str(v_gene,'V'), gene_to_num_str(j_gene,'J')] for v_gene in v_genes for j_gene in j_genes]
             except ValueError:
                 pass
             seq_features = list(set([self.feature_dict[tuple(f)] for f in seq_feature_lsts if tuple(f) in self.feature_dict]))

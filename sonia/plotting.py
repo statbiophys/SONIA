@@ -343,7 +343,7 @@ class Plotter(object):
         plt.xticks(rotation='vertical')
         plt.grid()
         plt.legend()
-        plt.title('CDR3 LENGTH DISTRIBUTIONS',fontsize=20)
+        plt.title('CDR3 LENGTH DISTRIBUTION',fontsize=20)
         plt.subplot(122)
         order=np.argsort(j_model_marginals)[::-1]
         plt.scatter(np.array(j_genes)[order],j_model_marginals[order],label='POST marginals',alpha=0.9)
@@ -353,7 +353,7 @@ class Plotter(object):
         plt.xticks(rotation='vertical')
         plt.grid()
         plt.legend()
-        plt.title('J USAGE DISTRIBUTIONS',fontsize=20)
+        plt.title('J USAGE DISTRIBUTION',fontsize=20)
         plt.tight_layout()
         if save_name is not None:
             fig.savefig(save_name.split('.')[0]+'_jl.'+save_name.split('.')[1])
@@ -367,7 +367,7 @@ class Plotter(object):
         plt.xticks(rotation='vertical')
         plt.grid()
         plt.legend()
-        plt.title('V USAGE DISTRIBUTIONS',fontsize=20)
+        plt.title('V USAGE DISTRIBUTION',fontsize=20)
         plt.tight_layout()        
         if save_name is not None:
             fig.savefig(save_name.split('.')[0]+'_v.'+save_name.split('.')[1])

@@ -11,7 +11,6 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 from tensorflow.keras.models import Model,load_model
-from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Input,Dense,Lambda
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.regularizers import l2
@@ -377,9 +376,13 @@ class Sonia(object):
             self.X=self.X[shuffle]
             self.Y=self.Y[shuffle]
 
-        computeL1_dist = computeL1(self)
-        if monitor:callbacks = [computeL1_dist]
+        
+        if monitor:
+            from sonia.utils import computeL1
+            computeL1_dist = computeL1(self)
+            callbacks = [computeL1_dist]
         else: callbacks=[]
+        
         self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
                                           validation_split=validation_split, verbose=verbose, callbacks=callbacks)
         if monitor:
@@ -748,56 +751,3 @@ class Sonia(object):
             self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         elif verbose:
             print('Cannot find model file --  no model parameters loaded.')
-
-    def gene_to_num_str(self,gene_name, gene_type):
-        """Strips excess gene name info to number string.
-
-        Parameters
-        ----------
-        gene_name : str
-            Gene or allele name
-        gene_type : char
-            Genomic cassette type. (i.e. V, D, or J)
-        Returns
-        -------
-        num_str : str
-            Reduced gene or allele name with leading zeros and excess
-            characters removed.
-
-        """
-        # get rid of allele and root
-        num_strs = gene_name.split('*')[0].lower().split(gene_type.lower())[1:]
-        # simplify numbering
-        num_strs = ['-'.join([g.lstrip('0') for g in n.split('-')]) for n in num_strs]
-        return gene_type.lower() + ''.join(num_strs)
-        
-class computeL1(Callback):
-            
-            def __init__(self, sonia):
-                self.data_marginals = sonia.data_marginals
-                self.sonia=sonia
-                self.len_features=len(sonia.features)
-                self.gen_enc = self.sonia.X[self.sonia.Y.astype(np.bool)]
-                self.encoded_data=self.sonia._encode_data(self.gen_enc)
-                self.previous_loss=1e8
-                
-            def on_train_begin(self, logs={}):
-                self.L1_history = []
-                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
-                self.weights_cpt=self.model.get_weights()
-                print("Initial L1 dist: ", self.L1_history[-1])
-                
-            def return_model_marginals(self):
-                marginals = np.zeros(self.len_features)
-                Qs = np.exp(-self.model.predict(self.encoded_data)[:, 0])  
-                for i in range(len(self.gen_enc)):
-                    marginals[self.gen_enc[i]] += Qs[i]
-                return marginals / np.sum(Qs)
-            def on_epoch_end(self, epoch, logs={}):
-                curr_loss = logs.get('loss')
-                curr_loss_val = logs.get('val_loss')
-                if self.previous_loss > curr_loss_val:
-                    self.previous_loss=curr_loss_val
-                    self.weights_cpt=self.model.get_weights()
-                self.L1_history.append(np.sum(np.abs(self.return_model_marginals() - self.data_marginals)))
-                print("epoch = ", epoch, " loss = ", np.around(curr_loss, decimals=4) , " val_loss = ", np.around(curr_loss_val, decimals=4), " L1 dist: ", np.around(self.L1_history[-1], decimals=4))
