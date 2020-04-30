@@ -24,11 +24,12 @@ class SoniaLengthPos(Sonia):
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None,
                  min_L = 4, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,vj=False):
 
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_re,vj=vj)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,vj=vj)
         self.min_L = min_L
         self.max_L = max_L
         self.include_indep_genes=include_indep_genes
         self.include_joint_genes=include_joint_genes
+        self.custom_pgen_model=custom_pgen_model
         if any([x is not None for x in [load_dir, feature_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file)
         else:

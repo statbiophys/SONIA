@@ -546,7 +546,11 @@ class Sonia(object):
 
         #Load generative model
         if custom_model_folder is None:
-            main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
+            try:
+                if self.custom_pgen_model is None: main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
+                else: main_folder=self.custom_pgen_model
+            except:
+                main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
         else:
             main_folder = custom_model_folder
 

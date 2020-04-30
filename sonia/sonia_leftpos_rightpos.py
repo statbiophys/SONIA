@@ -26,7 +26,7 @@ class SoniaLeftposRightpos(Sonia):
         self.max_L = max_L
         self.include_indep_genes=include_indep_genes
         self.include_joint_genes=include_joint_genes
-
+        self.custom_pgen_model=custom_pgen_model
         if any([x is not None for x in [load_dir, feature_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
         else:
