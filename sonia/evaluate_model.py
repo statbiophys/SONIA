@@ -175,7 +175,7 @@ class EvaluateModel(object):
         # Create size segments list
         jobs = []
         for i in range(0, procs):
-            jobs.append([seq_model_features[i*sizeSegment+1:(i+1)*sizeSegment],Qs[i*sizeSegment+1:(i+1)*sizeSegment],np.zeros((l,l))])
+            jobs.append([seq_model_features[i*sizeSegment:(i+1)*sizeSegment],Qs[i*sizeSegment:(i+1)*sizeSegment],np.zeros((l,l))])
 
         pool = mp.Pool(procs).map(partial_joint_marginals, jobs)
 

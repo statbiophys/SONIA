@@ -51,7 +51,7 @@ def partial_joint_marginals(args):
         for i,j in list(itertools.product(np.array(seq_features).astype(np.int), np.array(seq_features).astype(np.int))):
             if i>j:marginals[i,j] += Q
             else: marginals[j,i] += Q
-        Z += Q
+            Z += Q
     return [marginals,Z]
 
 class computeL1(Callback):
