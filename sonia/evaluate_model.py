@@ -204,8 +204,10 @@ class EvaluateModel(object):
         joint_marginals=np.zeros((len(marginals),len(marginals)))
         for i in range(len(marginals)):
             for j in range(len(marginals)):
-                if i>j:joint_marginals[i,j]=marginals[i]*marginals[j]
-                else: joint_marginals[j,i]=marginals[i]*marginals[j]
+                if i>j:
+                    joint_marginals[i,j]=marginals[i]*marginals[j]
+                else: 
+                    joint_marginals[j,i]=marginals[i]*marginals[j]
         return joint_marginals    
 
     def compute_joint_marginals(self):
