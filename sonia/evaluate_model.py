@@ -10,7 +10,7 @@ import multiprocessing as mp
 import olga.load_model as olga_load_model
 import olga.generation_probability as pgen
 from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals
-
+import itertools
 class EvaluateModel(object):
     """Class used to evaluate sequences with the sonia model: Ppost=Q*Pgen
 
@@ -202,13 +202,12 @@ class EvaluateModel(object):
         '''
 
         joint_marginals=np.zeros((len(marginals),len(marginals)))
-        for i in range(len(marginals)):
-            for j in range(len(marginals)):
-                if i>j:
-                    joint_marginals[i,j]=marginals[i]*marginals[j]
-                else: 
-                    joint_marginals[j,i]=marginals[i]*marginals[j]
-        return joint_marginals    
+        for i,j in itertools.combinations(np.arange(len(marginals)),2):
+            if i>j:
+                joint_marginals[i,j]=marginals[i]*marginals[j]
+            else: 
+                joint_marginals[j,i]=marginals[i]*marginals[j]
+        return joint_marginals
 
     def compute_joint_marginals(self):
         '''Computes joint marginals for all.

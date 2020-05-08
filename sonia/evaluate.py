@@ -31,7 +31,6 @@ import olga.load_model as olga_load_model
 import olga.generation_probability as generation_probability
 import numpy as np
 import time
-from sonia.evaluate_model import compute_all_pgens
 from tqdm import tqdm
 import multiprocessing as mp
 
@@ -62,6 +61,8 @@ def main():
     parser.add_option('--ppost', '--Ppost', action='store_true', dest='ppost', default=False, help='compute Ppost, also computes pgen and Q')
     parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='compute pgen')
     parser.add_option('--Q', '--selection_factor', action='store_true', dest='Q', default=False, help='compute Q')
+    parser.add_option('--recompute_productive_norm', '--compute_norm', action='store_true', dest='recompute_productive_norm', default=False, help='recompute productive normalization')
+
     parser.add_option('-s','--chunk_size', type='int',metavar='N', dest='chunck_size', default = mp.cpu_count()*int(5e2), help='Number of sequences to evaluate at each iteration')
 
     #vj genes
@@ -227,7 +228,10 @@ def main():
     
     # choose sonia model type
     sonia_model=SoniaLeftposRightpos(feature_file=os.path.join(model_folder,'features.tsv'),log_file=os.path.join(model_folder,'log.txt'),vj=recomb_type == 'VJ',custom_pgen_model=model_folder)
-    
+    if options.recompute_productive_norm: 
+        print('Recompute productive normalization.')
+        sonia_model.norm_productive=pgen_model.compute_regex_CDR3_template_pgen('CX{0,}')
+
     # load Evaluate model class
     ev=EvaluateModel(sonia_model,custom_olga_model=pgen_model)
 
@@ -399,7 +403,7 @@ def main():
                         Q=ev.evaluate_selection_factors(t)
                         for i in range(len(Q)):file.write(str(Q[i])+'\n')
                     elif options.pgen:
-                        pgens=compute_all_pgens(t,model=pgen_model)
+                        pgens=ev.compute_all_pgens(t)
                         for i in range(len(pgens)):file.write(str(pgens[i])+'\n')
 
         else: #print to stdout
@@ -413,7 +417,7 @@ def main():
                     print ('Q')
                     print(Q)
                 elif options.pgen:
-                    pgens=compute_all_pgens(t,model=pgen_model)
+                    pgens=ev.compute_all_pgens(t)
                     print ('Pgen')
                     print(pgens)
                 else:
