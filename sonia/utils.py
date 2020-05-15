@@ -26,11 +26,11 @@ def gene_to_num_str(gene_name, gene_type):
         characters removed.
 
     """
-    # get rid of allele and root
-    num_strs = gene_name.split('*')[0].lower().split(gene_type.lower())[1:]
-    # simplify numbering
-    num_strs = ['-'.join([g.lstrip('0') for g in n.split('-')]) for n in num_strs]
-    return gene_type.lower() + ''.join(num_strs)
+    # get rid of allele
+    gene_name=gene_name.split('*')[0]
+    num_str = gene_type.lower().join([g.lstrip('0') for g in gene_name.lower().split(gene_type.lower())[1:]])
+    num_str = '-'.join([g.lstrip('0') for g in num_str.split('-')])
+    return gene_type.lower() + num_str
 
 def compute_pgen_expand(x):
     # compute pgen conditioned on gene usage
