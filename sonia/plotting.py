@@ -125,8 +125,8 @@ class Plotter(object):
         
         fig.add_subplot(122)
         plt.title('Likelihood', fontsize = 15)
-        plt.plot(self.sonia_model.learning_history.history['_likelihood'],label='train',c='k')
-        plt.plot(self.sonia_model.learning_history.history['val__likelihood'],label='validation',c='r')
+        plt.plot(self.sonia_model.likelihood_train,label='train',c='k')
+        plt.plot(self.sonia_model.likelihood_test,label='validation',c='r')
         plt.legend(fontsize = 10)
         plt.xlabel('Iteration', fontsize = 13)
         plt.ylabel('Likelihood', fontsize = 13)
@@ -307,7 +307,7 @@ class Plotter(object):
         l_length=len(np.arange(len(initial))[initial=='l'])
 
         if self.sonia_model.include_joint_genes: 
-            vj_features=np.array(self.sonia_model.features[initial=='v'])
+            vj_features=np.array(self.sonia_model.features)[initial=='v']
 
             v_genes=[]
             j_genes=[]
@@ -315,21 +315,21 @@ class Plotter(object):
                 if not feat[1] in j_genes: j_genes.append(feat[1])
                 if not feat[0] in v_genes: v_genes.append(feat[0])
 
-            v_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
-            v_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
-            v_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=1)
-            j_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
-            j_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
-            j_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v']).reshape(len(v_genes),len(j_genes)).sum(axis=0)
+            v_model_marginals=np.array(self.sonia_model.model_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            v_data_marginals=np.array(self.sonia_model.data_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            v_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=1)
+            j_model_marginals=np.array(self.sonia_model.model_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=0)
+            j_data_marginals=np.array(self.sonia_model.data_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=0)
+            j_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=0)
         else:
-            v_genes=np.array([g[0] for g in self.sonia_model.features[initial=='v']])
-            j_genes=np.array([g[0] for g in self.sonia_model.features[initial=='j']])
-            v_model_marginals=np.array(self.sonia_model.model_marginals[initial=='v'])
-            v_data_marginals=np.array(self.sonia_model.data_marginals[initial=='v'])
-            v_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='v'])
-            j_model_marginals=np.array(self.sonia_model.model_marginals[initial=='j'])
-            j_data_marginals=np.array(self.sonia_model.data_marginals[initial=='j'])
-            j_gen_marginals=np.array(self.sonia_model.gen_marginals[initial=='j'])
+            v_genes=np.array([g[0] for g in np.array(self.sonia_model.features)[initial=='v']])
+            j_genes=np.array([g[0] for g in np.array(self.sonia_model.feature)[initial=='j']])
+            v_model_marginals=np.array(self.sonia_model.model_marginals)[initial=='v']
+            v_data_marginals=np.array(self.sonia_model.data_marginals)[initial=='v']
+            v_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='v']
+            j_model_marginals=np.array(self.sonia_model.model_marginals)[initial=='j']
+            j_data_marginals=np.array(self.sonia_model.data_marginals)[initial=='j']
+            j_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='j']
 
 
 

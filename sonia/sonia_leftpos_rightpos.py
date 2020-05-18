@@ -208,8 +208,9 @@ class SoniaLeftposRightpos(Sonia):
             with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
                 L1_file.write('Z ='+str(self.Z)+'\n')
                 L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
-                L1_file.write('L1 history =\n')
-                L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
+                L1_file.write('likelihood_train,likelihood_test\n')
+                for i in range(len(self.likelihood_train)):
+                    L1_file.write(str(self.likelihood_train[i])+','+str(self.likelihood_test[i])+'\n')
 
         if 'model' in attributes_to_save:
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)

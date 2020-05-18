@@ -131,6 +131,8 @@ class Sonia(object):
         self.l2_reg = l2_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
+        self.likelihood_train=[]
+        self.likelihood_test=[]
 
         self.gamma=1.
         self.Z=1.
@@ -385,6 +387,9 @@ class Sonia(object):
         
         self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
                                           validation_split=validation_split, verbose=verbose, callbacks=callbacks)
+        self.likelihood_train=self.learning_history.history['_likelihood']
+        self.likelihood_test=self.learning_history.history['val__likelihood']
+
         if monitor:
             self.L1_converge_history = computeL1_dist.L1_history
             self.model.set_weights(computeL1_dist.weights_cpt)
@@ -632,8 +637,9 @@ class Sonia(object):
             with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
                 L1_file.write('Z ='+str(self.Z)+'\n')
                 L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
-                L1_file.write('L1 history =\n')
-                L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
+                L1_file.write('likelihood_train,likelihood_test\n')
+                for i in range(len(self.likelihood_train)):
+                    L1_file.write(str(self.likelihood_train[i])+','+str(self.likelihood_test[i])+'\n')
 
         if 'model' in attributes_to_save:
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
@@ -704,9 +710,14 @@ class Sonia(object):
                 for i,line in enumerate(L1_file):
                     if i==0: self.Z=float(line.strip().split('=')[1])
                     elif i==1: self.norm_productive=float(line.strip().split('=')[1])
-                    elif len(line.strip())>0 and i>2: self.L1_converge_history.append(float(line.strip()))
+                    elif len(line.strip())>0 and i>2: 
+                        self.likelihood_train.append(float(line.strip().split(',')[0]))
+                        self.likelihood_test.append(float(line.strip().split(',')[1]))
+
         else:
             self.L1_converge_history = []
+            self.likelihood_train= []
+            self.likelihood_test= []
             if verbose: print('Cannot find log.txt  --  no norms and convergence loaded.')
 
         return None

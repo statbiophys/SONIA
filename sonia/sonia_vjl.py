@@ -183,6 +183,8 @@ class SoniaVJL(Sonia):
             
             self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
                                               validation_split=validation_split, verbose=verbose, callbacks=callbacks)
+            self.likelihood_train=self.learning_history.history['_likelihood']
+            self.likelihood_test=self.learning_history.history['val__likelihood']
             if monitor:
                 self.L1_converge_history = computeL1_dist.L1_history
                 self.model.set_weights(computeL1_dist.weights_cpt)
@@ -269,8 +271,9 @@ class SoniaVJL(Sonia):
             with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
                 L1_file.write('Z ='+str(self.Z)+'\n')
                 L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
-                L1_file.write('L1 history =\n')
-                L1_file.write('\n'.join([str(x) for x in self.L1_converge_history]))
+                L1_file.write('likelihood_train,likelihood_test\n')
+                for i in range(len(self.likelihood_train)):
+                    L1_file.write(str(self.likelihood_train[i])+','+str(self.likelihood_test[i])+'\n')
 
         if 'model' in attributes_to_save:
             model_energy_dict = self.get_energy_parameters(return_as_dict = True)
