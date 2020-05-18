@@ -323,7 +323,7 @@ class Plotter(object):
             j_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='v'].reshape(len(v_genes),len(j_genes)).sum(axis=0)
         else:
             v_genes=np.array([g[0] for g in np.array(self.sonia_model.features)[initial=='v']])
-            j_genes=np.array([g[0] for g in np.array(self.sonia_model.feature)[initial=='j']])
+            j_genes=np.array([g[0] for g in np.array(self.sonia_model.features)[initial=='j']])
             v_model_marginals=np.array(self.sonia_model.model_marginals)[initial=='v']
             v_data_marginals=np.array(self.sonia_model.data_marginals)[initial=='v']
             v_gen_marginals=np.array(self.sonia_model.gen_marginals)[initial=='v']
