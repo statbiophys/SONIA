@@ -341,7 +341,6 @@ def main():
                     break
 
         data_seqs=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
-        np.random.shuffle(data_seqs)
         #define number of gen_seqs:
         gen_seqs=[]
         n_gen_seqs=options.n_gen_seqs
@@ -433,7 +432,6 @@ def main():
                         return -1
 
             gen_seqs=[[seqs[i],V_usage_masks[i][0],J_usage_masks[i][0]] for i in range(len(seqs))]
-            np.random.shuffle(gen_seqs)
         # combine sequences.
         print('Initialise Model.')
 

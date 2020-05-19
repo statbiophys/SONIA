@@ -598,7 +598,7 @@ class Sonia(object):
         #Add to specified pool(s)
         self.update_model(add_gen_seqs = seqs)
 
-    def save_model(self, save_dir, attributes_to_save = None):
+    def save_model(self, save_dir, attributes_to_save = None,force=True):
         """Saves model parameters and sequences
 
         Parameters
@@ -615,9 +615,10 @@ class Sonia(object):
             attributes_to_save = ['model', 'data_seqs', 'gen_seqs', 'log']
 
         if os.path.isdir(save_dir):
-            if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
-                print('Exiting...')
-                return None
+            if not force:
+                if not input('The directory ' + save_dir + ' already exists. Overwrite existing model (y/n)? ').strip().lower() in ['y', 'yes']:
+                    print('Exiting...')
+                    return None
         else:
             os.mkdir(save_dir)
 
