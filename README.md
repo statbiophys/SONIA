@@ -7,7 +7,7 @@ SONIA is a python 3.6/2.7 software developed to infer selection pressures on fea
 SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence lists of possible V and J genes suspected to be used in the recombination process for this sequence. Its output is selection factors for each amino acid ,(relative) position , CDR3 length combinations, and also for each V and J gene choice. These selection factors can be used to calculate sequence level selection factors which indicate how more or less represented this sequence would be in the selected pool as compared to the the pre-selected pool. These in turn could be used to calculate the probability to observe any sequence after selection and sample from the selected repertoire. 
 
 ## Version
-Latest released version: 0.0.25
+Latest released version: 0.0.26
 
 ## Installation
 SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:

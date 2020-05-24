@@ -64,10 +64,11 @@ def main():
     parser.add_option('--pre', '--pgen', action='store_true', dest='pgen', default=False, help='sample from pre selected repertoire ')
     parser.add_option('--delimiter_out','-d', type='choice', dest='delimiter_out',  choices=['tab', 'space', ',', ';', ':'], help="declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':'")
     parser.add_option('-s','--chunk_size', type='int',metavar='N', dest='chunck_size', default = int(1e3), help='Number of sequences to generate at each iteration')
+    parser.add_option('-r','--rejection_bound', type='int',metavar='N', dest='rejection_bound', default = 10, help='limit above which sequences are always accepted.')
 
     # input output
     parser.add_option('-o', '--outfile', dest = 'outfile_name', metavar='PATH/TO/FILE', help='write CDR3 sequences to PATH/TO/FILE')
-    parser.add_option('-n', '--N', type='int',metavar='N', dest='num_seqs_to_generate', help='Number of sequences to sample from.')
+    parser.add_option('-n', '--N', type='int',metavar='N', dest='num_seqs_to_generate',default=1, help='Number of sequences to sample from.')
 
     (options, args) = parser.parse_args()
 
@@ -163,19 +164,20 @@ def main():
                 if options.pgen:
                     seqs=seq_gen.generate_sequences_pre(num_seqs=t,nucleotide=True)
                 elif options.ppost:
-                    seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True)
+                    seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True,upper_bound=options.rejection_bound)
                 else: 
                     print ('ERROR: give option between --pre or --post')
                     return -1
                 for seq in seqs: file.write(seq[0]+delimiter_out+seq[1]+delimiter_out+seq[2]+delimiter_out+seq[3]+'\n')
        # np.savetxt(options.outfile_name,seqs,fmt='%s')
+
     else: #print to stdout
         to_generate=chuncks(options.num_seqs_to_generate,options.chunck_size)
         for t in to_generate:
             if options.pgen:
                 seqs=seq_gen.generate_sequences_pre(num_seqs=t,nucleotide=True)
             elif options.ppost:
-                seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True)
+                seqs=seq_gen.generate_sequences_post(num_seqs=t,nucleotide=True,upper_bound=options.rejection_bound)
             else:
                 print ('ERROR: give option between --pre or --post')
                 return -1
