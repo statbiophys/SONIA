@@ -79,3 +79,8 @@ print(pgens,pposts,qs)
 ```
 
 Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).
+
+.. toctree::
+   :maxdepth: 2
+
+   sonia_tutorial

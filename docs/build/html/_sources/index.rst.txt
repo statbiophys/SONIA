@@ -64,8 +64,6 @@ Structure
    readme
    commands
    python_usage
-   sonia
+   sonia_tutorial
    license
    help
-
-* :ref:`genindex`

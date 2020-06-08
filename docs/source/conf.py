@@ -39,7 +39,7 @@ release = u'0.0.26'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc','recommonmark','sphinx_markdown_tables',
+    'sphinx.ext.autodoc','recommonmark','sphinx_markdown_tables','nbsphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -25,6 +25,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Sonia package documentation" href="sonia.html" />
+    <link rel="next" title="load lists of sequences with gene specification" href="sonia_tutorial.html" />
     <link rel="prev" title="Command line console scripts" href="commands.html" /> 
 </head>
 
@@ -84,7 +85,13 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Sonia modules in a Python script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sonia.html">Sonia package documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">load lists of sequences with gene specification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#define-and-infer-model">define and infer model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#do-some-plotting">do some plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#Generate-sequences">Generate sequences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#Evaluate-sequences">Evaluate sequences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#some-utils-from-OLGA">some utils from OLGA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#load-default-sonia-models">load default sonia models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
 </ul>
@@ -151,7 +158,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="sonia-modules-in-a-python-script">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="sonia-modules-in-a-python-script">
 <h1>Sonia modules in a Python script<a class="headerlink" href="#sonia-modules-in-a-python-script" title="Permalink to this headline">¶</a></h1>
 <p>In order to incorporate the core algorithm into an analysis pipeline (or to write your own script wrappers) all that is needed is to import the modules. Each module defines some classes that only a few methods get called on.</p>
 <p>The modules are:</p>
@@ -258,6 +289,9 @@ Data and gen files are included in the GitHub repository to demonstrate usage, h
 </pre></div>
 </div>
 <p>Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).</p>
+<p>.. toctree::
+:maxdepth: 2</p>
+<p>sonia_tutorial</p>
 </div>
 
 
@@ -268,7 +302,7 @@ Data and gen files are included in the GitHub repository to demonstrate usage, h
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="sonia.html" class="btn btn-neutral float-right" title="Sonia package documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="sonia_tutorial.html" class="btn btn-neutral float-right" title="load lists of sequences with gene specification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="commands.html" class="btn btn-neutral float-left" title="Command line console scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -25,6 +25,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -81,8 +82,15 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts and Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Using the SONIA modules in a Python script (advanced users)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">load lists of sequences with gene specification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#define-and-infer-model">define and infer model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#do-some-plotting">do some plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#Generate-sequences">Generate sequences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#Evaluate-sequences">Evaluate sequences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#some-utils-from-OLGA">some utils from OLGA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html#load-default-sonia-models">load default sonia models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Need Help?</a></li>
 </ul>
@@ -149,7 +157,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="need-help">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="need-help">
 <h1>Need Help?<a class="headerlink" href="#need-help" title="Permalink to this headline">¶</a></h1>
 <p>Any issues or questions should be addressed to <a class="reference external" href="mailto:zachary&#46;sethna&#37;&#52;&#48;gmail&#46;com">zachary<span>&#46;</span>sethna<span>&#64;</span>gmail<span>&#46;</span>com</a> , <a class="reference external" href="mailto:giulioisac&#37;&#52;&#48;gmail&#46;com">giulioisac<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
 </div>

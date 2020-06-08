@@ -64,5 +64,6 @@ Structure
    readme
    commands
    python_usage
+   sonia_tutorial
    license
    help
