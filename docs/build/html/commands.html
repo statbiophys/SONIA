@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Command line console scripts &mdash; sonia 0.0.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sonia modules in a Python script" href="python_usage.html" />
+    <link rel="prev" title="Directory architecture" href="readme.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sonia
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command line console scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quick-demo">Quick Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#specifying-a-default-v-d-j-model-or-a-custom-model-folder">Specifying a default V(D)J model (or a custom model folder)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#options-common-to-all-commands">Options common to all commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sonia</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Command line console scripts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/commands.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="command-line-console-scripts">
+<h1>Command line console scripts<a class="headerlink" href="#command-line-console-scripts" title="Permalink to this headline">¶</a></h1>
+<p>There are three command line console scripts (the scripts can still be called as executables if SONIA is not installed):</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-evaluate</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-generate</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>generates CDR3 sequences, before (like olga) or after selection</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-infer</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>infers a selection model with respect to a generative V(D)J model</p></li>
+</ul>
+<p>For any of them you can execute with the -h or –help flags to get the options.</p>
+<div class="section" id="quick-demo">
+<h2>Quick Demo<a class="headerlink" href="#quick-demo" title="Permalink to this headline">¶</a></h2>
+<p>After installing SONIA, we offer a quick demonstration of the console scripts. This will demonstrate generating and evaluating sequences and infer a selection model from the default model for human TCR beta chains that ships with SONIA.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-evaluate</span> <span class="pre">--humanTRB</span> <span class="pre">CASSTGNYGAFF</span> <span class="pre">--v_mask</span> <span class="pre">TRBV9</span> <span class="pre">--j_mask</span> <span class="pre">TRBJ1-1</span> <span class="pre">--ppost</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This computes Ppost,Pgen and Q of the TCR CASSTGNYGAFF,TRBV9,TRBJ1-1 (you should get ~1.3e-11, ~9.2e-12 and ~1.4 respectively)</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-generate</span> <span class="pre">--humanTRB</span> <span class="pre">-n</span> <span class="pre">5</span> <span class="pre">--pre</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>Generate 5 human TRB CDR3 sequences from the pre-selection repertoire and print to stdout along with the V and J genes used to generate them.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-generate</span> <span class="pre">--humanTRB</span> <span class="pre">-n</span> <span class="pre">10000</span> <span class="pre">--post</span> <span class="pre">-o</span> <span class="pre">example_seqs.txt</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This generates a file example_seqs.tsv and writes 10000 generated human TRB CDR3 sequences from the post-selection repertoire.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-evaluate</span> <span class="pre">--humanTRB</span> <span class="pre">--ppost</span> <span class="pre">-i</span> <span class="pre">example_seqs.txt</span> <span class="pre">-m</span> <span class="pre">5</span>&#160; <span class="pre">-o</span> <span class="pre">example_evaluation.txt</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This reads in the first 5 sequences from the file we just generated, example_seqs.tsv, evaluates them and writes the results them to the file example_pgens.tsv</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-infer</span> <span class="pre">--humanTRB</span> <span class="pre">-i</span> <span class="pre">example_seqs.txt</span> <span class="pre">-o</span> <span class="pre">sel_model</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This reads in the full file example_seqs.txt, infers a selection model and saves to the folder sel_model</p></li>
+</ul>
+</div>
+<div class="section" id="specifying-a-default-v-d-j-model-or-a-custom-model-folder">
+<h2>Specifying a default V(D)J model (or a custom model folder)<a class="headerlink" href="#specifying-a-default-v-d-j-model-or-a-custom-model-folder" title="Permalink to this headline">¶</a></h2>
+<p>All of the console scripts require specifying a V(D)J model. SONIA ships with 6 default models that can be indicated by flags, or a custom model folder can be indicated.</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>--humanTRA</strong></td>
+<td>Default human T cell alpha chain model (VJ)</td>
+</tr>
+<tr>
+<td><strong>--humanTRB</strong></td>
+<td>Default human T cell beta chain model (VDJ)</td>
+</tr>
+<tr>
+<td><strong>--mouseTRB</strong></td>
+<td>Default mouse T cell beta chain model (VDJ)</td>
+</tr>
+<tr>
+<td><strong>--humanIGH</strong></td>
+<td>Default human B cell heavy chain model (VDJ)</td>
+</tr>
+<tr>
+<td><strong>--humanIGK</strong></td>
+<td>Default human B cell light kappa chain model (VJ)</td>
+</tr>
+<tr>
+<td><strong>--humanIGL</strong></td>
+<td>Default human B cell light lambda chain model (VJ)</td>
+</tr>
+<tr>
+<td><strong>--set_custom_model_VJ</strong> PATH/TO/MODEL_FOLDER/</td>
+<td>Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VJ generative model</td>
+</tr>
+<tr>
+<td><strong>--set_custom_model_VDJ</strong> PATH/TO/MODEL_FOLDER/</td>
+<td>Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VDJ generative model</td>
+</tr>
+</tbody>
+</table><p>Note, if specifying a folder for a custom VJ recombination model
+(e.g. an alpha or light chain model) or a custom VDJ recombination model
+(e.g. a beta or heavy chain model), the folder must contain the following files
+with the exact naming convention:</p>
+<ul class="simple">
+<li><p>model_params.txt</p></li>
+<li><p>model_marginals.txt</p></li>
+<li><p>V_gene_CDR3_anchors.csv (V anchor residue position and functionality file)</p></li>
+<li><p>J_gene_CDR3_anchors.csv (J anchor residue position and functionality file)</p></li>
+<li><p>features.tsv (if you want to load the selection model as well: not required for in the sonia-infer command)</p></li>
+<li><p>log.txt (if you want to load the selection model as well: not required in the sonia-infer command)</p></li>
+</ul>
+<p>The console scripts can only read files of the assumed anchor.csv/<a class="reference external" href="https://github.com/qmarcou/IGoR">IGoR</a> syntaxes. See the default models in the sonia directory for examples.</p>
+</div>
+<div class="section" id="options-common-to-all-commands">
+<h2>Options common to all commands<a class="headerlink" href="#options-common-to-all-commands" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-h, --help</td>
+<td>show command options</td>
+</tr>
+<tr>
+<td>--sonia_model=MODEL_TYPE</td>
+<td>specify model type: leftright or lengthpos. Default is leftright</td>
+</tr>
+<tr>
+<td>-i PATH/TO/FILE, --infile=PATH/TO/FILE</td>
+<td>read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE</td>
+</tr>
+<tr>
+<td>-o PATH/TO/FILE, --outfile=PATH/TO/FILE</td>
+<td>output to PATH/TO/FILE</td>
+</tr>
+<tr>
+<td>--seq_in=INDEX, --seq_index=INDEX</td>
+<td>specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).</td>
+</tr>
+<tr>
+<td>--v_in=INDEX, --v_mask_index=INDEX</td>
+<td>specifies V_masks are found in column INDEX in the input file. Default is 1.</td>
+</tr>
+<tr>
+<td>--j_in=INDEX, --j_mask_index=INDEX</td>
+<td>specifies J_masks are found in column INDEX in the input file. Default is 2.</td>
+</tr>
+<tr>
+<td>-m N, --max_number_of_seqs=N</td>
+<td>read at most N sequences.</td>
+</tr>
+<tr>
+<td>--lines_to_skip=N</td>
+<td>skip the first N lines of the file. Default is 0.</td>
+</tr>
+<tr>
+<td>-d DELIMITER, --delimiter=DELIMITER</td>
+<td>declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: 'tab', 'space', ',', ';', ':'</td>
+</tr>
+<tr>
+<td>--delimiter_out=DELIMITER_OUT</td>
+<td>declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: 'tab', 'space', ',', ';', ':'</td>
+</tr>
+</tbody>
+</table><p>for command specific options use the –help flag.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="python_usage.html" class="btn btn-neutral float-right" title="Sonia modules in a Python script" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="readme.html" class="btn btn-neutral float-left" title="Directory architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Zachary Sethna and Giulio Isacchini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

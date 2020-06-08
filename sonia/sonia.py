@@ -18,7 +18,6 @@ from tensorflow.keras.backend import sum as ksum
 from tensorflow.keras.backend import log as klog
 from tensorflow.keras.backend import exp as kexp
 from tensorflow.keras.backend import clip as kclip
-
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
 from copy import copy
@@ -147,11 +146,12 @@ class Sonia(object):
             return None
         self.chain_type = default_chain_types[chain_type]
         self.vj=vj
-        if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda']: self.vj=True
+        if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda','mouse_T_alpha']: self.vj=True
 
         norms={'human_T_beta':0.2442847269027897,'human_T_alpha':0.2847166577727317,'human_B_heavy': 0.1499265655936305, 
                 'human_B_lambda':0.29489499727399304, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.2727148540013573}
         self.norm_productive=norms[self.chain_type]
+
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
             if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
@@ -527,7 +527,7 @@ class Sonia(object):
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
 
-    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None):
+    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None, add_error=False,custom_error=None):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -542,6 +542,11 @@ class Sonia(object):
             Path to a folder specifying a custom IGoR formatted model to be
             used as a generative model. Folder must contain 'model_params.txt'
             and 'model_marginals.txt'
+        add_error: bool
+            simualate sequencing error: default is false
+        custom_error: int
+            set custom error rate for sequencing error.
+            Default is the one inferred by igor.
 
         Attributes set
         --------------
@@ -551,6 +556,8 @@ class Sonia(object):
             Features gen_seqs have been projected onto.
 
         """
+        from sonia.utils import add_random_error
+        from olga.utils import nt2aa
 
         #Load generative model
         if custom_model_folder is None:
@@ -576,6 +583,17 @@ class Sonia(object):
         if not os.path.isfile(J_anchor_pos_file):
             J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
 
+        with open(params_file_name,'r') as file:
+            sep=0
+            error_rate=''
+            lines=file.read().splitlines()
+            while len(error_rate)<1:
+                error_rate=lines[-1+sep]
+                sep-=1
+
+        if custom_error is None: self.error_rate=float(error_rate)
+        else: self.error_rate=custom_error
+
         if self.vj:
             genomic_data = olga_load_model.GenomicDataVJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
@@ -591,8 +609,8 @@ class Sonia(object):
 
         #Generate sequences
         print('Generate sequences.')
-        seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
-
+        if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
+        else: seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
         if reset_gen_seqs: #reset gen_seqs if needed
             self.gen_seqs = []
         #Add to specified pool(s)

@@ -65,6 +65,7 @@ class SoniaLeftposRightpos(Sonia):
             if self.vj: genomic_data = olga_load_model.GenomicDataVJ()
             else: genomic_data = olga_load_model.GenomicDataVDJ()
             genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+            
             if include_indep_genes:
                 features += [[v] for v in set([gene_to_num_str(genV[0],'V') for genV in genomic_data.genV])]
                 features += [[j] for j in set([gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]

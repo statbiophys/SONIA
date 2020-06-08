@@ -60,8 +60,11 @@ class SequenceGeneration(object):
             self.genomic_data = custom_genomic_data
             self.seq_gen_model = custom_olga_model
         else:
-
-            main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
+            try:
+                if self.sonia_model.custom_pgen_model is None: main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
+                else: main_folder=self.sonia_model.custom_pgen_model
+            except:
+                main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
 
             params_file_name = os.path.join(main_folder,'model_params.txt')
             marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
@@ -71,15 +74,15 @@ class SequenceGeneration(object):
             if not self.sonia_model.vj:
                 self.genomic_data = olga_load_model.GenomicDataVDJ()
                 self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-                generative_model = olga_load_model.GenerativeModelVDJ()
-                generative_model.load_and_process_igor_model(marginals_file_name)
-                self.seq_gen_model = seq_gen.SequenceGenerationVDJ(generative_model, self.genomic_data)
+                self.generative_model = olga_load_model.GenerativeModelVDJ()
+                self.generative_model.load_and_process_igor_model(marginals_file_name)
+                self.seq_gen_model = seq_gen.SequenceGenerationVDJ(self.generative_model, self.genomic_data)
             else:
                 self.genomic_data = olga_load_model.GenomicDataVJ()
                 self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-                generative_model = olga_load_model.GenerativeModelVJ()
-                generative_model.load_and_process_igor_model(marginals_file_name)   
-                self.seq_gen_model = seq_gen.SequenceGenerationVJ(generative_model, self.genomic_data)
+                self.generative_model = olga_load_model.GenerativeModelVJ()
+                self.generative_model.load_and_process_igor_model(marginals_file_name)   
+                self.seq_gen_model = seq_gen.SequenceGenerationVJ(self.generative_model, self.genomic_data)
 
     def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.

@@ -55,7 +55,11 @@ class EvaluateModel(object):
         if custom_olga_model is not None:
             self.pgen_model = custom_olga_model
         else:
-            main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
+            try:
+                if self.sonia_model.custom_pgen_model is None: main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
+                else: main_folder=self.sonia_model.custom_pgen_model
+            except:
+                main_folder=os.path.join(os.path.dirname(__file__), 'default_models', self.sonia_model.chain_type)
 
             params_file_name = os.path.join(main_folder,'model_params.txt')
             marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
@@ -63,17 +67,17 @@ class EvaluateModel(object):
             J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
 
             if self.sonia_model.vj:
-                genomic_data = olga_load_model.GenomicDataVJ()
-                genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-                generative_model = olga_load_model.GenerativeModelVJ()
-                generative_model.load_and_process_igor_model(marginals_file_name)
-                self.pgen_model = pgen.GenerationProbabilityVJ(generative_model, genomic_data)
+                self.genomic_data = olga_load_model.GenomicDataVJ()
+                self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+                self.generative_model = olga_load_model.GenerativeModelVJ()
+                self.generative_model.load_and_process_igor_model(marginals_file_name)
+                self.pgen_model = pgen.GenerationProbabilityVJ(self.generative_model, self.genomic_data)
             else:
-                genomic_data = olga_load_model.GenomicDataVDJ()
-                genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-                generative_model = olga_load_model.GenerativeModelVDJ()
-                generative_model.load_and_process_igor_model(marginals_file_name)
-                self.pgen_model = pgen.GenerationProbabilityVDJ(generative_model, genomic_data)
+                self.genomic_data = olga_load_model.GenomicDataVDJ()
+                self.genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
+                self.generative_model = olga_load_model.GenerativeModelVDJ()
+                self.generative_model.load_and_process_igor_model(marginals_file_name)
+                self.pgen_model = pgen.GenerationProbabilityVDJ(self.generative_model, self.genomic_data)
 
 
     def evaluate_seqs(self,seqs=[]):

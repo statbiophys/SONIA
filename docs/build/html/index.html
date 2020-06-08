@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Documentation for Sonia package &mdash; sonia 0.0.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Directory architecture" href="readme.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> sonia
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia.html">Sonia package documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">sonia</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Documentation for Sonia package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="documentation-for-sonia-package">
+<h1>Documentation for Sonia package<a class="headerlink" href="#documentation-for-sonia-package" title="Permalink to this headline">¶</a></h1>
+<p>SONIA is a python 3.6/2.7 software developed to infer selection
+pressures on features of amino acid CDR3 sequences. The inference
+is based on maximizing the likelihood of observing a selected data
+sample given a representative pre-selected sample. This method was
+first used in Elhanati et al (2014) to study thymic selection. For
+this purpose, the pre-selected sample can be generated internally
+using the OLGA software package, but SONIA allows it also to be
+supplied externally, in the same way the data sample is provided.</p>
+<p>SONIA takes as input TCR CDR3 amino acid sequences, with or without
+per sequence lists of possible V and J genes suspected to be used in
+the recombination psrocess for this sequence. Its output is selection
+factors for each amino acid ,(relative) position , CDR3 length combinations,
+and also for each V and J gene choice. These selection factors can be used to
+calculate sequence level selection factors which indicate how more or less
+represented this sequence would be in the selected pool as compared to the
+the pre-selected pool. These in turn could be used to calculate the probability
+to observe any sequence after selection and sample from the selected repertoire.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:</p>
+<blockquote>
+<div><p>pip install sonia</p>
+</div></blockquote>
+<p>SONIA is also available at <a class="reference external" href="https://github.com/statbiophys/SONIA">https://github.com/statbiophys/SONIA</a> . The command line entry points can be installed by using the setup.py script:</p>
+<blockquote>
+<div><p>python setup.py install</p>
+</div></blockquote>
+<p>Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:</p>
+<blockquote>
+<div><p>pip install tensorflow</p>
+<p>pip install matplotlib</p>
+<p>pip install olga</p>
+<p>pip install sonia</p>
+</div></blockquote>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Sethna Z, Isacchini G, Dupic T, Mora T, Walczak AM, Elhanati Y,
+Population variability in the generation and thymic selection of
+T-cell repertoires, (2020) bioRxiv, <a class="reference external" href="https://doi.org/10.1101/2020.01.08.899682">https://doi.org/10.1101/2020.01.08.899682</a></p></li>
+<li><p>Isacchini G, Sethna Z, Elhanati Y ,Nourmohammad A, Mora T, Walczak AM, On generative models of T-cell receptor sequences,(2019)
+bioRxiv, <a class="reference external" href="https://doi.org/10.1101/857722">https://doi.org/10.1101/857722</a></p></li>
+<li><p>Elhanati Y, Murugan A , Callan CGJ ,  Mora T , Walczak AM,
+Quantifying selection in immune receptor repertoires, PNAS July 8,
+2014 111 (27) 9875-9880, <a class="reference external" href="https://doi.org/10.1073/pnas.1409572111">https://doi.org/10.1073/pnas.1409572111</a></p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="structure">
+<h1>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#notes-about-training-data-preparation">Notes about training data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="readme.html#notes-about-cdr3-sequence-definition">Notes about CDR3 sequence definition</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#quick-demo">Quick Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#specifying-a-default-v-d-j-model-or-a-custom-model-folder">Specifying a default V(D)J model (or a custom model folder)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#options-common-to-all-commands">Options common to all commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia.html">Sonia package documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.evaluate_model">sonia.evaluate_model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.plotting">sonia.plotting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sequence_generation">sonia.sequence_generation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia">sonia.sonia module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_leftpos_rightpos">sonia.sonia_leftpos_rightpos module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_length_pos">sonia.sonia_length_pos module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_vjl">sonia.sonia_vjl module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
+</ul>
+</div>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="readme.html" class="btn btn-neutral float-right" title="Directory architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Zachary Sethna and Giulio Isacchini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

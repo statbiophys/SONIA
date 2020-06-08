@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SONIA &#8212; sonia 0.0.26 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line console scripts and Examples" href="commands.html" />
+    <link rel="prev" title="SONIA" href="readme.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="sonia">
+<h1>SONIA<a class="headerlink" href="#sonia" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p>SONIA is a python 3.6/2.7 software developed to infer selection pressures on features of amino acid CDR3 sequences. The inference is based on maximizing the likelihood of observing a selected data sample given a representative pre-selected sample. This method was first used in Elhanati et al (2014) to study thymic selection. For this purpose, the pre-selected sample can be generated internally using the OLGA software package, but SONIA allows it also to be supplied externally, in the same way the data sample is provided.</p>
+<p>SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence lists of possible V and J genes suspected to be used in the recombination process for this sequence. Its output is selection factors for each amino acid ,(relative) position , CDR3 length combinations, and also for each V and J gene choice. These selection factors can be used to calculate sequence level selection factors which indicate how more or less represented this sequence would be in the selected pool as compared to the the pre-selected pool. These in turn could be used to calculate the probability to observe any sequence after selection and sample from the selected repertoire.</p>
+</div>
+<div class="section" id="version">
+<h2>Version<a class="headerlink" href="#version" title="Permalink to this headline">¶</a></h2>
+<p>Latest released version: 0.0.27</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sonia</span></code>.</p>
+<p>SONIA is also available on <a class="reference external" href="https://github.com/statbiophys/SONIA">GitHub</a>. The command line entry points can be installed by using the setup.py script:</p>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>.</p>
+<p>Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">matplotlib</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">olga</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">sonia</span> 
+</pre></div>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Sethna Z, Isacchini G, Dupic T, Mora T, Walczak AM, Elhanati Y, Population variability in the generation and thymic selection of T-cell repertoires, (2020) bioRxiv, https://doi.org/10.1101/2020.01.08.899682</p></li>
+<li><p>Isacchini G, Sethna Z, Elhanati Y ,Nourmohammad A, Mora T, Walczak AM, On generative models of T-cell receptor sequences,(2019) bioRxiv, https://doi.org/10.1101/857722</p></li>
+<li><p>Elhanati Y, Murugan A , Callan CGJ ,  Mora T , Walczak AM, Quantifying selection in immune receptor repertoires, PNAS July 8, 2014 111 (27) 9875-9880, https://doi.org/10.1073/pnas.1409572111</p></li>
+</ol>
+</div>
+<div class="section" id="directory-architecture">
+<h2>Directory architecture<a class="headerlink" href="#directory-architecture" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SONIA/
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── data_infer.txt
+├── data_seqs.txt
+├── gen_seqs.txt
+├── setup.py
+└── sonia
+    ├── __init__.py
+    ├── evaluate.py
+    ├── evaluate_model.py
+    ├── generate.py
+    ├── infer.py
+    ├── plotting.py
+    ├── sequence_generation.py
+    ├── sonia.py
+    ├── sonia_leftpos_rightpos.py
+    ├── sonia_length_pos.py
+    ├── utils.py
+    └── default_models
+        ├── human_B_heavy
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_kappa
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_lambda
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_alpha
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_beta
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        └── mouse_T_beta
+            ├── J_gene_CDR3_anchors.csv
+            ├── V_gene_CDR3_anchors.csv
+            ├── features.tsv
+            ├── log.txt
+            ├── model_marginals.txt
+            └── model_params.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-line-console-scripts-and-examples">
+<h2>Command line console scripts and Examples<a class="headerlink" href="#command-line-console-scripts-and-examples" title="Permalink to this headline">¶</a></h2>
+<p>There are three command line console scripts (the scripts can still be called as executables if SONIA is not installed):</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-evaluate</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>evaluates Ppost, Pgen or selection factors of sequences according to a generative V(D)J model and selection model.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-generate</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>generates CDR3 sequences, before (like olga) or after selection</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sonia-infer</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>infers a selection model with respect to a generative V(D)J model</p></li>
+</ul>
+<p>For any of them you can execute with the -h or –help flags to get the options.</p>
+<div class="section" id="quick-demo">
+<h3>Quick Demo<a class="headerlink" href="#quick-demo" title="Permalink to this headline">¶</a></h3>
+<p>After installing SONIA, we offer a quick demonstration of the console scripts. This will demonstrate generating and evaluating sequences and infer a selection model from the default model for human TCR beta chains that ships with SONIA.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-evaluate</span> <span class="pre">--humanTRB</span> <span class="pre">CASSTGNYGAFF</span> <span class="pre">--v_mask</span> <span class="pre">TRBV9</span> <span class="pre">--j_mask</span> <span class="pre">TRBJ1-1</span> <span class="pre">--ppost</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This computes Ppost,Pgen and Q of the TCR CASSTGNYGAFF,TRBV9,TRBJ1-1 (you should get ~1.3e-11, ~9.2e-12 and ~1.4 respectively)</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-generate</span> <span class="pre">--humanTRB</span> <span class="pre">-n</span> <span class="pre">5</span> <span class="pre">--pre</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>Generate 5 human TRB CDR3 sequences from the pre-selection repertoire and print to stdout along with the V and J genes used to generate them.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-generate</span> <span class="pre">--humanTRB</span> <span class="pre">-n</span> <span class="pre">10000</span> <span class="pre">--post</span> <span class="pre">-o</span> <span class="pre">example_seqs.txt</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This generates a file example_seqs.tsv and writes 10000 generated human TRB CDR3 sequences from the post-selection repertoire.</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-evaluate</span> <span class="pre">--humanTRB</span> <span class="pre">--ppost</span> <span class="pre">-i</span> <span class="pre">example_seqs.txt</span> <span class="pre">-m</span> <span class="pre">5</span>&#160; <span class="pre">-o</span> <span class="pre">example_evaluation.txt</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This reads in the first 5 sequences from the file we just generated, example_seqs.tsv, evaluates them and writes the results them to the file example_pgens.tsv</p></li>
+</ul>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">sonia-infer</span> <span class="pre">--humanTRB</span> <span class="pre">-i</span> <span class="pre">example_seqs.txt</span> <span class="pre">-o</span> <span class="pre">sel_model</span></code></p></li>
+</ol>
+<ul class="simple">
+<li><p>This reads in the full file example_seqs.txt, infers a selection model and saves to the folder sel_model</p></li>
+</ul>
+</div>
+<div class="section" id="specifying-a-default-v-d-j-model-or-a-custom-model-folder">
+<h3>Specifying a default V(D)J model (or a custom model folder)<a class="headerlink" href="#specifying-a-default-v-d-j-model-or-a-custom-model-folder" title="Permalink to this headline">¶</a></h3>
+<p>All of the console scripts require specifying a V(D)J model. SONIA ships with 6 default models that can be indicated by flags, or a custom model folder can be indicated.</p>
+<p>| Options                                         | Description                                      |
+|————————————————-|————————————————–|
+| <strong>–humanTRA</strong>                                  | Default human T cell alpha chain model (VJ)      |
+| <strong>–humanTRB</strong>                                  | Default human T cell beta chain model (VDJ)      |
+| <strong>–mouseTRB</strong>                                  | Default mouse T cell beta chain model (VDJ)      |
+| <strong>–humanIGH</strong>                                  | Default human B cell heavy chain model (VDJ)     |
+| <strong>–humanIGK</strong>                                  | Default human B cell light kappa chain model (VJ)|
+| <strong>–humanIGL</strong>                                  | Default human B cell light lambda chain model (VJ)|
+| <strong>–set_custom_model_VJ</strong> PATH/TO/MODEL_FOLDER/ | Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VJ generative model|
+| <strong>–set_custom_model_VDJ</strong> PATH/TO/MODEL_FOLDER/| Specifies the directory PATH/TO/MODEL_FOLDER/ of a custom VDJ generative model|</p>
+<p>Note, if specifying a folder for a custom VJ recombination model
+(e.g. an alpha or light chain model) or a custom VDJ recombination model
+(e.g. a beta or heavy chain model), the folder must contain the following files
+with the exact naming convention:</p>
+<ul class="simple">
+<li><p>model_params.txt</p></li>
+<li><p>model_marginals.txt</p></li>
+<li><p>V_gene_CDR3_anchors.csv (V anchor residue position and functionality file)</p></li>
+<li><p>J_gene_CDR3_anchors.csv (J anchor residue position and functionality file)</p></li>
+<li><p>features.tsv (if you want to load the selection model as well: not required for in the sonia-infer command)</p></li>
+<li><p>log.txt (if you want to load the selection model as well: not required in the sonia-infer command)</p></li>
+</ul>
+<p>The console scripts can only read files of the assumed anchor.csv/<a class="reference external" href="https://github.com/qmarcou/IGoR">IGoR</a> syntaxes. See the default models in the sonia directory for examples.</p>
+</div>
+<div class="section" id="options-common-to-all-commands">
+<h3>Options common to all commands<a class="headerlink" href="#options-common-to-all-commands" title="Permalink to this headline">¶</a></h3>
+<p>| Options                                         | Description                                      |
+|————————————————-|————————————————–|
+|  -h, –help                                     |     show command options                         |
+|  –sonia_model=MODEL_TYPE                       | specify model type: leftright or lengthpos. Default is leftright |
+|  -i PATH/TO/FILE, –infile=PATH/TO/FILE         | read in CDR3 sequences (and optionally V/J masks) from PATH/TO/FILE|
+|  -o PATH/TO/FILE, –outfile=PATH/TO/FILE        | output to PATH/TO/FILE                           |
+|  –seq_in=INDEX, –seq_index=INDEX              | specifies sequences to be read in are in column INDEX. Default is index 0 (the first column). |
+|  –v_in=INDEX, –v_mask_index=INDEX             | specifies V_masks are found in column INDEX in the input file. Default is 1. |
+|  –j_in=INDEX, –j_mask_index=INDEX             | specifies J_masks are found in column INDEX in the input file. Default is 2. |
+|  -m N, –max_number_of_seqs=N                   | read at most N sequences.                        |
+|  –lines_to_skip=N                              | skip the first N lines of the file. Default is 0.|
+|  -d DELIMITER, –delimiter=DELIMITER            | declare infile delimiter. Default is tab for .tsv input files, comma for .csv files, and any whitespace for all others. Choices: ‘tab’, ‘space’, ‘,’, ‘;’, ‘:’ |
+|  –delimiter_out=DELIMITER_OUT                  | declare outfile delimiter. Default is tab for .tsv output files, comma for .csv files, and the infile delimiter for all others. Choices: ‘tab’, ‘space’, ‘,’, ‘;’, ‘:’ |</p>
+<p>for command specific options use the –help flag.</p>
+</div>
+</div>
+<div class="section" id="using-the-sonia-modules-in-a-python-script-advanced-users">
+<h2>Using the SONIA modules in a Python script (advanced users)<a class="headerlink" href="#using-the-sonia-modules-in-a-python-script-advanced-users" title="Permalink to this headline">¶</a></h2>
+<p>In order to incorporate the core algorithm into an analysis pipeline (or to write your own script wrappers) all that is needed is to import the modules. Each module defines some classes that only a few methods get called on.</p>
+<p>The modules are:</p>
+<p>| Module name                                    | Classes                                          |<br />|————————————————|————————————————–|
+| evaluate_model.py                              | EvaluateModel                                    |
+| sequence_generation.py                         | SequenceGeneration                               |
+| plotting.py.                                   | Plotter                                          |
+| sonia_leftpos_rightpos.py                      | SoniaLeftposRightpos                             |
+| sonia_length_pos.py                            | SoniaLengthPos                                   |
+| sonia.py                                       | Sonia                                            |
+| utils.py                                       | N/A (contains util functions)                    |</p>
+<p>The classes with methods that are of interest will be EvaluateModel (to evaluate seqs) and SequenceGeneration (to generate seqs), SoniaLeftposRightpos or SoniaLengthPos (to initialise and infer the models) and Plotter (to plot results).</p>
+<p>You can find some examples in the examples folder. We demonstrate here some basic usage.
+Data and gen files are included in the GitHub repository to demonstrate usage, however we recommend to expand both data and generated files for an accurate inference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sonia</span>
+<span class="kn">from</span> <span class="nn">sonia.sonia_leftpos_rightpos</span> <span class="kn">import</span> <span class="n">SoniaLeftposRightpos</span>
+<span class="kn">from</span> <span class="nn">sonia.plotting</span> <span class="kn">import</span> <span class="n">Plotter</span>
+<span class="kn">from</span> <span class="nn">sonia.evaluate_model</span> <span class="kn">import</span> <span class="n">EvaluateModel</span>
+<span class="kn">from</span> <span class="nn">sonia.sequence_generation</span> <span class="kn">import</span> <span class="n">SequenceGeneration</span>
+
+<span class="n">work_folder</span> <span class="o">=</span> <span class="s1">&#39;examples/&#39;</span> <span class="c1"># where data files are and output folder should be</span>
+<span class="n">data_file</span> <span class="o">=</span> <span class="n">work_folder</span> <span class="o">+</span> <span class="s1">&#39;data_seqs.txt&#39;</span> <span class="c1"># file with data sequences</span>
+<span class="n">gen_file</span> <span class="o">=</span> <span class="n">work_folder</span> <span class="o">+</span> <span class="s1">&#39;gen_seqs.txt&#39;</span> <span class="c1"># file with generated sequences if not generated internally</span>
+<span class="n">output_folder</span> <span class="o">=</span> <span class="n">work_folder</span> <span class="o">+</span> <span class="s1">&#39;selection/&#39;</span> <span class="c1"># location to save model</span>
+
+<span class="c1"># load lists of sequences with gene specification</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span> <span class="c1"># this assume data sequences are in semi-colon separated text file, with gene specification</span>
+    <span class="n">data_seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+<span class="n">gen_seqs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">gen_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>  <span class="c1"># this assume generated sequences are in semi-colon separated text file, with gene specification</span>
+    <span class="n">gen_seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+<span class="c1"># creates the model object, load up sequences and set the features to learn</span>
+<span class="n">qm</span> <span class="o">=</span> <span class="n">SoniaLeftposRightpos</span><span class="p">(</span><span class="n">data_seqs</span><span class="o">=</span><span class="n">data_seqs</span><span class="p">,</span> <span class="n">gen_seqs</span><span class="o">=</span><span class="n">gen_seqs</span><span class="p">)</span>
+
+<span class="c1"># infer model</span>
+<span class="n">qm</span><span class="o">.</span><span class="n">infer_selection</span><span class="p">()</span>
+
+<span class="c1"># plot results</span>
+<span class="n">pl</span><span class="o">=</span><span class="n">Plotter</span><span class="p">(</span><span class="n">qm</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot_model_learning</span><span class="p">(</span><span class="s1">&#39;model_learning.png&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot_vjl</span><span class="p">(</span><span class="s1">&#39;marginals.png&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot_logQ</span><span class="p">(</span><span class="s1">&#39;log_Q.png&#39;</span><span class="p">)</span>
+
+<span class="c1"># save the model</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_folder</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
+<span class="n">qm</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">+</span> <span class="s1">&#39;SONIA_model_example&#39;</span><span class="p">)</span>
+
+<span class="c1"># load default model (human TRA)</span>
+<span class="n">model_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sonia</span><span class="o">.</span><span class="n">sonia_leftpos_rightpos</span><span class="o">.</span><span class="vm">__file__</span><span class="p">),</span><span class="s1">&#39;default_models&#39;</span><span class="p">,</span><span class="s1">&#39;human_T_alpha&#39;</span><span class="p">)</span>
+<span class="n">qm</span><span class="o">=</span><span class="n">SoniaLeftposRightpos</span><span class="p">(</span><span class="n">load_dir</span><span class="o">=</span><span class="n">model_dir</span><span class="p">,</span><span class="n">chain_type</span><span class="o">=</span><span class="s1">&#39;human_T_alpha&#39;</span><span class="p">)</span>
+
+<span class="c1"># load evaluation and generation classes</span>
+<span class="n">ev</span><span class="o">=</span><span class="n">EvaluateModel</span><span class="p">(</span><span class="n">sonia_model</span><span class="o">=</span><span class="n">qm</span><span class="p">)</span>
+<span class="n">sq</span><span class="o">=</span><span class="n">SequenceGeneration</span><span class="p">(</span><span class="n">sonia_model</span><span class="o">=</span><span class="n">qm</span><span class="p">)</span>
+
+<span class="c1"># generate seqs pre</span>
+<span class="n">seqs_pre</span><span class="o">=</span><span class="n">sq</span><span class="o">.</span><span class="n">generate_sequences_pre</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># generate seqs post</span>
+<span class="n">seqs_post</span> <span class="o">=</span> <span class="n">sq</span><span class="o">.</span><span class="n">generate_sequences_post</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seqs_post</span><span class="p">)</span>
+
+<span class="c1"># evaluate Q, pgen and ppost of sequences </span>
+<span class="c1"># NB: data has to be in format: list(array((n_seqs,3 or more))). Check output of generate_sequences_post method for an example (4th column is not used in the evaluate_seqs method).</span>
+<span class="n">qs</span><span class="p">,</span><span class="n">pgens</span><span class="p">,</span><span class="n">pposts</span><span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">evaluate_seqs</span><span class="p">(</span><span class="n">seqs_post</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pgens</span><span class="p">,</span><span class="n">pposts</span><span class="p">,</span><span class="n">qs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additional documentation of the modules is found in their docstrings (accessible either through pydoc or using help() within the python interpreter).</p>
+</div>
+<div class="section" id="notes-about-training-data-preparation">
+<h2>Notes about training data preparation<a class="headerlink" href="#notes-about-training-data-preparation" title="Permalink to this headline">¶</a></h2>
+<p>Sonia shines when trained on top of independent rearrangement events, thus you should throw away the read count information.
+If you have a sample from an individual, you should keep the unique nucleotide rearrangements. This means that in principle there could be few aminoacid CDR3,V,J combination that are not unique after the mapping from nucleotide to aminoacid, but that’s fine. Moreover if you pool data from multiple people you can still keep rearrangements that are found in multiple individuals because you are sure that they correspond to independent recombination events.</p>
+</div>
+<div class="section" id="notes-about-cdr3-sequence-definition">
+<h2>Notes about CDR3 sequence definition<a class="headerlink" href="#notes-about-cdr3-sequence-definition" title="Permalink to this headline">¶</a></h2>
+<p>This code is quite flexible, however it does demand a very consistent definition of CDR3 sequences.</p>
+<p><strong>CHECK THE DEFINITION OF THE CDR3 REGION OF THE SEQUENCES YOU INPUT.</strong> This will likely be the most often problem that occurs.</p>
+<p>The default models/genomic data are set up to define the CDR3 region from the conserved cysteine C (INCLUSIVE) in the V region to the conserved F or W (INCLUSIVE) in the J. This corresponds to positions X and X according to IMGT. This can be changed by altering the anchor position files, however the user is strongly recommended against this.</p>
+</div>
+<div class="section" id="contact">
+<h2>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h2>
+<p>Any issues or questions should be addressed to <a class="reference external" href="mailto:zachary&#46;sethna&#37;&#52;&#48;gmail&#46;com,giulioisac&#37;&#52;&#48;gmail&#46;com">us</a>.</p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>Free use of SONIA is granted under the terms of the GNU General Public License version 3 (GPLv3).</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">sonia</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">SONIA</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SONIA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directory-architecture">Directory architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-console-scripts-and-examples">Command line console scripts and Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-sonia-modules-in-a-python-script-advanced-users">Using the SONIA modules in a Python script (advanced users)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes-about-training-data-preparation">Notes about training data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes-about-cdr3-sequence-definition">Notes about CDR3 sequence definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contact">Contact</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts and Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Using the SONIA modules in a Python script (advanced users)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="readme.html" title="previous chapter">SONIA</a></li>
+      <li>Next: <a href="commands.html" title="next chapter">Command line console scripts and Examples</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Zachary Sethna and Giulio Isacchini.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/installation.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -10,6 +10,17 @@ import itertools
 from tensorflow.keras.callbacks import Callback
 import numpy as np
 
+def add_random_error(nt, p):
+    """ Take a nucleotide seq then simulate a sequencing
+    error on it. Explicitely, each nucleotide has a probability p
+    of being randomly modified. Adapted from Thomas Dupic.
+    @ Arguments:
+    * nt: amino-acid sequence
+    * p: the error rate
+    """
+    rand = np.random.choice(["A", "T", "G", "C"], len(nt))
+    return "".join([(a, r)[np.random.random() < p] for a, r in zip(nt, rand)])
+
 def gene_to_num_str(gene_name, gene_type):
     """Strips excess gene name info to number string.
 

@@ -62,6 +62,7 @@ def main():
     parser.add_option('--pgen', '--Pgen', action='store_true', dest='pgen', default=False, help='compute pgen')
     parser.add_option('--Q', '--selection_factor', action='store_true', dest='Q', default=False, help='compute Q')
     parser.add_option('--recompute_productive_norm', '--compute_norm', action='store_true', dest='recompute_productive_norm', default=False, help='recompute productive normalization')
+    parser.add_option('--skip_off','--skip_empty_off', action='store_true', dest = 'skip_empty', default=True, help='stop skipping empty or blank sequences/lines (if for example you want to keep line index fidelity between the infile and outfile).')
 
     parser.add_option('-s','--chunk_size', type='int',metavar='N', dest='chunck_size', default = mp.cpu_count()*int(5e2), help='Number of sequences to evaluate at each iteration')
 
@@ -224,6 +225,8 @@ def main():
     max_number_of_seqs = options.max_number_of_seqs
     V_mask_index = options.V_mask_index #Default is not conditioning on V identity
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
+    skip_empty = options.skip_empty
+
     #print(V_mask_index,J_mask_index,seq_in_index,gene_mask_delimiter,delimiter)
     
     # choose sonia model type
