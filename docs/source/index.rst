@@ -66,5 +66,3 @@ Structure
    python_usage
    license
    help
-
-* :ref:`genindex`
