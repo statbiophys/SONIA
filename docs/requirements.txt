@@ -1,3 +1,2 @@
 sphinx_markdown_tables
 nbsphinx
-sonia
