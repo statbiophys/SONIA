@@ -10,6 +10,10 @@ this purpose, the pre-selected sample can be generated internally
 using the OLGA software package, but SONIA allows it also to be
 supplied externally, in the same way the data sample is provided.
 
+.. image:: model.png
+   :width: 450
+   :align: center
+	   
 SONIA takes as input TCR CDR3 amino acid sequences, with or without
 per sequence lists of possible V and J genes suspected to be used in
 the recombination psrocess for this sequence. Its output is selection
@@ -19,6 +23,10 @@ calculate sequence level selection factors which indicate how more or less
 represented this sequence would be in the selected pool as compared to the
 the pre-selected pool. These in turn could be used to calculate the probability
 to observe any sequence after selection and sample from the selected repertoire.
+
+.. image:: workflow.png
+   :width: 600
+   :align: center
 
 Installation
 ^^^^^^^^^^^^
@@ -65,7 +73,6 @@ Structure
    commands
    python_usage
    sonia_tutorial
-   modules
    license
    help
 
