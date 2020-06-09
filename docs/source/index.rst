@@ -65,7 +65,6 @@ Structure
    commands
    python_usage
    sonia_tutorial
-   modules
    license
    help
 
