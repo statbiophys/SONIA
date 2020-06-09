@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Directory architecture" href="readme.html" /> 
+    <link rel="next" title="Directory architecture" href="directory.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,10 +81,11 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="directory.html">Directory architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Sonia Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
 </ul>
@@ -230,11 +231,7 @@ Quantifying selection in immune receptor repertoires, PNAS July 8,
 <h1>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#notes-about-training-data-preparation">Notes about training data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#notes-about-cdr3-sequence-definition">Notes about CDR3 sequence definition</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="directory.html">Directory architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#quick-demo">Quick Demo</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commands.html#specifying-a-default-v-d-j-model-or-a-custom-model-folder">Specifying a default V(D)J model (or a custom model folder)</a></li>
@@ -242,19 +239,44 @@ Quantifying selection in immune receptor repertoires, PNAS July 8,
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Sonia Example</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#load-lists-of-sequences-with-gene-specification">load lists of sequences with gene specification</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#define-and-infer-model">define and infer model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#do-some-plotting">do some plotting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#Generate-sequences">Generate sequences</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#Evaluate-sequences">Evaluate sequences</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#Some-utils-from-OLGA">Some utils from OLGA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#generate-sequences">generate sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#evaluate-sequences">evaluate sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#some-utils-from-OLGA">some utils from OLGA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sonia_tutorial.html#load-default-sonia-models">load default sonia models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sonia.html">sonia package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
 </ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Note about training data preparation</strong></p>
+<p>Sonia shines when trained on top of independent rearrangement events, thus
+you should throw away the read count information.
+If you have a sample from an individual, you should keep the unique
+nucleotide rearrangements. This means that in principle there could be few aminoacid
+CDR3,V,J combination that are not unique after the mapping from nucleotide to aminoacid, but that’s fine.
+Moreover if you pool data from multiple people you can still keep rearrangements that are found
+in multiple individuals because you are sure that they correspond to independent recombination events.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Note about CDR3 sequence definition</strong></p>
+<p>This code is quite flexible, however it does demand a very consistent definition of CDR3 sequences.</p>
+<p><strong>CHECK THE DEFINITION OF THE CDR3 REGION OF THE SEQUENCES YOU INPUT.</strong> This will likely be the most often problem that occurs.
+The default models/genomic data are set up to define the CDR3 region from
+the conserved cysteine C (INCLUSIVE) in the V region to the conserved F or W (INCLUSIVE)
+in the J. This corresponds to positions X and X according to IMGT. This can be changed
+by altering the anchor position files, however the user is strongly recommended against this.</p>
 </div>
 </div>
 
@@ -266,7 +288,7 @@ Quantifying selection in immune receptor repertoires, PNAS July 8,
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="readme.html" class="btn btn-neutral float-right" title="Directory architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="directory.html" class="btn btn-neutral float-right" title="Directory architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

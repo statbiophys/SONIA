@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Documentation &mdash; sonia 0.0.26 documentation</title>
+  <title>Directory architecture &mdash; sonia 0.0.26 documentation</title>
   
 
   
@@ -36,8 +36,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="sonia package" href="sonia.html" />
-    <link rel="prev" title="Sonia Example" href="sonia_tutorial.html" /> 
+    <link rel="next" title="Command line console scripts" href="commands.html" />
+    <link rel="prev" title="Documentation for Sonia package" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,14 +82,11 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Directory architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Directory architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Sonia Example</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html">sonia package</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
 </ul>
@@ -137,13 +134,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Documentation</li>
+      <li>Directory architecture</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/directory.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -180,21 +177,72 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="documentation">
-<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="sonia.html">sonia package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.evaluate_model">sonia.evaluate_model module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.plotting">sonia.plotting module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sequence_generation">sonia.sequence_generation module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia">sonia.sonia module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_leftpos_rightpos">sonia.sonia_leftpos_rightpos module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_length_pos">sonia.sonia_length_pos module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sonia.html#module-sonia.sonia_vjl">sonia.sonia_vjl module</a></li>
-</ul>
-</li>
-</ul>
+<div class="section" id="directory-architecture">
+<h1>Directory architecture<a class="headerlink" href="#directory-architecture" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>SONIA/
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── data_infer.txt
+├── data_seqs.txt
+├── gen_seqs.txt
+├── setup.py
+└── sonia
+    ├── __init__.py
+    ├── evaluate.py
+    ├── evaluate_model.py
+    ├── generate.py
+    ├── infer.py
+    ├── plotting.py
+    ├── sequence_generation.py
+    ├── sonia.py
+    ├── sonia_leftpos_rightpos.py
+    ├── sonia_length_pos.py
+    ├── utils.py
+    └── default_models
+        ├── human_B_heavy
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_kappa
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_B_lambda
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_alpha
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        ├── human_T_beta
+        │   ├── J_gene_CDR3_anchors.csv
+        │   ├── V_gene_CDR3_anchors.csv
+        │   ├── features.tsv
+        │   ├── log.txt
+        │   ├── model_marginals.txt
+        │   └── model_params.txt
+        └── mouse_T_beta
+            ├── J_gene_CDR3_anchors.csv
+            ├── V_gene_CDR3_anchors.csv
+            ├── features.tsv
+            ├── log.txt
+            ├── model_marginals.txt
+            └── model_params.txt
+</pre></div>
 </div>
 </div>
 
@@ -206,10 +254,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="sonia.html" class="btn btn-neutral float-right" title="sonia package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="commands.html" class="btn btn-neutral float-right" title="Command line console scripts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="sonia_tutorial.html" class="btn btn-neutral float-left" title="Sonia Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Documentation for Sonia package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -61,9 +61,30 @@ Structure
 .. toctree::
    :maxdepth: 2
 
-   readme
+   directory
    commands
    python_usage
    sonia_tutorial
+   modules
    license
    help
+
+.. note:: **Note about training data preparation**
+
+   Sonia shines when trained on top of independent rearrangement events, thus
+   you should throw away the read count information.
+   If you have a sample from an individual, you should keep the unique
+   nucleotide rearrangements. This means that in principle there could be few aminoacid
+   CDR3,V,J combination that are not unique after the mapping from nucleotide to aminoacid, but that's fine.
+   Moreover if you pool data from multiple people you can still keep rearrangements that are found
+   in multiple individuals because you are sure that they correspond to independent recombination events.
+
+.. note:: **Note about CDR3 sequence definition**
+
+   This code is quite flexible, however it does demand a very consistent definition of CDR3 sequences.
+
+   **CHECK THE DEFINITION OF THE CDR3 REGION OF THE SEQUENCES YOU INPUT.** This will likely be the most often problem that occurs.
+   The default models/genomic data are set up to define the CDR3 region from
+   the conserved cysteine C (INCLUSIVE) in the V region to the conserved F or W (INCLUSIVE)
+   in the J. This corresponds to positions X and X according to IMGT. This can be changed
+   by altering the anchor position files, however the user is strongly recommended against this.
