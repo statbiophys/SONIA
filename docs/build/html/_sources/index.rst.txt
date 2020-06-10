@@ -73,6 +73,7 @@ Structure
    commands
    python_usage
    sonia_tutorial
+   documentation
    license
    help
 

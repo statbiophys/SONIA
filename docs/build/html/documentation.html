@@ -1,0 +1,1492 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Documentation &mdash; sonia 0.0.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Tutorial" href="sonia_tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sonia
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="directory.html">Directory architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Command line console scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python_usage.html">Sonia modules in a Python script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sonia_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-sonia">sonia.sonia</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-sonia-leftpos-rightpos">sonia.sonia_leftpos_rightpos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-sonia-length-pos">sonia.sonia_length_pos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-sonia-vjl">sonia.sonia_vjl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-evaluate-model">sonia.evaluate_model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id8">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-sequence-generation">sonia.sequence_generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sonia-plotting">sonia.plotting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id12">Methods</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="help.html">Need Help?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sonia</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/documentation.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="sonia-sonia">
+<h2>sonia.sonia<a class="headerlink" href="#sonia-sonia" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Jan 30 12:06:58 2019</p>
+<p>&#64;author: zacharysethna and Giulio Isacchini</p>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Sonia(features=[],</span> <span class="pre">data_seqs=[],</span> <span class="pre">gen_seqs=[],</span> <span class="pre">chain_type='humanTRB',</span> <span class="pre">load_dir=None,</span> <span class="pre">feature_file=None,</span> <span class="pre">model_file=None,</span> <span class="pre">data_seq_file=None,</span> <span class="pre">gen_seq_file=None,</span> <span class="pre">log_file=None,</span> <span class="pre">load_seqs=True,</span> <span class="pre">l2_reg=0.0,</span> <span class="pre">min_energy_clip=-5,</span> <span class="pre">max_energy_clip=10,</span> <span class="pre">seed=None,</span> <span class="pre">vj=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">a</span> <span class="n">Q</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+<span class="n">features_dict</span> <span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">Dictionary</span> <span class="n">keyed</span> <span class="n">by</span> <span class="n">tuples</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Values</span> <span class="n">are</span> <span class="n">the</span> <span class="n">index</span>
+    <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span>
+<span class="n">constant_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">strings</span> <span class="n">to</span> <span class="ow">not</span> <span class="n">update</span> <span class="n">parameters</span> <span class="n">during</span> <span class="n">learning</span><span class="o">.</span> <span class="n">These</span>
+        <span class="n">features</span> <span class="n">are</span> <span class="n">still</span> <span class="n">used</span> <span class="n">to</span> <span class="n">compute</span> <span class="n">energies</span> <span class="p">(</span><span class="ow">not</span> <span class="n">currently</span> <span class="n">used</span><span class="p">)</span>
+<span class="n">data_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Data</span> <span class="n">sequences</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span>
+    <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span> <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span>
+    <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Sequences</span> <span class="kn">from</span> <span class="nn">generative</span> <span class="n">distribution</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span>
+    <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">data_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">data_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">gen_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">data_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">data_seqs</span>
+<span class="n">gen_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">gen_seqs</span>
+<span class="n">model_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">the</span> <span class="n">model</span> <span class="n">weighted</span> <span class="n">gen_seqs</span>
+<span class="n">L1_converge_history</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">L1</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">data_marginals</span> <span class="ow">and</span> <span class="n">model_marginals</span> <span class="n">at</span> <span class="n">each</span>
+    <span class="n">iteration</span><span class="o">.</span>
+<span class="n">chain_type</span> <span class="p">:</span> <span class="nb">str</span>
+    <span class="n">Type</span> <span class="n">of</span> <span class="n">receptor</span><span class="o">.</span> <span class="n">This</span> <span class="n">specification</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">determine</span> <span class="n">gene</span> <span class="n">names</span>
+    <span class="ow">and</span> <span class="n">allow</span> <span class="n">integrated</span> <span class="n">OLGA</span> <span class="n">sequence</span> <span class="n">generation</span><span class="o">.</span> <span class="n">Options</span><span class="p">:</span> <span class="s1">&#39;humanTRA&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;humanTRB&#39;</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="s1">&#39;humanIGH&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGL&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGK&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mouseTRB&#39;</span><span class="o">.</span>
+<span class="n">l2_reg</span> <span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">L2</span> <span class="n">regularization</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">then</span> <span class="n">no</span> <span class="n">regularization</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+<span class="n">seq_feature_proj</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="k">if</span> <span class="n">a</span> <span class="n">feature</span> <span class="n">matches</span><span class="o">/</span><span class="ow">is</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">find_seq_features</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="nb">all</span> <span class="n">model</span> <span class="n">features</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_seq_energy</span><span class="p">(</span><span class="n">seq_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span><span class="p">,</span> <span class="k">as</span> <span class="n">determined</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="p">,</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_energy</span><span class="p">(</span><span class="n">seqs_features</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energies</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">seq_features</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">compute_marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq_model_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seqs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_flat_distribution</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">features</span> <span class="n">over</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+
+<span class="n">infer_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">initialize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Infers</span> <span class="n">model</span> <span class="n">parameters</span> <span class="p">(</span><span class="n">energies</span> <span class="k">for</span> <span class="n">each</span> <span class="n">feature</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">update_model_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">input_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">initialize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Sets</span> <span class="n">keras</span> <span class="n">model</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">compiles</span><span class="o">.</span>
+
+<span class="n">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_data_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_gen_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">remove_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_constant_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">auto_update_marginals</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">auto_update_seq_features</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Updates</span> <span class="n">model</span> <span class="n">by</span> <span class="n">adding</span><span class="o">/</span><span class="n">removing</span> <span class="n">model</span> <span class="n">features</span> <span class="ow">or</span> <span class="n">data</span><span class="o">/</span><span class="n">generated</span> <span class="n">seqs</span><span class="o">.</span>
+    <span class="n">Marginals</span> <span class="ow">and</span> <span class="n">seq_features</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">updated</span><span class="o">.</span>
+
+<span class="n">add_generated_seqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gen_seqs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">reset_gen_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Generates</span> <span class="n">synthetic</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">OLGA</span> <span class="ow">and</span> <span class="n">adds</span> <span class="n">them</span> <span class="n">to</span> <span class="n">gen_seqs</span><span class="o">.</span>
+
+<span class="n">plot_model_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">current</span> <span class="n">marginal</span> <span class="n">scatter</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">history</span><span class="o">.</span>
+
+<span class="n">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">attributes_to_save</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Saves</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">load_dir</span><span class="p">,</span> <span class="n">load_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="methods">
+<h4>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">add_generated_seqs(self,</span> <span class="pre">num_gen_seqs=0,</span> <span class="pre">reset_gen_seqs=True,</span> <span class="pre">custom_model_folder=None,</span> <span class="pre">add_error=False,</span> <span class="pre">custom_error=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="k">for</span> <span class="n">gen_seqs</span> <span class="n">using</span> <span class="n">OLGA</span><span class="o">.</span>
+    
+    <span class="n">Only</span> <span class="n">generates</span> <span class="n">seqs</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">V</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="n">J</span> <span class="n">model</span><span class="o">.</span> <span class="n">Requires</span> <span class="n">the</span> <span class="n">OLGA</span> <span class="n">package</span>
+    <span class="p">(</span><span class="n">pip</span> <span class="n">install</span> <span class="n">olga</span><span class="p">)</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">num_gen_seqs</span> <span class="p">:</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">float</span>
+        <span class="n">Number</span> <span class="n">of</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">generate</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">to</span> <span class="n">the</span> <span class="n">specified</span>
+        <span class="n">sequence</span> <span class="n">pool</span><span class="o">.</span>
+    <span class="n">custom_model_folder</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">folder</span> <span class="n">specifying</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">IGoR</span> <span class="n">formatted</span> <span class="n">model</span> <span class="n">to</span> <span class="n">be</span>
+        <span class="n">used</span> <span class="k">as</span> <span class="n">a</span> <span class="n">generative</span> <span class="n">model</span><span class="o">.</span> <span class="n">Folder</span> <span class="n">must</span> <span class="n">contain</span> <span class="s1">&#39;model_params.txt&#39;</span>
+        <span class="ow">and</span> <span class="s1">&#39;model_marginals.txt&#39;</span>
+    <span class="n">add_error</span><span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">simualate</span> <span class="n">sequencing</span> <span class="n">error</span><span class="p">:</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">false</span>
+    <span class="n">custom_error</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="nb">set</span> <span class="n">custom</span> <span class="n">error</span> <span class="n">rate</span> <span class="k">for</span> <span class="n">sequencing</span> <span class="n">error</span><span class="o">.</span>
+        <span class="n">Default</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">one</span> <span class="n">inferred</span> <span class="n">by</span> <span class="n">igor</span><span class="o">.</span>
+    
+    <span class="n">Attributes</span> <span class="nb">set</span>
+    <span class="o">--------------</span>
+    <span class="n">gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">drawn</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">VDJ</span> <span class="n">recomb</span> <span class="n">model</span>
+    <span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Features</span> <span class="n">gen_seqs</span> <span class="n">have</span> <span class="n">been</span> <span class="n">projected</span> <span class="n">onto</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_energy(self,</span> <span class="pre">seqs_features)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">encoded</span> <span class="n">sequences</span> <span class="n">into</span> <span class="n">sonia</span> <span class="n">features</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">E</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">Energies</span> <span class="n">of</span> <span class="n">seqs</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_marginals(self,</span> <span class="pre">features=None,</span> <span class="pre">seq_model_features=None,</span> <span class="pre">seqs=None,</span> <span class="pre">use_flat_distribution=False,</span> <span class="pre">output_dict=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">sequences</span><span class="o">.</span>
+
+    <span class="n">Computes</span> <span class="n">marginals</span> <span class="n">either</span> <span class="k">with</span> <span class="n">a</span> <span class="n">flat</span> <span class="n">distribution</span> <span class="n">over</span> <span class="n">the</span> <span class="n">sequences</span>
+    <span class="ow">or</span> <span class="n">weighted</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span> <span class="n">energies</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">finding</span> <span class="n">the</span> <span class="n">features</span> <span class="n">of</span> <span class="n">each</span>
+    <span class="n">sequence</span> <span class="n">takes</span> <span class="n">time</span> <span class="ow">and</span> <span class="n">should</span> <span class="n">be</span> <span class="n">avoided</span> <span class="k">if</span> <span class="n">it</span> <span class="n">has</span> <span class="n">already</span> <span class="n">been</span> <span class="n">done</span><span class="o">.</span>
+    <span class="n">If</span> <span class="n">computing</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">model</span> <span class="n">features</span> <span class="n">use</span> <span class="n">the</span> <span class="n">default</span> <span class="n">setting</span> <span class="n">to</span>
+    <span class="n">prevent</span> <span class="n">searching</span> <span class="k">for</span> <span class="n">the</span> <span class="n">model</span> <span class="n">features</span> <span class="n">a</span> <span class="n">second</span> <span class="n">time</span><span class="o">.</span> <span class="n">Similarly</span><span class="p">,</span> <span class="k">if</span>
+    <span class="n">seq_model_features</span> <span class="n">has</span> <span class="n">already</span> <span class="n">been</span> <span class="n">determined</span> <span class="n">use</span> <span class="n">this</span> <span class="n">to</span> <span class="n">avoid</span>
+    <span class="n">recalculating</span> <span class="n">it</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">features</span><span class="o">.</span> <span class="n">This</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">need</span> <span class="n">to</span> <span class="n">match</span> <span class="n">the</span> <span class="n">model</span>
+        <span class="n">features</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">the</span> <span class="n">model</span> <span class="n">features</span> <span class="n">will</span> <span class="n">be</span> <span class="n">used</span><span class="o">.</span>
+    <span class="n">seq_features_all</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Indices</span> <span class="n">of</span> <span class="n">model</span> <span class="n">features</span> <span class="n">seqs</span> <span class="n">project</span> <span class="n">onto</span><span class="o">.</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">compute</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">marginals</span> <span class="n">over</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">each</span>
+        <span class="s1">&#39;sequence&#39;</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span> <span class="n">sequence</span>
+        <span class="n">which</span> <span class="ow">is</span> <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+    <span class="n">use_flat_distribution</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">Marginals</span> <span class="n">will</span> <span class="n">be</span> <span class="n">computed</span> <span class="n">using</span> <span class="n">a</span> <span class="n">flat</span> <span class="n">distribution</span> <span class="p">(</span><span class="n">each</span> <span class="n">seq</span> <span class="ow">is</span>
+        <span class="n">weighted</span> <span class="k">as</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="kc">True</span><span class="o">.</span> <span class="n">If</span> <span class="kc">False</span><span class="p">,</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">are</span> <span class="n">computed</span> <span class="n">using</span>
+        <span class="n">model</span> <span class="n">weights</span> <span class="p">(</span><span class="n">each</span> <span class="n">sequence</span> <span class="ow">is</span> <span class="n">weighted</span> <span class="k">as</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">E</span><span class="p">)</span> <span class="o">=</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span> <span class="n">Default</span>
+        <span class="ow">is</span> <span class="kc">False</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">marginals</span> <span class="p">:</span> <span class="n">ndarray</span> <span class="ow">or</span> <span class="nb">dict</span>
+        <span class="n">Marginals</span> <span class="n">of</span> <span class="n">model</span> <span class="n">features</span> <span class="n">over</span> <span class="n">seqs</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_seq_energy(self,</span> <span class="pre">seq=None,</span> <span class="pre">seq_features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    <span class="n">seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Features</span> <span class="n">indices</span> <span class="n">seq</span> <span class="n">projects</span> <span class="n">onto</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">E</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">Energy</span> <span class="n">of</span> <span class="n">seq</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">find_seq_features(self,</span> <span class="pre">seq,</span> <span class="pre">features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Finds</span> <span class="n">which</span> <span class="n">features</span> <span class="n">match</span> <span class="n">seq</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Indices</span> <span class="n">of</span> <span class="n">features</span> <span class="n">seq</span> <span class="n">projects</span> <span class="n">onto</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">infer_selection(self,</span> <span class="pre">epochs=10,</span> <span class="pre">batch_size=5000,</span> <span class="pre">initialize=True,</span> <span class="pre">seed=None,</span> <span class="pre">validation_split=0.2,</span> <span class="pre">monitor=False,</span> <span class="pre">verbose=0)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Infer</span> <span class="n">model</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="n">energies</span> <span class="k">for</span> <span class="n">each</span> <span class="n">model</span> <span class="n">feature</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">epochs</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Maximum</span> <span class="n">number</span> <span class="n">of</span> <span class="n">learning</span> <span class="n">epochs</span>
+    <span class="n">intialize</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">Resets</span> <span class="n">data</span> <span class="n">shuffle</span>
+    <span class="n">batch_size</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Size</span> <span class="n">of</span> <span class="n">the</span> <span class="n">batches</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">inference</span>
+    <span class="n">seed</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Sets</span> <span class="n">random</span> <span class="n">seed</span>
+    
+    <span class="n">Attributes</span> <span class="nb">set</span>
+    <span class="o">--------------</span>
+    <span class="n">model</span> <span class="p">:</span> <span class="n">keras</span> <span class="n">model</span>
+        <span class="n">Parameters</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span>
+    <span class="n">model_marginals</span> <span class="p">:</span> <span class="n">array</span>
+        <span class="n">Marginals</span> <span class="n">over</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">sequences</span><span class="p">,</span> <span class="n">reweighted</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">L1_converge_history</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">L1</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">data_marginals</span> <span class="ow">and</span> <span class="n">model_marginals</span> <span class="n">at</span> <span class="n">each</span>
+        <span class="n">iteration</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">load_model(self,</span> <span class="pre">load_dir=None,</span> <span class="pre">load_seqs=True,</span> <span class="pre">feature_file=None,</span> <span class="pre">model_file=None,</span> <span class="pre">data_seq_file=None,</span> <span class="pre">gen_seq_file=None,</span> <span class="pre">log_file=None,</span> <span class="pre">verbose=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Loads</span> <span class="n">model</span> <span class="kn">from</span> <span class="nn">directory.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">load_dir</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Directory</span> <span class="n">name</span> <span class="n">to</span> <span class="n">load</span> <span class="n">model</span> <span class="n">attributes</span> <span class="n">from</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">save_model(self,</span> <span class="pre">save_dir,</span> <span class="pre">attributes_to_save=None,</span> <span class="pre">force=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Saves</span> <span class="n">model</span> <span class="n">parameters</span> <span class="ow">and</span> <span class="n">sequences</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_dir</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Directory</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">model</span> <span class="n">attributes</span> <span class="n">to</span><span class="o">.</span>
+    
+    <span class="n">attributes_to_save</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">name</span> <span class="n">of</span> <span class="n">attributes</span> <span class="n">to</span> <span class="n">save</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">seq_feature_proj(self,</span> <span class="pre">feature,</span> <span class="pre">seq)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Checks</span> <span class="k">if</span> <span class="n">a</span> <span class="n">sequence</span> <span class="n">matches</span> <span class="nb">all</span> <span class="n">subfeatures</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="nb">list</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">feature</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">the</span> <span class="n">sequence</span> <span class="n">must</span> <span class="n">match</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="nb">bool</span>
+        <span class="kc">True</span> <span class="k">if</span> <span class="n">seq</span> <span class="n">matches</span> <span class="n">feature</span> <span class="k">else</span> <span class="kc">False</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">update_model(self,</span> <span class="pre">add_data_seqs=[],</span> <span class="pre">add_gen_seqs=[],</span> <span class="pre">add_features=[],</span> <span class="pre">remove_features=[],</span> <span class="pre">add_constant_features=[],</span> <span class="pre">auto_update_marginals=False,</span> <span class="pre">auto_update_seq_features=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Updates</span> <span class="n">the</span> <span class="n">model</span> <span class="n">attributes</span>
+    <span class="n">This</span> <span class="n">method</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">add</span><span class="o">/</span><span class="n">remove</span> <span class="n">model</span> <span class="n">features</span> <span class="ow">or</span> <span class="n">data</span><span class="o">/</span><span class="n">generated</span>
+    <span class="n">sequences</span><span class="o">.</span> <span class="n">These</span> <span class="n">changes</span> <span class="n">will</span> <span class="n">be</span> <span class="n">propagated</span> <span class="n">through</span> <span class="n">the</span> <span class="k">class</span> <span class="nc">to</span> <span class="n">update</span>
+    <span class="nb">any</span> <span class="n">other</span> <span class="n">attributes</span> <span class="n">that</span> <span class="n">need</span> <span class="n">to</span> <span class="n">match</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">the</span> <span class="n">marginals</span> <span class="ow">or</span>
+    <span class="n">seq_features</span><span class="p">)</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">add_data_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">CDR3</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="n">data_seq</span> <span class="n">pool</span><span class="o">.</span>
+    <span class="n">add_gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">CDR3</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="n">data_seq</span> <span class="n">pool</span><span class="o">.</span>
+    <span class="n">add_gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">CDR3</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="n">data_seq</span> <span class="n">pool</span><span class="o">.</span>
+    <span class="n">add_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span>
+    <span class="n">remove_featurese</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span> <span class="ow">and</span><span class="o">/</span><span class="ow">or</span> <span class="n">indices</span> <span class="n">to</span> <span class="n">remove</span> <span class="kn">from</span> <span class="nn">self.features</span>
+    <span class="n">add_constant_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span> <span class="n">to</span> <span class="n">add</span> <span class="n">to</span> <span class="n">constant</span> <span class="n">features</span><span class="o">.</span> <span class="p">(</span><span class="n">Not</span> <span class="n">currently</span> <span class="n">used</span><span class="p">)</span>
+    <span class="n">auto_update_marginals</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">Specifies</span> <span class="n">to</span> <span class="n">update</span> <span class="n">marginals</span><span class="o">.</span>
+    <span class="n">auto_update_seq_features</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">Specifies</span> <span class="n">to</span> <span class="n">update</span> <span class="n">seq</span> <span class="n">features</span><span class="o">.</span>
+    
+    <span class="n">Attributes</span> <span class="nb">set</span>
+    <span class="o">--------------</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">List</span> <span class="n">of</span> <span class="n">model</span> <span class="n">features</span>
+    <span class="n">data_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Features</span> <span class="n">data_seqs</span> <span class="n">have</span> <span class="n">been</span> <span class="n">projected</span> <span class="n">onto</span><span class="o">.</span>
+    <span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Features</span> <span class="n">gen_seqs</span> <span class="n">have</span> <span class="n">been</span> <span class="n">projected</span> <span class="n">onto</span><span class="o">.</span>
+    <span class="n">data_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Marginals</span> <span class="n">over</span> <span class="n">the</span> <span class="n">data</span> <span class="n">sequences</span> <span class="k">for</span> <span class="n">each</span> <span class="n">model</span> <span class="n">feature</span><span class="o">.</span>
+    <span class="n">gen_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Marginals</span> <span class="n">over</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">sequences</span> <span class="k">for</span> <span class="n">each</span> <span class="n">model</span> <span class="n">feature</span><span class="o">.</span>
+    <span class="n">model_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Marginals</span> <span class="n">over</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">sequences</span><span class="p">,</span> <span class="n">reweighted</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="p">,</span>
+        <span class="k">for</span> <span class="n">each</span> <span class="n">model</span> <span class="n">feature</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">update_model_structure(self,</span> <span class="pre">output_layer=[],</span> <span class="pre">input_layer=[],</span> <span class="pre">initialize=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Defines</span> <span class="n">the</span> <span class="n">model</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">compiles</span> <span class="n">it</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">structure</span> <span class="p">:</span> <span class="n">Sequential</span> <span class="n">Model</span> <span class="n">Keras</span>
+        <span class="n">structure</span> <span class="n">of</span> <span class="n">the</span> <span class="n">model</span>
+    
+    <span class="n">initialize</span><span class="p">:</span> <span class="nb">bool</span>
+        <span class="k">if</span> <span class="kc">True</span><span class="p">,</span> <span class="n">it</span> <span class="n">initializes</span> <span class="n">to</span> <span class="n">linear</span> <span class="n">model</span><span class="p">,</span> <span class="n">otherwise</span> <span class="n">it</span> <span class="n">updates</span> <span class="n">to</span> <span class="n">new</span> <span class="n">structure</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-sonia-leftpos-rightpos">
+<h2>sonia.sonia_leftpos_rightpos<a class="headerlink" href="#sonia-sonia-leftpos-rightpos" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: zacharysethna</p>
+<div class="section" id="id1">
+<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SoniaLeftposRightpos(data_seqs=[],</span> <span class="pre">gen_seqs=[],</span> <span class="pre">chain_type='humanTRB',</span> <span class="pre">load_dir=None,</span> <span class="pre">feature_file=None,</span> <span class="pre">data_seq_file=None,</span> <span class="pre">gen_seq_file=None,</span> <span class="pre">log_file=None,</span> <span class="pre">load_seqs=True,</span> <span class="pre">max_depth=25,</span> <span class="pre">max_L=30,</span> <span class="pre">include_indep_genes=False,</span> <span class="pre">include_joint_genes=True,</span> <span class="pre">min_energy_clip=-5,</span> <span class="pre">max_energy_clip=10,</span> <span class="pre">seed=None,</span> <span class="pre">custom_pgen_model=None,</span> <span class="pre">l2_reg=0.0,</span> <span class="pre">vj=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">a</span> <span class="n">Q</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+<span class="n">features_dict</span> <span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">Dictionary</span> <span class="n">keyed</span> <span class="n">by</span> <span class="n">tuples</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Values</span> <span class="n">are</span> <span class="n">the</span> <span class="n">index</span>
+    <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span>
+<span class="n">constant_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">strings</span> <span class="n">to</span> <span class="ow">not</span> <span class="n">update</span> <span class="n">parameters</span> <span class="n">during</span> <span class="n">learning</span><span class="o">.</span> <span class="n">These</span>
+        <span class="n">features</span> <span class="n">are</span> <span class="n">still</span> <span class="n">used</span> <span class="n">to</span> <span class="n">compute</span> <span class="n">energies</span> <span class="p">(</span><span class="ow">not</span> <span class="n">currently</span> <span class="n">used</span><span class="p">)</span>
+<span class="n">data_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Data</span> <span class="n">sequences</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span>
+    <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span> <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span>
+    <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Sequences</span> <span class="kn">from</span> <span class="nn">generative</span> <span class="n">distribution</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span>
+    <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">data_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">data_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">gen_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">data_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">data_seqs</span>
+<span class="n">gen_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">gen_seqs</span>
+<span class="n">model_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">the</span> <span class="n">model</span> <span class="n">weighted</span> <span class="n">gen_seqs</span>
+<span class="n">L1_converge_history</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">L1</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">data_marginals</span> <span class="ow">and</span> <span class="n">model_marginals</span> <span class="n">at</span> <span class="n">each</span>
+    <span class="n">iteration</span><span class="o">.</span>
+<span class="n">chain_type</span> <span class="p">:</span> <span class="nb">str</span>
+    <span class="n">Type</span> <span class="n">of</span> <span class="n">receptor</span><span class="o">.</span> <span class="n">This</span> <span class="n">specification</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">determine</span> <span class="n">gene</span> <span class="n">names</span>
+    <span class="ow">and</span> <span class="n">allow</span> <span class="n">integrated</span> <span class="n">OLGA</span> <span class="n">sequence</span> <span class="n">generation</span><span class="o">.</span> <span class="n">Options</span><span class="p">:</span> <span class="s1">&#39;humanTRA&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;humanTRB&#39;</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="s1">&#39;humanIGH&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGL&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGK&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mouseTRB&#39;</span><span class="o">.</span>
+<span class="n">l2_reg</span> <span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">L2</span> <span class="n">regularization</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">then</span> <span class="n">no</span> <span class="n">regularization</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+<span class="n">seq_feature_proj</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="k">if</span> <span class="n">a</span> <span class="n">feature</span> <span class="n">matches</span><span class="o">/</span><span class="ow">is</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">find_seq_features</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="nb">all</span> <span class="n">model</span> <span class="n">features</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_seq_energy</span><span class="p">(</span><span class="n">seq_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span><span class="p">,</span> <span class="k">as</span> <span class="n">determined</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="p">,</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_energy</span><span class="p">(</span><span class="n">seqs_features</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energies</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">seq_features</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">compute_marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq_model_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seqs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_flat_distribution</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">features</span> <span class="n">over</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+
+<span class="n">infer_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">initialize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Infers</span> <span class="n">model</span> <span class="n">parameters</span> <span class="p">(</span><span class="n">energies</span> <span class="k">for</span> <span class="n">each</span> <span class="n">feature</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">update_model_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">input_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">initialize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Sets</span> <span class="n">keras</span> <span class="n">model</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">compiles</span><span class="o">.</span>
+
+<span class="n">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_data_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_gen_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">remove_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_constant_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">auto_update_marginals</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">auto_update_seq_features</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Updates</span> <span class="n">model</span> <span class="n">by</span> <span class="n">adding</span><span class="o">/</span><span class="n">removing</span> <span class="n">model</span> <span class="n">features</span> <span class="ow">or</span> <span class="n">data</span><span class="o">/</span><span class="n">generated</span> <span class="n">seqs</span><span class="o">.</span>
+    <span class="n">Marginals</span> <span class="ow">and</span> <span class="n">seq_features</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">updated</span><span class="o">.</span>
+
+<span class="n">add_generated_seqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gen_seqs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">reset_gen_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Generates</span> <span class="n">synthetic</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">OLGA</span> <span class="ow">and</span> <span class="n">adds</span> <span class="n">them</span> <span class="n">to</span> <span class="n">gen_seqs</span><span class="o">.</span>
+
+<span class="n">plot_model_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">current</span> <span class="n">marginal</span> <span class="n">scatter</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">history</span><span class="o">.</span>
+
+<span class="n">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">attributes_to_save</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Saves</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">load_dir</span><span class="p">,</span> <span class="n">load_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="id2">
+<h4>Methods<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">add_features(self,</span> <span class="pre">include_indep_genes=False,</span> <span class="pre">include_joint_genes=True,</span> <span class="pre">custom_pgen_model=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">feature_lsts</span> <span class="k">for</span> <span class="n">L</span><span class="o">/</span><span class="n">R</span> <span class="n">pos</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">include_genes</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">If</span> <span class="n">true</span><span class="p">,</span> <span class="n">features</span> <span class="k">for</span> <span class="n">gene</span> <span class="n">selection</span> <span class="n">are</span> <span class="n">also</span> <span class="n">generated</span><span class="o">.</span> <span class="n">Currently</span>
+        <span class="n">joint</span> <span class="n">V</span><span class="o">/</span><span class="n">J</span> <span class="n">pairs</span> <span class="n">used</span><span class="o">.</span>
+    
+    <span class="n">custom_pgen_model</span><span class="p">:</span> <span class="n">string</span>
+        <span class="n">path</span> <span class="n">to</span> <span class="n">folder</span> <span class="n">of</span> <span class="n">custom</span> <span class="n">olga</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_seq_energy_from_parameters(self,</span> <span class="pre">seqs=None,</span> <span class="pre">seqs_features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">This</span> <span class="n">computes</span> <span class="n">according</span> <span class="n">to</span> <span class="n">model</span> <span class="n">parameters</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">the</span> <span class="n">keras</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">As</span> <span class="n">a</span> <span class="n">result</span><span class="p">,</span> <span class="n">no</span> <span class="n">clipping</span> <span class="n">occurs</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">Sequence</span> <span class="nb">list</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    <span class="n">seqs_features</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequence</span> <span class="n">features</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">E</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">Energies</span> <span class="n">of</span> <span class="n">seqs</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">find_seq_features(self,</span> <span class="pre">seq,</span> <span class="pre">features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Finds</span> <span class="n">which</span> <span class="n">features</span> <span class="n">match</span> <span class="n">seq</span>
+    
+    
+    <span class="n">If</span> <span class="n">no</span> <span class="n">features</span> <span class="n">are</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">left</span><span class="o">/</span><span class="n">right</span> <span class="n">indexing</span> <span class="n">amino</span> <span class="n">acid</span> <span class="n">model</span>
+    <span class="n">features</span> <span class="n">will</span> <span class="n">be</span> <span class="n">assumed</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Indices</span> <span class="n">of</span> <span class="n">features</span> <span class="n">seq</span> <span class="n">projects</span> <span class="n">onto</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_energy_parameters(self,</span> <span class="pre">return_as_dict=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Extract</span> <span class="n">energy</span> <span class="n">terms</span> <span class="kn">from</span> <span class="nn">keras</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">save_model(self,</span> <span class="pre">save_dir,</span> <span class="pre">attributes_to_save=None,</span> <span class="pre">force=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Saves</span> <span class="n">model</span> <span class="n">parameters</span> <span class="ow">and</span> <span class="n">sequences</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_dir</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Directory</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">model</span> <span class="n">attributes</span> <span class="n">to</span><span class="o">.</span>
+    
+    <span class="n">attributes_to_save</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Names</span> <span class="n">of</span> <span class="n">attributes</span> <span class="n">to</span> <span class="n">save</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-sonia-length-pos">
+<h2>sonia.sonia_length_pos<a class="headerlink" href="#sonia-sonia-length-pos" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Mar  6 15:12:15 2019</p>
+<p>&#64;author: Zachary Sethna</p>
+<div class="section" id="id3">
+<h3>Classes<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SoniaLengthPos(data_seqs=[],</span> <span class="pre">gen_seqs=[],</span> <span class="pre">chain_type='humanTRB',</span> <span class="pre">load_dir=None,</span> <span class="pre">feature_file=None,</span> <span class="pre">data_seq_file=None,</span> <span class="pre">gen_seq_file=None,</span> <span class="pre">log_file=None,</span> <span class="pre">min_L=4,</span> <span class="pre">max_L=30,</span> <span class="pre">include_indep_genes=False,</span> <span class="pre">include_joint_genes=True,</span> <span class="pre">min_energy_clip=-5,</span> <span class="pre">max_energy_clip=10,</span> <span class="pre">seed=None,</span> <span class="pre">custom_pgen_model=None,</span> <span class="pre">l2_reg=0.0,</span> <span class="pre">vj=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">a</span> <span class="n">Q</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+<span class="n">features_dict</span> <span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">Dictionary</span> <span class="n">keyed</span> <span class="n">by</span> <span class="n">tuples</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Values</span> <span class="n">are</span> <span class="n">the</span> <span class="n">index</span>
+    <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span>
+<span class="n">constant_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">strings</span> <span class="n">to</span> <span class="ow">not</span> <span class="n">update</span> <span class="n">parameters</span> <span class="n">during</span> <span class="n">learning</span><span class="o">.</span> <span class="n">These</span>
+        <span class="n">features</span> <span class="n">are</span> <span class="n">still</span> <span class="n">used</span> <span class="n">to</span> <span class="n">compute</span> <span class="n">energies</span> <span class="p">(</span><span class="ow">not</span> <span class="n">currently</span> <span class="n">used</span><span class="p">)</span>
+<span class="n">data_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Data</span> <span class="n">sequences</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span>
+    <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span> <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span>
+    <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Sequences</span> <span class="kn">from</span> <span class="nn">generative</span> <span class="n">distribution</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span>
+    <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">data_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">data_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">gen_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">data_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">data_seqs</span>
+<span class="n">gen_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">gen_seqs</span>
+<span class="n">model_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">the</span> <span class="n">model</span> <span class="n">weighted</span> <span class="n">gen_seqs</span>
+<span class="n">L1_converge_history</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">L1</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">data_marginals</span> <span class="ow">and</span> <span class="n">model_marginals</span> <span class="n">at</span> <span class="n">each</span>
+    <span class="n">iteration</span><span class="o">.</span>
+<span class="n">chain_type</span> <span class="p">:</span> <span class="nb">str</span>
+    <span class="n">Type</span> <span class="n">of</span> <span class="n">receptor</span><span class="o">.</span> <span class="n">This</span> <span class="n">specification</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">determine</span> <span class="n">gene</span> <span class="n">names</span>
+    <span class="ow">and</span> <span class="n">allow</span> <span class="n">integrated</span> <span class="n">OLGA</span> <span class="n">sequence</span> <span class="n">generation</span><span class="o">.</span> <span class="n">Options</span><span class="p">:</span> <span class="s1">&#39;humanTRA&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;humanTRB&#39;</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="s1">&#39;humanIGH&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGL&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGK&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mouseTRB&#39;</span><span class="o">.</span>
+<span class="n">l2_reg</span> <span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">L2</span> <span class="n">regularization</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">then</span> <span class="n">no</span> <span class="n">regularization</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+<span class="n">seq_feature_proj</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="k">if</span> <span class="n">a</span> <span class="n">feature</span> <span class="n">matches</span><span class="o">/</span><span class="ow">is</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">find_seq_features</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="nb">all</span> <span class="n">model</span> <span class="n">features</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_seq_energy</span><span class="p">(</span><span class="n">seq_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span><span class="p">,</span> <span class="k">as</span> <span class="n">determined</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="p">,</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_energy</span><span class="p">(</span><span class="n">seqs_features</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energies</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">seq_features</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">compute_marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq_model_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seqs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_flat_distribution</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">features</span> <span class="n">over</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+
+<span class="n">infer_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">initialize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Infers</span> <span class="n">model</span> <span class="n">parameters</span> <span class="p">(</span><span class="n">energies</span> <span class="k">for</span> <span class="n">each</span> <span class="n">feature</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">update_model_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">input_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">initialize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Sets</span> <span class="n">keras</span> <span class="n">model</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">compiles</span><span class="o">.</span>
+
+<span class="n">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_data_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_gen_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">remove_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_constant_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">auto_update_marginals</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">auto_update_seq_features</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Updates</span> <span class="n">model</span> <span class="n">by</span> <span class="n">adding</span><span class="o">/</span><span class="n">removing</span> <span class="n">model</span> <span class="n">features</span> <span class="ow">or</span> <span class="n">data</span><span class="o">/</span><span class="n">generated</span> <span class="n">seqs</span><span class="o">.</span>
+    <span class="n">Marginals</span> <span class="ow">and</span> <span class="n">seq_features</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">updated</span><span class="o">.</span>
+
+<span class="n">add_generated_seqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gen_seqs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">reset_gen_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Generates</span> <span class="n">synthetic</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">OLGA</span> <span class="ow">and</span> <span class="n">adds</span> <span class="n">them</span> <span class="n">to</span> <span class="n">gen_seqs</span><span class="o">.</span>
+
+<span class="n">plot_model_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">current</span> <span class="n">marginal</span> <span class="n">scatter</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">history</span><span class="o">.</span>
+
+<span class="n">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">attributes_to_save</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Saves</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">load_dir</span><span class="p">,</span> <span class="n">load_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="id4">
+<h4>Methods<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">add_features(self,</span> <span class="pre">include_indep_genes=False,</span> <span class="pre">include_joint_genes=True,</span> <span class="pre">custom_pgen_model=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">feature_lsts</span> <span class="k">for</span> <span class="n">a</span> <span class="n">length</span> <span class="n">dependent</span> <span class="n">L</span> <span class="n">pos</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">include_genes</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">If</span> <span class="n">true</span><span class="p">,</span> <span class="n">features</span> <span class="k">for</span> <span class="n">gene</span> <span class="n">selection</span> <span class="n">are</span> <span class="n">also</span> <span class="n">generated</span><span class="o">.</span> <span class="n">Currently</span>
+        <span class="n">joint</span> <span class="n">V</span><span class="o">/</span><span class="n">J</span> <span class="n">pairs</span> <span class="n">used</span><span class="o">.</span>
+    
+    <span class="n">custom_pgen_model</span><span class="p">:</span> <span class="n">string</span>
+        <span class="n">path</span> <span class="n">to</span> <span class="n">folder</span> <span class="n">of</span> <span class="n">custom</span> <span class="n">olga</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_seq_energy_from_parameters(self,</span> <span class="pre">seqs=None,</span> <span class="pre">seqs_features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">This</span> <span class="n">computes</span> <span class="n">according</span> <span class="n">to</span> <span class="n">model</span> <span class="n">parameters</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">the</span> <span class="n">keras</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">As</span> <span class="n">a</span> <span class="n">result</span><span class="p">,</span> <span class="n">no</span> <span class="n">clipping</span> <span class="n">occurs</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">Sequence</span> <span class="nb">list</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    <span class="n">seqs_features</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequence</span> <span class="n">features</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">E</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">Energies</span> <span class="n">of</span> <span class="n">seqs</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">find_seq_features(self,</span> <span class="pre">seq,</span> <span class="pre">features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Finds</span> <span class="n">which</span> <span class="n">features</span> <span class="n">match</span> <span class="n">seq</span>
+    
+    <span class="n">If</span> <span class="n">no</span> <span class="n">features</span> <span class="n">are</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">length</span> <span class="n">dependent</span> <span class="n">amino</span> <span class="n">acid</span> <span class="n">model</span>
+    <span class="n">features</span> <span class="n">will</span> <span class="n">be</span> <span class="n">assumed</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Indices</span> <span class="n">of</span> <span class="n">features</span> <span class="n">seq</span> <span class="n">projects</span> <span class="n">onto</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_energy_parameters(self,</span> <span class="pre">return_as_dict=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Extract</span> <span class="n">energy</span> <span class="n">terms</span> <span class="kn">from</span> <span class="nn">keras</span> <span class="n">model</span> <span class="ow">and</span> <span class="n">gauge</span><span class="o">.</span>
+    
+    <span class="n">For</span> <span class="n">the</span> <span class="n">length</span> <span class="n">dependent</span> <span class="n">position</span> <span class="n">model</span><span class="p">,</span> <span class="n">the</span> <span class="n">gauge</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">so</span> <span class="n">that</span> <span class="n">at</span> <span class="n">a</span>
+    <span class="n">given</span> <span class="n">position</span><span class="p">,</span> <span class="k">for</span> <span class="n">a</span> <span class="n">given</span> <span class="n">length</span><span class="p">,</span> <span class="n">we</span> <span class="n">have</span><span class="p">:</span>
+    
+    <span class="o">&lt;</span><span class="n">q_i</span><span class="p">,</span><span class="n">aa</span><span class="p">;</span><span class="n">L</span><span class="o">&gt;</span><span class="n">_gen</span><span class="o">|</span><span class="n">L</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">min_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Minimum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+    <span class="n">max_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Maximum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">save_model(self,</span> <span class="pre">save_dir,</span> <span class="pre">attributes_to_save=None,</span> <span class="pre">force=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Saves</span> <span class="n">model</span> <span class="n">parameters</span> <span class="ow">and</span> <span class="n">sequences</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_dir</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Directory</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">model</span> <span class="n">attributes</span> <span class="n">to</span><span class="o">.</span>
+    
+    <span class="n">attributes_to_save</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Names</span> <span class="n">of</span> <span class="n">attributes</span> <span class="n">to</span> <span class="n">save</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-sonia-vjl">
+<h2>sonia.sonia_vjl<a class="headerlink" href="#sonia-sonia-vjl" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: Giulio Isacchini</p>
+<div class="section" id="id5">
+<h3>Classes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SoniaVJL(data_seqs=[],</span> <span class="pre">gen_seqs=[],</span> <span class="pre">chain_type='humanTRB',</span> <span class="pre">load_dir=None,</span> <span class="pre">feature_file=None,</span> <span class="pre">data_seq_file=None,</span> <span class="pre">gen_seq_file=None,</span> <span class="pre">log_file=None,</span> <span class="pre">load_seqs=True,</span> <span class="pre">max_depth=25,</span> <span class="pre">max_L=30,</span> <span class="pre">include_indep_genes=False,</span> <span class="pre">include_joint_genes=True,</span> <span class="pre">min_energy_clip=-5,</span> <span class="pre">max_energy_clip=10,</span> <span class="pre">seed=None,</span> <span class="pre">custom_pgen_model=None,</span> <span class="pre">l2_reg=0.0,</span> <span class="pre">vj=False,</span> <span class="pre">joint_vjl=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">a</span> <span class="n">Q</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+<span class="n">features_dict</span> <span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">Dictionary</span> <span class="n">keyed</span> <span class="n">by</span> <span class="n">tuples</span> <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Values</span> <span class="n">are</span> <span class="n">the</span> <span class="n">index</span>
+    <span class="n">of</span> <span class="n">the</span> <span class="n">feature</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">features_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span>
+<span class="n">constant_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">List</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">strings</span> <span class="n">to</span> <span class="ow">not</span> <span class="n">update</span> <span class="n">parameters</span> <span class="n">during</span> <span class="n">learning</span><span class="o">.</span> <span class="n">These</span>
+        <span class="n">features</span> <span class="n">are</span> <span class="n">still</span> <span class="n">used</span> <span class="n">to</span> <span class="n">compute</span> <span class="n">energies</span> <span class="p">(</span><span class="ow">not</span> <span class="n">currently</span> <span class="n">used</span><span class="p">)</span>
+<span class="n">data_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Data</span> <span class="n">sequences</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span> <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span>
+    <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span> <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span>
+    <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">gen_seqs</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Sequences</span> <span class="kn">from</span> <span class="nn">generative</span> <span class="n">distribution</span> <span class="n">used</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">selection</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">Note</span><span class="p">,</span> <span class="n">each</span> <span class="s1">&#39;sequence&#39;</span> <span class="ow">is</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">where</span> <span class="n">the</span> <span class="n">first</span> <span class="n">element</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">CDR3</span>
+    <span class="n">sequence</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">followed</span> <span class="n">by</span> <span class="nb">any</span> <span class="n">V</span> <span class="ow">or</span> <span class="n">J</span> <span class="n">genes</span><span class="o">.</span>
+<span class="n">data_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">data_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">gen_seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">Lists</span> <span class="n">of</span> <span class="n">features</span> <span class="n">that</span> <span class="n">gen_seqs</span> <span class="n">project</span> <span class="n">onto</span>
+<span class="n">data_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">data_seqs</span>
+<span class="n">gen_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">gen_seqs</span>
+<span class="n">model_marginals</span> <span class="p">:</span> <span class="n">ndarray</span>
+    <span class="n">Array</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">each</span> <span class="n">feature</span> <span class="n">over</span> <span class="n">the</span> <span class="n">model</span> <span class="n">weighted</span> <span class="n">gen_seqs</span>
+<span class="n">L1_converge_history</span> <span class="p">:</span> <span class="nb">list</span>
+    <span class="n">L1</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">data_marginals</span> <span class="ow">and</span> <span class="n">model_marginals</span> <span class="n">at</span> <span class="n">each</span>
+    <span class="n">iteration</span><span class="o">.</span>
+<span class="n">chain_type</span> <span class="p">:</span> <span class="nb">str</span>
+    <span class="n">Type</span> <span class="n">of</span> <span class="n">receptor</span><span class="o">.</span> <span class="n">This</span> <span class="n">specification</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">to</span> <span class="n">determine</span> <span class="n">gene</span> <span class="n">names</span>
+    <span class="ow">and</span> <span class="n">allow</span> <span class="n">integrated</span> <span class="n">OLGA</span> <span class="n">sequence</span> <span class="n">generation</span><span class="o">.</span> <span class="n">Options</span><span class="p">:</span> <span class="s1">&#39;humanTRA&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;humanTRB&#39;</span> <span class="p">(</span><span class="n">default</span><span class="p">),</span> <span class="s1">&#39;humanIGH&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGL&#39;</span><span class="p">,</span> <span class="s1">&#39;humanIGK&#39;</span> <span class="ow">and</span> <span class="s1">&#39;mouseTRB&#39;</span><span class="o">.</span>
+<span class="n">l2_reg</span> <span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="n">L2</span> <span class="n">regularization</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">then</span> <span class="n">no</span> <span class="n">regularization</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+<span class="n">seq_feature_proj</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="k">if</span> <span class="n">a</span> <span class="n">feature</span> <span class="n">matches</span><span class="o">/</span><span class="ow">is</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">find_seq_features</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Determines</span> <span class="nb">all</span> <span class="n">model</span> <span class="n">features</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_seq_energy</span><span class="p">(</span><span class="n">seq_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span><span class="p">,</span> <span class="k">as</span> <span class="n">determined</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span><span class="p">,</span> <span class="n">of</span> <span class="n">a</span> <span class="n">sequence</span><span class="o">.</span>
+
+<span class="n">compute_energy</span><span class="p">(</span><span class="n">seqs_features</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energies</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">seq_features</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">compute_marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq_model_features</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seqs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_flat_distribution</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Computes</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">features</span> <span class="n">over</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+
+<span class="n">infer_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">initialize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Infers</span> <span class="n">model</span> <span class="n">parameters</span> <span class="p">(</span><span class="n">energies</span> <span class="k">for</span> <span class="n">each</span> <span class="n">feature</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">update_model_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">output_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">input_layer</span><span class="o">=</span><span class="p">[],</span><span class="n">initialize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Sets</span> <span class="n">keras</span> <span class="n">model</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">compiles</span><span class="o">.</span>
+
+<span class="n">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_data_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_gen_seqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">remove_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">add_constant_features</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">auto_update_marginals</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">auto_update_seq_features</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">Updates</span> <span class="n">model</span> <span class="n">by</span> <span class="n">adding</span><span class="o">/</span><span class="n">removing</span> <span class="n">model</span> <span class="n">features</span> <span class="ow">or</span> <span class="n">data</span><span class="o">/</span><span class="n">generated</span> <span class="n">seqs</span><span class="o">.</span>
+    <span class="n">Marginals</span> <span class="ow">and</span> <span class="n">seq_features</span> <span class="n">can</span> <span class="n">also</span> <span class="n">be</span> <span class="n">updated</span><span class="o">.</span>
+
+<span class="n">add_generated_seqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_gen_seqs</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">reset_gen_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Generates</span> <span class="n">synthetic</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">OLGA</span> <span class="ow">and</span> <span class="n">adds</span> <span class="n">them</span> <span class="n">to</span> <span class="n">gen_seqs</span><span class="o">.</span>
+
+<span class="n">plot_model_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">current</span> <span class="n">marginal</span> <span class="n">scatter</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">history</span><span class="o">.</span>
+
+<span class="n">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">attributes_to_save</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Saves</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">load_dir</span><span class="p">,</span> <span class="n">load_seqs</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="id6">
+<h4>Methods<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">add_features(self,</span> <span class="pre">custom_pgen_model=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">feature_lsts</span> <span class="k">for</span> <span class="n">L</span><span class="o">/</span><span class="n">R</span> <span class="n">pos</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">include_genes</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="n">If</span> <span class="n">true</span><span class="p">,</span> <span class="n">features</span> <span class="k">for</span> <span class="n">gene</span> <span class="n">selection</span> <span class="n">are</span> <span class="n">also</span> <span class="n">generated</span><span class="o">.</span> <span class="n">Currently</span>
+        <span class="n">joint</span> <span class="n">V</span><span class="o">/</span><span class="n">J</span> <span class="n">pairs</span> <span class="n">used</span><span class="o">.</span>
+    
+    <span class="n">custom_pgen_model</span><span class="p">:</span> <span class="n">string</span>
+        <span class="n">path</span> <span class="n">to</span> <span class="n">folder</span> <span class="n">of</span> <span class="n">custom</span> <span class="n">olga</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_seq_energy_from_parameters(self,</span> <span class="pre">seqs=None,</span> <span class="pre">seqs_features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">This</span> <span class="n">computes</span> <span class="n">according</span> <span class="n">to</span> <span class="n">model</span> <span class="n">parameters</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">the</span> <span class="n">keras</span> <span class="n">model</span><span class="o">.</span>
+    <span class="n">As</span> <span class="n">a</span> <span class="n">result</span><span class="p">,</span> <span class="n">no</span> <span class="n">clipping</span> <span class="n">occurs</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">Sequence</span> <span class="nb">list</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    <span class="n">seqs_features</span> <span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequence</span> <span class="n">features</span> <span class="k">for</span> <span class="n">a</span> <span class="n">single</span> <span class="n">sequence</span> <span class="ow">or</span> <span class="n">many</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">E</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">Energies</span> <span class="n">of</span> <span class="n">seqs</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">find_seq_features(self,</span> <span class="pre">seq,</span> <span class="pre">features=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Finds</span> <span class="n">which</span> <span class="n">features</span> <span class="n">match</span> <span class="n">seq</span>
+    
+    
+    <span class="n">If</span> <span class="n">no</span> <span class="n">features</span> <span class="n">are</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">left</span><span class="o">/</span><span class="n">right</span> <span class="n">indexing</span> <span class="n">amino</span> <span class="n">acid</span> <span class="n">model</span>
+    <span class="n">features</span> <span class="n">will</span> <span class="n">be</span> <span class="n">assumed</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seq</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">CDR3</span> <span class="n">sequence</span> <span class="ow">and</span> <span class="nb">any</span> <span class="n">associated</span> <span class="n">genes</span>
+    <span class="n">features</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">Array</span> <span class="n">of</span> <span class="n">feature</span> <span class="n">lists</span><span class="o">.</span> <span class="n">Each</span> <span class="nb">list</span> <span class="n">contains</span> <span class="n">individual</span> <span class="n">subfeatures</span> <span class="n">which</span>
+        <span class="nb">all</span> <span class="n">must</span> <span class="n">be</span> <span class="n">satisfied</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">seq_features</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Indices</span> <span class="n">of</span> <span class="n">features</span> <span class="n">seq</span> <span class="n">projects</span> <span class="n">onto</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_energy_parameters(self,</span> <span class="pre">return_as_dict=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Extract</span> <span class="n">energy</span> <span class="n">terms</span> <span class="kn">from</span> <span class="nn">keras</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">save_model(self,</span> <span class="pre">save_dir,</span> <span class="pre">attributes_to_save=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Saves</span> <span class="n">model</span> <span class="n">parameters</span> <span class="ow">and</span> <span class="n">sequences</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_dir</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="n">Directory</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">model</span> <span class="n">attributes</span> <span class="n">to</span><span class="o">.</span>
+    
+    <span class="n">attributes_to_save</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">Names</span> <span class="n">of</span> <span class="n">attributes</span> <span class="n">to</span> <span class="n">save</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-evaluate-model">
+<h2>sonia.evaluate_model<a class="headerlink" href="#sonia-evaluate-model" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: Giulio Isacchini</p>
+<div class="section" id="id7">
+<h3>Classes<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">EvaluateModel(sonia_model=None,</span> <span class="pre">include_genes=True,</span> <span class="pre">processes=None,</span> <span class="pre">custom_olga_model=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">evaluate</span> <span class="n">sequences</span> <span class="k">with</span> <span class="n">the</span> <span class="n">sonia</span> <span class="n">model</span><span class="p">:</span> <span class="n">Ppost</span><span class="o">=</span><span class="n">Q</span><span class="o">*</span><span class="n">Pgen</span>
+
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">sonia_model</span><span class="p">:</span> <span class="nb">object</span>
+    <span class="n">Sonia</span> <span class="n">model</span><span class="o">.</span> <span class="n">Loaded</span> <span class="n">previously</span><span class="p">,</span> <span class="n">do</span> <span class="ow">not</span> <span class="n">put</span> <span class="n">the</span> <span class="n">path</span><span class="o">.</span>
+
+<span class="n">include_genes</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">Conditioning</span> <span class="n">on</span> <span class="n">gene</span> <span class="n">usage</span> <span class="k">for</span> <span class="n">pgen</span><span class="o">/</span><span class="n">ppost</span> <span class="n">evaluation</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="kc">True</span>
+
+<span class="n">processes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">Number</span> <span class="n">of</span> <span class="n">processes</span> <span class="n">to</span> <span class="n">use</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">pgen</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="nb">all</span><span class="o">.</span>
+
+<span class="n">custom_olga_model</span><span class="p">:</span> <span class="nb">object</span>
+    <span class="n">Optional</span><span class="p">:</span> <span class="n">already</span> <span class="n">loaded</span> <span class="n">custom</span> <span class="n">generation_probability</span> <span class="n">olga</span> <span class="n">model</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+
+<span class="n">evaluate_seqs</span><span class="p">(</span><span class="n">seqs</span><span class="o">=</span><span class="p">[])</span>
+    <span class="n">Returns</span> <span class="n">Q</span><span class="p">,</span> <span class="n">pgen</span> <span class="ow">and</span> <span class="n">ppost</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+
+<span class="n">evaluate_selection_factors</span><span class="p">(</span><span class="n">seqs</span><span class="o">=</span><span class="p">[])</span>
+    <span class="n">Returns</span> <span class="n">normalised</span> <span class="n">selection</span> <span class="n">factor</span> <span class="n">Q</span> <span class="p">(</span><span class="n">Ppost</span><span class="o">=</span><span class="n">Q</span><span class="o">*</span><span class="n">Pgen</span><span class="p">)</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="p">(</span><span class="n">faster</span> <span class="n">than</span> <span class="n">evaluate_seqs</span> <span class="n">because</span> <span class="n">it</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">compute</span> <span class="n">pgen</span> <span class="ow">and</span> <span class="n">ppost</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="id8">
+<h4>Methods<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">compute_all_pgens(self,</span> <span class="pre">seqs)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Compute</span> <span class="n">Pgen</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">OLGA</span> <span class="ow">in</span> <span class="n">parallel</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">evaluate</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">pgens</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">generation</span> <span class="n">probabilities</span> <span class="n">of</span> <span class="n">the</span> <span class="n">sequences</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">compute_joint_marginals(self)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Computes</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="nb">all</span><span class="o">.</span>
+    
+    <span class="n">Attributes</span> <span class="n">Set</span>
+    <span class="o">-------</span>
+    <span class="n">gen_marginals_two</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">pre</span><span class="o">-</span><span class="n">selection</span> <span class="n">distribution</span>
+    <span class="n">data_marginals_two</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">data</span>
+    <span class="n">model_marginals_two</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">post</span><span class="o">-</span><span class="n">selection</span> <span class="n">distribution</span>
+    <span class="n">gen_marginals_two_independent</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">independent</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">pre</span><span class="o">-</span><span class="n">selection</span> <span class="n">distribution</span>
+    <span class="n">data_marginals_two_independent</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">pre</span><span class="o">-</span><span class="n">selection</span> <span class="n">distribution</span>
+    <span class="n">model_marginals_two_independent</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="k">for</span> <span class="n">pre</span><span class="o">-</span><span class="n">selection</span> <span class="n">distribution</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">evaluate_selection_factors(self,</span> <span class="pre">seqs=[])</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Returns</span> <span class="n">normalised</span> <span class="n">selection</span> <span class="n">factor</span> <span class="n">Q</span> <span class="p">(</span><span class="n">of</span> <span class="n">Ppost</span><span class="o">=</span><span class="n">Q</span><span class="o">*</span><span class="n">Pgen</span><span class="p">)</span> <span class="n">of</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="p">(</span><span class="n">faster</span> <span class="n">than</span> <span class="n">evaluate_seqs</span> <span class="n">because</span> <span class="n">it</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">compute</span> <span class="n">pgen</span> <span class="ow">and</span> <span class="n">ppost</span><span class="p">)</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">evaluate</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">Q</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">selection</span> <span class="n">factor</span> <span class="n">Q</span> <span class="p">(</span><span class="n">of</span> <span class="n">Ppost</span><span class="o">=</span><span class="n">Q</span><span class="o">*</span><span class="n">Pgen</span><span class="p">)</span> <span class="n">of</span> <span class="n">the</span> <span class="n">sequences</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">evaluate_seqs(self,</span> <span class="pre">seqs=[])</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Returns</span> <span class="n">selection</span> <span class="n">factors</span><span class="p">,</span> <span class="n">pgen</span> <span class="ow">and</span> <span class="n">pposts</span> <span class="n">of</span> <span class="n">sequences</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">seqs</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="nb">list</span> <span class="n">of</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">evaluate</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">Q</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">selection</span> <span class="n">factor</span> <span class="n">Q</span> <span class="p">(</span><span class="n">of</span> <span class="n">Ppost</span><span class="o">=</span><span class="n">Q</span><span class="o">*</span><span class="n">Pgen</span><span class="p">)</span> <span class="n">of</span> <span class="n">the</span> <span class="n">sequences</span>
+    
+    <span class="n">pgens</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">pgen</span> <span class="n">of</span> <span class="n">the</span> <span class="n">sequences</span>
+    
+    <span class="n">pposts</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">ppost</span> <span class="n">of</span> <span class="n">the</span> <span class="n">sequences</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">joint_marginals(self,</span> <span class="pre">features=None,</span> <span class="pre">seq_model_features=None,</span> <span class="pre">seqs=None,</span> <span class="pre">use_flat_distribution=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Returns</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="n">P</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="k">with</span> <span class="n">i</span> <span class="ow">and</span> <span class="n">j</span> <span class="n">features</span> <span class="n">of</span> <span class="n">sonia</span> <span class="p">(</span><span class="n">l3</span><span class="p">,</span> <span class="n">aA6</span><span class="p">,</span> <span class="n">etc</span><span class="o">..</span><span class="p">),</span> <span class="n">index</span> <span class="n">of</span> <span class="n">features</span> <span class="n">attribute</span> <span class="ow">is</span> <span class="n">preserved</span><span class="o">.</span>
+    <span class="n">Matrix</span> <span class="ow">is</span> <span class="n">upper</span><span class="o">-</span><span class="n">triangular</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">custom</span> <span class="n">feature</span> <span class="nb">list</span> 
+    <span class="n">seq_model_features</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">encoded</span> <span class="n">sequences</span>
+    <span class="n">seqs</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">seqs</span> <span class="n">to</span> <span class="n">encode</span><span class="o">.</span>
+    <span class="n">use_flat_distribution</span><span class="p">:</span> <span class="nb">bool</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">generated</span> <span class="n">seqs</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">False</span> <span class="p">(</span><span class="n">weights</span> <span class="k">with</span> <span class="n">Q</span><span class="p">)</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">joint_marginals</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">joint_marginals_independent(self,</span> <span class="pre">marginals)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Returns</span> <span class="n">independent</span> <span class="n">joint</span> <span class="n">marginals</span> <span class="n">P</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span><span class="o">=</span><span class="n">P</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">P</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">with</span> <span class="n">i</span> <span class="ow">and</span> <span class="n">j</span> <span class="n">features</span> <span class="n">of</span> <span class="n">sonia</span> <span class="p">(</span><span class="n">l3</span><span class="p">,</span> <span class="n">aA6</span><span class="p">,</span> <span class="n">etc</span><span class="o">..</span><span class="p">),</span> <span class="n">index</span> <span class="n">of</span> <span class="n">features</span> <span class="n">attribute</span> <span class="ow">is</span> <span class="n">preserved</span><span class="o">.</span>
+    <span class="n">Matrix</span> <span class="ow">is</span> <span class="n">upper</span><span class="o">-</span><span class="n">triangular</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">marginals</span><span class="p">:</span> <span class="nb">list</span>
+        <span class="n">marginals</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">joint_marginals</span><span class="p">:</span> <span class="n">array</span>
+        <span class="n">matrix</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="n">of</span> <span class="n">joint</span> <span class="n">marginals</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-sequence-generation">
+<h2>sonia.sequence_generation<a class="headerlink" href="#sonia-sequence-generation" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: Giulio Isacchini</p>
+<div class="section" id="id9">
+<h3>Classes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SequenceGeneration(sonia_model=None,</span> <span class="pre">custom_olga_model=None,</span> <span class="pre">custom_genomic_data=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">evaluate</span> <span class="n">sequences</span> <span class="k">with</span> <span class="n">the</span> <span class="n">sonia</span> <span class="n">model</span>
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">sonia_model</span><span class="p">:</span> <span class="nb">object</span> 
+    <span class="n">Required</span><span class="o">.</span> <span class="n">Sonia</span> <span class="n">model</span><span class="p">:</span> <span class="n">only</span> <span class="nb">object</span> <span class="n">accepted</span><span class="o">.</span>
+
+<span class="n">custom_olga_model</span><span class="p">:</span> <span class="nb">object</span> 
+    <span class="n">Optional</span><span class="p">:</span> <span class="n">already</span> <span class="n">loaded</span> <span class="n">custom</span> <span class="n">olga</span> <span class="n">sequence_generation</span> <span class="nb">object</span>
+
+<span class="n">custom_genomic_data</span><span class="p">:</span> <span class="nb">object</span>
+    <span class="n">Optional</span><span class="p">:</span> <span class="n">already</span> <span class="n">loaded</span> <span class="n">custom</span> <span class="n">olga</span> <span class="n">genomic_data</span> <span class="nb">object</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+
+<span class="n">generate_sequences_pre</span><span class="p">(</span><span class="n">num_seqs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">Generate</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">olga</span>
+
+<span class="n">generate_sequences_post</span><span class="p">(</span><span class="n">num_seqs</span><span class="p">,</span><span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">Generate</span> <span class="n">sequences</span> <span class="n">using</span> <span class="n">olga</span> <span class="ow">and</span> <span class="n">perform</span> <span class="n">rejection</span> <span class="n">selection</span><span class="o">.</span>
+
+<span class="n">rejection_sampling</span><span class="p">(</span><span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">energies</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">Returns</span> <span class="n">acceptance</span> <span class="kn">from</span> <span class="nn">rejection</span> <span class="n">sampling</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">energies</span><span class="o">.</span>
+    <span class="n">By</span> <span class="n">default</span> <span class="n">uses</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">sequences</span> <span class="n">within</span> <span class="n">the</span> <span class="n">sonia</span> <span class="n">model</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="id10">
+<h4>Methods<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">generate_sequences_post(self,</span> <span class="pre">num_seqs=1,</span> <span class="pre">upper_bound=10,</span> <span class="pre">nucleotide=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="kn">from</span> <span class="nn">Sonia</span> <span class="n">through</span> <span class="n">rejection</span> <span class="n">sampling</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">num_seqs</span> <span class="p">:</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">float</span>
+        <span class="n">Number</span> <span class="n">of</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">generate</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">to</span> <span class="n">the</span> <span class="n">specified</span>
+        <span class="n">sequence</span> <span class="n">pool</span><span class="o">.</span>
+    <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">accept</span> <span class="nb">all</span> <span class="n">above</span> <span class="n">the</span> <span class="n">threshold</span><span class="o">.</span> <span class="n">Relates</span> <span class="n">to</span> <span class="n">the</span> <span class="n">percentage</span> <span class="n">of</span> 
+        <span class="n">sequences</span> <span class="n">that</span> <span class="k">pass</span> <span class="n">selection</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">--------------</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">drawn</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">VDJ</span> <span class="n">recomb</span> <span class="n">model</span> <span class="n">that</span> <span class="k">pass</span> <span class="n">selection</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">generate_sequences_pre(self,</span> <span class="pre">num_seqs=1,</span> <span class="pre">nucleotide=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generates</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="k">for</span> <span class="n">gen_seqs</span> <span class="n">using</span> <span class="n">OLGA</span><span class="o">.</span>
+    
+    <span class="n">Only</span> <span class="n">generates</span> <span class="n">seqs</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">V</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="n">J</span> <span class="n">model</span><span class="o">.</span> <span class="n">Requires</span> <span class="n">the</span> <span class="n">OLGA</span> <span class="n">package</span>
+    <span class="p">(</span><span class="n">pip</span> <span class="n">install</span> <span class="n">olga</span><span class="p">)</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">num_seqs</span> <span class="p">:</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">float</span>
+        <span class="n">Number</span> <span class="n">of</span> <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">to</span> <span class="n">generate</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">to</span> <span class="n">the</span> <span class="n">specified</span>
+        <span class="n">sequence</span> <span class="n">pool</span><span class="o">.</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">--------------</span>
+    <span class="n">seqs</span> <span class="p">:</span> <span class="nb">list</span>
+        <span class="n">MonteCarlo</span> <span class="n">sequences</span> <span class="n">drawn</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">VDJ</span> <span class="n">recomb</span> <span class="n">model</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">rejection_sampling(self,</span> <span class="pre">upper_bound=10,</span> <span class="pre">energies=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Returns</span> <span class="n">acceptance</span> <span class="kn">from</span> <span class="nn">rejection</span> <span class="n">sampling</span> <span class="n">of</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">seqs</span><span class="o">.</span>
+    <span class="n">By</span> <span class="n">default</span> <span class="n">uses</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">sequences</span> <span class="n">within</span> <span class="n">the</span> <span class="n">sonia</span> <span class="n">model</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">upper_bound</span> <span class="p">:</span> <span class="nb">int</span> <span class="ow">or</span> <span class="nb">float</span>
+        <span class="n">accept</span> <span class="nb">all</span> <span class="n">above</span> <span class="n">the</span> <span class="n">threshold</span><span class="o">.</span> <span class="n">Relates</span> <span class="n">to</span> <span class="n">the</span> <span class="n">percentage</span> <span class="n">of</span> 
+        <span class="n">sequences</span> <span class="n">that</span> <span class="k">pass</span> <span class="n">selection</span>
+    
+    <span class="n">Returns</span>
+    <span class="o">-------</span>
+    <span class="n">rejection</span> <span class="n">selection</span><span class="p">:</span> <span class="n">array</span> <span class="n">of</span> <span class="nb">bool</span>
+        <span class="n">acceptance</span> <span class="n">of</span> <span class="n">each</span> <span class="n">sequence</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="sonia-plotting">
+<h2>sonia.plotting<a class="headerlink" href="#sonia-plotting" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: Giulio Isacchini</p>
+<div class="section" id="id11">
+<h3>Classes<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Plotter(sonia_model=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Class</span> <span class="n">used</span> <span class="n">to</span> <span class="n">do</span> <span class="n">plotting</span>
+
+<span class="n">Attributes</span>
+<span class="o">----------</span>
+<span class="n">sonia_model</span><span class="p">:</span> <span class="nb">object</span>
+    <span class="n">Sonia</span> <span class="n">model</span><span class="o">.</span> <span class="n">No</span> <span class="n">path</span><span class="o">.</span>
+
+<span class="n">Methods</span>
+<span class="o">----------</span>
+
+<span class="n">plot_model_learning</span><span class="p">(</span><span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">curve</span> <span class="ow">and</span> <span class="n">marginal</span> <span class="n">scatter</span><span class="o">.</span>
+
+<span class="n">plot_pgen</span><span class="p">(</span><span class="n">pgen_data</span><span class="o">=</span><span class="p">[],</span><span class="n">pgen_gen</span><span class="o">=</span><span class="p">[],</span><span class="n">pgen_model</span><span class="o">=</span><span class="p">[],</span><span class="n">n_bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">Histogram</span> <span class="n">plot</span> <span class="n">of</span> <span class="n">pgen</span><span class="o">.</span> <span class="n">You</span> <span class="n">need</span> <span class="n">to</span> <span class="n">evalute</span> <span class="n">them</span> <span class="n">first</span><span class="o">.</span>
+
+<span class="n">plot_ppost</span><span class="p">(</span><span class="n">ppost_data</span><span class="o">=</span><span class="p">[],</span><span class="n">ppost_gen</span><span class="o">=</span><span class="p">[],</span><span class="n">pppst_model</span><span class="o">=</span><span class="p">[],</span><span class="n">n_bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">Histogram</span> <span class="n">plot</span> <span class="n">of</span> <span class="n">ppost</span><span class="o">.</span> <span class="n">You</span> <span class="n">need</span> <span class="n">to</span> <span class="n">evalute</span> <span class="n">them</span> <span class="n">first</span><span class="o">.</span>
+
+<span class="n">plot_model_parameters</span><span class="p">(</span><span class="n">low_freq_mask</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">For</span> <span class="n">LengthPos</span> <span class="n">model</span> <span class="n">only</span><span class="o">.</span> <span class="n">Plot</span> <span class="n">the</span> <span class="n">model</span> <span class="n">parameters</span> <span class="n">using</span> <span class="n">plot_onepoint_values</span>
+
+<span class="n">plot_marginals_length_corrected</span><span class="p">(</span><span class="n">min_L</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">max_L</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">log_scale</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">For</span> <span class="n">LengthPos</span> <span class="n">model</span> <span class="n">only</span><span class="o">.</span> <span class="n">Plot</span> <span class="n">length</span> <span class="n">normalized</span> <span class="n">marginals</span><span class="o">.</span>
+
+<span class="n">plot_vjl</span><span class="p">(</span><span class="n">save_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">V</span> <span class="n">gene</span><span class="p">,</span> <span class="n">J</span> <span class="n">gene</span> <span class="ow">and</span> <span class="n">cdr3</span> <span class="n">length</span>
+
+<span class="n">plot_logQ</span><span class="p">(</span><span class="n">save_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">logQ</span> <span class="n">of</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">generated</span> <span class="n">sequences</span>
+
+<span class="n">plot_ratioQ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">save_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">Plots</span> <span class="n">the</span> <span class="n">ratio</span> <span class="n">of</span> <span class="n">P</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">pre</span><span class="o">-</span><span class="n">selected</span> <span class="n">pool</span><span class="o">.</span> <span class="n">Useful</span> <span class="k">for</span> <span class="n">model</span> <span class="n">validation</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="section" id="id12">
+<h4>Methods<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">norm_marginals(self,</span> <span class="pre">marg,</span> <span class="pre">min_L=None,</span> <span class="pre">max_L=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">renormalizing</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">accourding</span> <span class="n">to</span> <span class="n">length</span><span class="p">,</span> <span class="n">so</span> <span class="n">the</span> <span class="nb">sum</span> <span class="n">of</span> <span class="n">the</span> <span class="n">marginals</span> <span class="n">over</span> <span class="nb">all</span> <span class="n">amino</span> <span class="n">acid</span> 
+    <span class="k">for</span> <span class="n">one</span> <span class="n">position</span><span class="o">/</span><span class="n">length</span> <span class="n">combination</span> <span class="n">will</span> <span class="n">be</span> <span class="mi">1</span> <span class="p">(</span><span class="ow">and</span> <span class="ow">not</span> <span class="n">the</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">CDR3s</span> <span class="n">of</span> <span class="n">this</span> <span class="n">length</span><span class="p">)</span>
+        
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">marg</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">the</span> <span class="n">marginal</span> <span class="n">to</span> <span class="n">renormalize</span>
+    <span class="n">min_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Minimum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+    <span class="n">max_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Maximum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_logQ(self,</span> <span class="pre">save_name=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Plots</span> <span class="n">logQ</span> <span class="n">of</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">generated</span> <span class="n">sequences</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_name</span> <span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">File</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">output</span> <span class="n">figure</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">save</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_marginals_length_corrected(self,</span> <span class="pre">min_L=8,</span> <span class="pre">max_L=16,</span> <span class="pre">log_scale=True)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">plot</span> <span class="n">length</span> <span class="n">normalized</span> <span class="n">marginals</span> <span class="n">using</span> <span class="n">plot_onepoint_values</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">min_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Minimum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+    <span class="n">max_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Maximum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span><span class="p">,</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">taken</span> <span class="kn">from</span> <span class="nn">class</span> <span class="n">attribute</span>
+    <span class="n">log_scale</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="k">if</span> <span class="kc">True</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">plots</span> <span class="n">marginals</span> <span class="n">on</span> <span class="n">a</span> <span class="n">log</span> <span class="n">scale</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_model_learning(self,</span> <span class="pre">save_name=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Plots</span> <span class="n">L1</span> <span class="n">convergence</span> <span class="n">curve</span> <span class="ow">and</span> <span class="n">marginal</span> <span class="n">scatter</span><span class="o">.</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_name</span> <span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">File</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">output</span> <span class="n">figure</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">save</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_model_parameters(self,</span> <span class="pre">low_freq_mask=0.0)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">plot</span> <span class="n">the</span> <span class="n">model</span> <span class="n">parameters</span> <span class="n">using</span> <span class="n">plot_onepoint_values</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">low_freq_mask</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">threshold</span> <span class="n">on</span> <span class="n">the</span> <span class="n">marginals</span><span class="p">,</span> <span class="n">anything</span> <span class="n">lower</span> <span class="n">would</span> <span class="n">be</span> <span class="n">grayed</span> <span class="n">out</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_onepoint_values(self,</span> <span class="pre">onepoint=None,</span> <span class="pre">onepoint_dict=None,</span> <span class="pre">min_L=None,</span> <span class="pre">max_L=None,</span> <span class="pre">min_val=None,</span> <span class="pre">max_value=None,</span> <span class="pre">title='',</span> <span class="pre">cmap='seismic',</span> <span class="pre">bad_color='black',</span> <span class="pre">aa_color='white',</span> <span class="pre">marginals=False)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">plot</span> <span class="n">a</span> <span class="n">function</span> <span class="n">of</span> <span class="n">aa</span><span class="p">,</span> <span class="n">length</span> <span class="ow">and</span> <span class="n">position</span> <span class="kn">from</span> <span class="nn">left</span><span class="p">,</span> <span class="n">one</span> <span class="n">heatplot</span> <span class="n">per</span> <span class="n">aa</span>
+       
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">onepoint</span> <span class="p">:</span> <span class="n">ndarray</span>
+        <span class="n">array</span> <span class="n">containting</span> <span class="n">one</span><span class="o">-</span><span class="n">point</span> <span class="n">values</span> <span class="n">to</span> <span class="n">plot</span><span class="p">,</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">shape</span> <span class="k">as</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> 
+        <span class="n">expected</span> <span class="n">unless</span> <span class="n">onepoint_dict</span> <span class="ow">is</span> <span class="n">given</span>
+    <span class="n">onepoint_dict</span> <span class="p">:</span> <span class="nb">dict</span>
+        <span class="nb">dict</span> <span class="n">of</span> <span class="n">the</span> <span class="n">one</span><span class="o">-</span><span class="n">point</span> <span class="n">values</span> <span class="n">to</span> <span class="n">plot</span><span class="p">,</span> <span class="n">keyed</span> <span class="n">by</span> <span class="n">the</span> <span class="n">feature</span> <span class="n">tuples</span> <span class="n">such</span> <span class="k">as</span> <span class="p">(</span><span class="n">l12</span><span class="p">,</span><span class="n">aA8</span><span class="p">)</span>
+    <span class="n">min_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Minimum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span>
+    <span class="n">max_L</span> <span class="p">:</span> <span class="nb">int</span>
+        <span class="n">Maximum</span> <span class="n">length</span> <span class="n">CDR3</span> <span class="n">sequence</span>
+    <span class="n">min_val</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">minimum</span> <span class="n">value</span> <span class="n">to</span> <span class="n">plot</span>
+    <span class="n">max_val</span> <span class="p">:</span> <span class="nb">float</span>
+        <span class="n">maximum</span> <span class="n">value</span> <span class="n">to</span> <span class="n">plot</span>
+    <span class="n">title</span> <span class="p">:</span> <span class="n">string</span>
+        <span class="n">title</span> <span class="n">of</span> <span class="n">plot</span> <span class="n">to</span> <span class="n">display</span>
+    <span class="n">cmap</span> <span class="p">:</span> <span class="n">colormap</span> 
+        <span class="n">colormap</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">the</span> <span class="n">heatplots</span>
+    <span class="n">bad_color</span> <span class="p">:</span> <span class="n">string</span>
+        <span class="n">color</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">nan</span> <span class="n">values</span> <span class="o">-</span> <span class="n">used</span> <span class="n">primarly</span> <span class="k">for</span> <span class="n">cells</span> <span class="n">where</span> <span class="n">position</span> <span class="ow">is</span> <span class="n">larger</span> <span class="n">than</span> <span class="n">length</span>
+    <span class="n">aa_color</span> <span class="p">:</span> <span class="n">string</span>
+        <span class="n">color</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">amino</span> <span class="n">acid</span> <span class="n">names</span> <span class="k">for</span> <span class="n">each</span> <span class="n">heatplot</span> <span class="n">displayed</span> <span class="n">on</span> <span class="n">the</span> <span class="n">bad_color</span> <span class="n">background</span>
+    <span class="n">marginals</span> <span class="p">:</span> <span class="nb">bool</span>
+        <span class="k">if</span> <span class="n">true</span><span class="p">,</span> <span class="n">indicates</span> <span class="n">marginals</span> <span class="n">are</span> <span class="n">to</span> <span class="n">be</span> <span class="n">plotted</span> <span class="ow">and</span> <span class="n">this</span> <span class="n">sets</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">bad_color</span> <span class="ow">and</span> <span class="n">aa_color</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_prob(self,</span> <span class="pre">data=[],</span> <span class="pre">gen=[],</span> <span class="pre">model=[],</span> <span class="pre">n_bins=30,</span> <span class="pre">save_name=None,</span> <span class="pre">bin_min=-20,</span> <span class="pre">bin_max=-5,</span> <span class="pre">ptype='P_{pre}',</span> <span class="pre">figsize=(6,</span> <span class="pre">4))</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Histogram</span> <span class="n">plot</span> <span class="n">of</span> <span class="n">Pgen</span><span class="o">/</span><span class="n">ppost</span><span class="o">/</span><span class="n">Q</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">number</span> <span class="n">of</span> <span class="n">bins</span> <span class="n">of</span> <span class="n">the</span> <span class="n">histogram</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_ratioQ(self,</span> <span class="pre">save_name=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Plots</span> <span class="n">the</span> <span class="n">ratio</span> <span class="n">of</span> <span class="n">P</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">pre</span><span class="o">-</span><span class="n">selected</span> <span class="n">pool</span><span class="o">.</span> <span class="n">Useful</span> <span class="k">for</span> <span class="n">model</span> <span class="n">validation</span><span class="o">.</span> 
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_name</span> <span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">File</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">output</span> <span class="n">figure</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">save</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_vjl(self,</span> <span class="pre">save_name=None)</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Plots</span> <span class="n">marginals</span> <span class="n">of</span> <span class="n">V</span> <span class="n">gene</span><span class="p">,</span> <span class="n">J</span> <span class="n">gene</span> <span class="ow">and</span> <span class="n">cdr3</span> <span class="n">length</span>
+    
+    <span class="n">Parameters</span>
+    <span class="o">----------</span>
+    <span class="n">save_name</span> <span class="p">:</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="n">File</span> <span class="n">name</span> <span class="n">to</span> <span class="n">save</span> <span class="n">output</span> <span class="n">figure</span><span class="o">.</span> <span class="n">If</span> <span class="kc">None</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">save</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="license.html" class="btn btn-neutral float-right" title="License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="sonia_tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Zachary Sethna and Giulio Isacchini
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
