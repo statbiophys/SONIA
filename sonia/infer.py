@@ -36,6 +36,7 @@ import olga.generation_probability as generation_probability
 import numpy as np
 from tqdm import tqdm
 
+
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -84,12 +85,20 @@ def main():
     parser.add_option('--gene_mask_delimiter', type='choice', dest='gene_mask_delimiter',  choices=['tab', 'space', ',', ';', ':'], help="declare gene mask delimiter. Default comma unless infile delimiter is comma, then default is a semicolon. Choices: 'tab', 'space', ',', ';', ':'")
     parser.add_option('--raw_gene_mask_delimiter', type='str', dest='gene_mask_delimiter', help="declare delimiter of gene masks as a raw string.")
     parser.add_option('--comment_delimiter', type='str', dest='comment_delimiter', help="character or string to indicate comment or header lines to skip.")
+    parser.add_option('--seed', type='int',metavar='N', dest='seed', default = None, help='set seed for inference')
 
     (options, args) = parser.parse_args()
 
-    #Check that the model is specified properly
-    main_folder = os.path.dirname(__file__)
+    #set seed
+    if options.seed is not None: 
+        import tensorflow as tf
+        np.random.seed(options.seed)
+        tf.random.set_seed(options.seed)
 
+    #Check that the model is specified properly
+    
+    main_folder = os.path.dirname(__file__)
+    
     default_models = {}
     default_models['humanTRA'] = [os.path.join(main_folder, 'default_models', 'human_T_alpha'),  'VJ']
     default_models['humanIGK'] = [os.path.join(main_folder, 'default_models', 'human_B_kappa'),  'VJ']
@@ -119,27 +128,6 @@ def main():
                 recomb_type = 'VDJ'
             elif options.vj_model_folder: #custom VJ model specified
                 recompute_productive_norm=True
-                model_folder = options.vj_model_folder
-                recomb_type = 'VJ'
-    elif num_models_specified == 0:
-        print('Need to indicate generative model.')
-        print('Exiting...')
-        return -1
-    elif num_models_specified > 1:
-        print('Only specify one model')
-        print('Exiting...')
-        return -1
-
-    if num_models_specified == 1: #exactly one model specified
-        try:
-            d_model = [x for x in default_models.keys() if getattr(options, x)][0]
-            model_folder = default_models[d_model][0]
-            recomb_type = default_models[d_model][1]
-        except IndexError:
-            if options.vdj_model_folder: #custom VDJ model specified
-                model_folder = options.vdj_model_folder
-                recomb_type = 'VDJ'
-            elif options.vj_model_folder: #custom VJ model specified
                 model_folder = options.vj_model_folder
                 recomb_type = 'VJ'
     elif num_models_specified == 0:

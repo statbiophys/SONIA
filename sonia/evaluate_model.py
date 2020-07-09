@@ -180,9 +180,9 @@ class EvaluateModel(object):
         jobs = []
         for i in range(0, procs):
             jobs.append([seq_model_features[i*sizeSegment:(i+1)*sizeSegment],Qs[i*sizeSegment:(i+1)*sizeSegment],np.zeros((l,l))])
-
-        pool = mp.Pool(procs).map(partial_joint_marginals, jobs)
-
+        p=mp.Pool(procs)
+        pool = p.map(partial_joint_marginals, jobs)
+        p.close()
         Z=np.array(pool)[:,1].sum()
         marg=np.array(pool)[:,0]
         for m in marg: two_points_marginals=two_points_marginals+m
