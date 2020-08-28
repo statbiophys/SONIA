@@ -8,7 +8,7 @@ SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence
 
 ![](docs/source/workflow.png)
 ## Version
-Latest released version: 0.0.27
+Latest released version: 0.0.31
 
 ## Installation
 SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
@@ -30,7 +30,7 @@ pip install sonia
 ## References
 
 1. Sethna Z, Isacchini G, Dupic T, Mora T, Walczak AM, Elhanati Y, Population variability in the generation and thymic selection of T-cell repertoires, (2020) bioRxiv, https://doi.org/10.1101/2020.01.08.899682
-2. Isacchini G, Sethna Z, Elhanati Y ,Nourmohammad A, Mora T, Walczak AM, On generative models of T-cell receptor sequences,(2019) bioRxiv, https://doi.org/10.1101/857722
+2. Isacchini G, Sethna Z, Elhanati Y ,Nourmohammad A, Mora T, Walczak AM, Generative models of T-cell receptor sequences, (2020) Phys. Rev. E 101, 062414, https://journals.aps.org/pre/abstract/10.1103/PhysRevE.101.062414
 3. Elhanati Y, Murugan A , Callan CGJ ,  Mora T , Walczak AM, Quantifying selection in immune receptor repertoires, PNAS July 8, 2014 111 (27) 9875-9880, https://doi.org/10.1073/pnas.1409572111
 
 ## Documentation
