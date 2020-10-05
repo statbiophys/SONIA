@@ -13,7 +13,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from tensorflow.keras.models import Model,load_model
 from tensorflow.keras.layers import Input,Dense,Lambda
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.regularizers import l2
+from tensorflow.keras.regularizers import l2, l1_l2
 from tensorflow.keras.backend import sum as ksum
 from tensorflow.keras.backend import log as klog
 from tensorflow.keras.backend import exp as kexp
@@ -116,7 +116,7 @@ class Sonia(object):
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
-                 l2_reg = 0., min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False):
+                 l2_reg = 0., l1_reg=0.,min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -128,6 +128,7 @@ class Sonia(object):
         self.model_marginals = np.zeros(len(features))
         self.L1_converge_history = []
         self.l2_reg = l2_reg
+        self.l1_reg = l1_reg
         self.min_energy_clip = min_energy_clip
         self.max_energy_clip = max_energy_clip
         self.likelihood_train=[]
@@ -416,9 +417,11 @@ class Sonia(object):
         min_clip=copy(self.min_energy_clip)
         max_clip=copy(self.max_energy_clip)
         l2_reg=copy(self.l2_reg)
+        l1_reg=copy(self.l1_reg)
+
         if initialize:
             input_layer = Input(shape=(length_input,))
-            output_layer = Dense(1,use_bias=False,activation='linear', activity_regularizer=l2(l2_reg))(input_layer) #normal glm model
+            output_layer = Dense(1,use_bias=False,activation='linear',kernel_regularizer=l1_l2(l2=l2_reg,l1=l1_reg))(input_layer) #normal glm model
 
         # Define model
         clipped_out=Lambda(lambda x: kclip(x,min_clip,max_clip))(output_layer)

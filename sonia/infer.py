@@ -237,7 +237,7 @@ def main():
     max_number_of_seqs = options.max_number_of_seqs
     V_mask_index = options.V_mask_index #Default is not conditioning on V identity
     J_mask_index = options.J_mask_index #Default is not conditioning on J identity
-
+    skip_empty=True # skip empty lines
     if options.infile_name is None: #No infile specified -- args should be the input seqs
         print('ERROR: specify input file.')
         return -1
