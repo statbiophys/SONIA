@@ -170,6 +170,42 @@ class SoniaLeftposRightpos(Sonia):
         feature_energies = self.get_energy_parameters()
         return np.array([np.sum(feature_energies[seq_features]) for seq_features in seqs_features])
 
+    def set_gauge(self):
+        """
+        sets gauge such as sum(q)_i =1 at each position of CDR3 (left and right).
+        """
+
+        model_energy_parameters = self.model.get_weights()[0].flatten()
+
+        Gs_plus=[]
+        for i in list(range(self.max_depth)):
+            norm_p=sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] for aa in self.amino_acids])
+            G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
+                      np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
+                      for aa in self.amino_acids])
+            Gs_plus.append(G)
+            for aa in self.amino_acids: model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]] += np.log(G)
+        Gs_minus=[]     
+        for i in list(range(-self.max_depth,0)):
+            norm_p=sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] for aa in self.amino_acids])
+            G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
+                      np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
+                      for aa in self.amino_acids])
+            Gs_minus.append(G)
+            for aa in self.amino_acids: model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]] += np.log(G)
+        for i in range(1,self.max_L):
+            for j in list(range(i,self.max_depth)):
+                model_energy_parameters[self.feature_dict[( 'l' + str(i),)]] += np.log(Gs_plus[j])
+            for j in list(range(-self.max_depth,-i)):
+                model_energy_parameters[self.feature_dict[( 'l' + str(i),)]] += np.log(Gs_minus[j])
+        delta_Z=np.sum([np.log(g) for g in Gs_plus])+np.sum([np.log(g) for g in Gs_minus])
+
+        self.min_energy_clip=self.min_energy_clip+delta_Z
+        self.max_energy_clip=self.max_energy_clip+delta_Z
+        self.Z=self.Z+np.exp(-delta_Z)
+        self.update_model_structure(initialize=True)
+        self.model.set_weights([np.array([model_energy_parameters]).T])
+
     def save_model(self, save_dir, attributes_to_save = None,force=True):
         """Saves model parameters and sequences
 

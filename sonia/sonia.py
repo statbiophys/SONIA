@@ -398,8 +398,15 @@ class Sonia(object):
         # set Z    
         self.energies_gen=self.compute_energy(self.gen_seq_features)
         self.Z=np.sum(np.exp(-self.energies_gen))/len(self.energies_gen)
+        self.set_gauge()
         
         self.update_model(auto_update_marginals=True)
+
+    def set_gauge(self)
+        '''
+        placeholder for gauges.
+        '''
+        pass
 
     def update_model_structure(self,output_layer=[],input_layer=[],initialize=False):
         """ Defines the model structure and compiles it.
