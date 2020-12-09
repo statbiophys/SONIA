@@ -402,7 +402,7 @@ class Sonia(object):
         
         self.update_model(auto_update_marginals=True)
 
-    def set_gauge(self)
+    def set_gauge(self):
         '''
         placeholder for gauges.
         '''
