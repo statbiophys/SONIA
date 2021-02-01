@@ -180,17 +180,23 @@ class SoniaLeftposRightpos(Sonia):
         Gs_plus=[]
         for i in list(range(self.max_depth)):
             norm_p=sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] for aa in self.amino_acids])
-            G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
-                      np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
-                      for aa in self.amino_acids])
+            if norm_p==0:            
+                G=1
+            else:
+                G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
+                          np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
+                          for aa in self.amino_acids])
             Gs_plus.append(G)
             for aa in self.amino_acids: model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]] += np.log(G)
         Gs_minus=[]     
         for i in list(range(-self.max_depth,0)):
             norm_p=sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] for aa in self.amino_acids])
-            G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
-                      np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
-                      for aa in self.amino_acids])
+            if norm_p==0:            
+                G=1
+            else:
+                G = sum([self.gen_marginals[self.feature_dict[( 'a' + aa + str(i),)]] /norm_p * 
+                          np.exp(-model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]])
+                          for aa in self.amino_acids])
             Gs_minus.append(G)
             for aa in self.amino_acids: model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]] += np.log(G)
         for i in range(1,self.max_L):
