@@ -199,7 +199,7 @@ class SoniaLeftposRightpos(Sonia):
                           for aa in self.amino_acids])
             Gs_minus.append(G)
             for aa in self.amino_acids: model_energy_parameters[self.feature_dict[( 'a' + aa + str(i),)]] += np.log(G)
-        for i in range(1,self.max_L):
+        for i in range(1,self.max_L+1):
             for j in list(range(i,self.max_depth)):
                 model_energy_parameters[self.feature_dict[( 'l' + str(i),)]] += np.log(Gs_plus[j])
             for j in list(range(-self.max_depth,-i)):
@@ -208,7 +208,7 @@ class SoniaLeftposRightpos(Sonia):
 
         self.min_energy_clip=self.min_energy_clip+delta_Z
         self.max_energy_clip=self.max_energy_clip+delta_Z
-        self.Z=self.Z+np.exp(-delta_Z)
+        self.Z=self.Z*np.exp(-delta_Z)
         self.update_model_structure(initialize=True)
         self.model.set_weights([np.array([model_energy_parameters]).T])
 
