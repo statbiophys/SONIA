@@ -64,6 +64,8 @@ def main():
     parser.add_option('--batch_size', type='int', default = 5000, dest='batch_size' ,help='size of batch for the stochastic gradient descent')
     parser.add_option('--validation_split', type='float', default = 0.2, dest='validation_split' ,help='fraction of sequences used for validation.')
     parser.add_option('--independent_genes', '--include_indep_genes', action='store_true', dest='independent_genes', default=False, help='Independent gene selection factors q_v*q_j. Deafult is joint q_vj')
+    parser.add_option('--min_energy_clip', dest='min_energy_clip', default=-5, help='Set numerical lower bound to the values of -logQ, default is -5.')
+    parser.add_option('--max_energy_clip', dest='max_energy_clip', default=10, help='Set numerical upper bound to the values of -logQ, default is 10.')
 
     #location of seqs
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
@@ -139,6 +141,11 @@ def main():
         return -1
     elif num_models_specified > 1:
         print('Only specify one model')
+        print('Exiting...')
+        return -1
+    
+    if options.max_energy_clip <= options.min_energy_clip :
+        print('The clip for the higher energy must be strictly greater than the clip for the lower energy. ')
         print('Exiting...')
         return -1
 
