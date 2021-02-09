@@ -288,7 +288,7 @@ class SoniaLeftposRightpos(Sonia):
             with open(feature_file, 'r') as features_file:
                 all_lines = features_file.read().strip().split('\n')[1:] #skip header
                 splitted=[l.split(',') for l in all_lines]
-                features = np.array([l[0].split(';') for l in splitted])
+                features = np.array([l[0].split(';') for l in splitted], dtype=object)
                 feature_energies = np.array([float(l[1]) for l in splitted]).reshape((len(features), 1))
                 data_marginals=[float(l[2])  for l in splitted]
                 model_marginals=[float(l[3])  for l in splitted]
