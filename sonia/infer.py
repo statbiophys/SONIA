@@ -148,6 +148,9 @@ def main():
         print('The clip for the higher energy must be strictly greater than the clip for the lower energy. ')
         print('Exiting...')
         return -1
+    else :
+        max_energy_clip = options.max_energy_clip
+        min_energy_clip = options.min_energy_clip
 
     #Generative model specification -- note we'll probably change this syntax to
     #allow for arbitrary model file specification
@@ -440,14 +443,20 @@ def main():
                                              custom_pgen_model=model_folder,
                                              vj=recomb_type == 'VJ',
                                              include_joint_genes=joint_genes,
-                                             include_indep_genes=independent_genes)
+                                             include_indep_genes=independent_genes,
+                                             min_energy_clip=min_energy_clip,
+                                             max_energy_clip=max_energy_clip
+                                            )
         elif options.model_type=='lengthpos':
             sonia_model=SoniaLengthPos(data_seqs=data_seqs,
                                        gen_seqs=gen_seqs,
                                        custom_pgen_model=model_folder,
                                        vj=recomb_type == 'VJ',
                                        include_joint_genes=joint_genes,
-                                       include_indep_genes=independent_genes)
+                                       include_indep_genes=independent_genes,
+                                       min_energy_clip=min_energy_clip,
+                                       max_energy_clip=max_energy_clip
+                                      )
         else:
             print('ERROR: choose a model between leftright or lengthpos')
 
