@@ -515,7 +515,7 @@ class Sonia(object):
 
         if len(add_features) > 0:
             if len(self.features) == 0:
-                self.features = np.array(add_features)
+                self.features = np.array(add_features, dtype=object)
             else:
                 self.features = np.append(self.features, add_features, axis = 0)
             self.update_model_structure(initialize=True)
