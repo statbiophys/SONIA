@@ -372,7 +372,7 @@ class Sonia(object):
             np.random.seed(seed = seed)
         if initialize:
             # prepare data
-            self.X = np.array(self.data_seq_features+self.gen_seq_features)
+            self.X = np.array(self.data_seq_features+self.gen_seq_features, dtype=object)
             self.Y = np.concatenate([np.zeros(len(self.data_seq_features)), np.ones(len(self.gen_seq_features))])
 
             shuffle = np.random.permutation(len(self.X)) # shuffle
@@ -515,7 +515,7 @@ class Sonia(object):
 
         if len(add_features) > 0:
             if len(self.features) == 0:
-                self.features = np.array(add_features)
+                self.features = np.array(add_features, dtype=object)
             else:
                 self.features = np.append(self.features, add_features, axis = 0)
             self.update_model_structure(initialize=True)

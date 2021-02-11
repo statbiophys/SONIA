@@ -64,6 +64,8 @@ def main():
     parser.add_option('--batch_size', type='int', default = 5000, dest='batch_size' ,help='size of batch for the stochastic gradient descent')
     parser.add_option('--validation_split', type='float', default = 0.2, dest='validation_split' ,help='fraction of sequences used for validation.')
     parser.add_option('--independent_genes', '--include_indep_genes', action='store_true', dest='independent_genes', default=False, help='Independent gene selection factors q_v*q_j. Deafult is joint q_vj')
+    parser.add_option('--min_energy_clip', type='float', default=-5, dest='min_energy_clip',  help='Set numerical lower bound to the values of -logQ, default is -5.')
+    parser.add_option('--max_energy_clip', type='float', default=10, dest='max_energy_clip', help='Set numerical upper bound to the values of -logQ, default is 10.')
 
     #location of seqs
     parser.add_option('--seq_in', '--seq_index', type='int', metavar='INDEX', dest='seq_in_index', default = 0, help='specifies sequences to be read in are in column INDEX. Default is index 0 (the first column).')
@@ -141,6 +143,14 @@ def main():
         print('Only specify one model')
         print('Exiting...')
         return -1
+    
+    if options.max_energy_clip <= options.min_energy_clip :
+        print('The clip for the higher energy must be strictly greater than the clip for the lower energy. ')
+        print('Exiting...')
+        return -1
+    else :
+        max_energy_clip = options.max_energy_clip
+        min_energy_clip = options.min_energy_clip
 
     #Generative model specification -- note we'll probably change this syntax to
     #allow for arbitrary model file specification
@@ -433,14 +443,20 @@ def main():
                                              custom_pgen_model=model_folder,
                                              vj=recomb_type == 'VJ',
                                              include_joint_genes=joint_genes,
-                                             include_indep_genes=independent_genes)
+                                             include_indep_genes=independent_genes,
+                                             min_energy_clip=min_energy_clip,
+                                             max_energy_clip=max_energy_clip
+                                            )
         elif options.model_type=='lengthpos':
             sonia_model=SoniaLengthPos(data_seqs=data_seqs,
                                        gen_seqs=gen_seqs,
                                        custom_pgen_model=model_folder,
                                        vj=recomb_type == 'VJ',
                                        include_joint_genes=joint_genes,
-                                       include_indep_genes=independent_genes)
+                                       include_indep_genes=independent_genes,
+                                       min_energy_clip=min_energy_clip,
+                                       max_energy_clip=max_energy_clip
+                                      )
         else:
             print('ERROR: choose a model between leftright or lengthpos')
 
