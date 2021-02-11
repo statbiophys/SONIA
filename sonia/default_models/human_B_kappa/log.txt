@@ -1,3 +1,5 @@
 Z =1.016906470677986
 norm_productive =0.29247125650320943
+min_energy_clip =-5
+max_energy_clip =10
 L1 history =

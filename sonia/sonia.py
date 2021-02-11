@@ -666,6 +666,8 @@ class Sonia(object):
             with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
                 L1_file.write('Z ='+str(self.Z)+'\n')
                 L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
+                L1_file.write('min_energy_clip ='+str(self.min_energy_clip)+'\n')
+                L1_file.write('max_energy_clip ='+str(self.max_energy_clip)+'\n')
                 L1_file.write('likelihood_train,likelihood_test\n')
                 for i in range(len(self.likelihood_train)):
                     L1_file.write(str(self.likelihood_train[i])+','+str(self.likelihood_test[i])+'\n')
@@ -750,9 +752,22 @@ class Sonia(object):
                 for i,line in enumerate(L1_file):
                     if i==0: self.Z=float(line.strip().split('=')[1])
                     elif i==1: self.norm_productive=float(line.strip().split('=')[1])
-                    elif len(line.strip())>0 and i>2: 
-                        self.likelihood_train.append(float(line.strip().split(',')[0]))
-                        self.likelihood_test.append(float(line.strip().split(',')[1]))
+                    elif i==2: 
+                        try: 
+                            self.min_energy_clip=float(line.strip().split('=')[1])
+                        except:
+                            continue
+                    elif i==3: 
+                        try:
+                            self.max_energy_clip=float(line.strip().split('=')[1])
+                        except:
+                            continue
+                    elif len(line.strip())>0 and i>4: 
+                        try:
+                            self.likelihood_train.append(float(line.strip().split(',')[0]))
+                            self.likelihood_test.append(float(line.strip().split(',')[1]))
+                        except:
+                            continue
 
         else:
             self.L1_converge_history = []
