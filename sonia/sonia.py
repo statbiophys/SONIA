@@ -372,7 +372,7 @@ class Sonia(object):
             np.random.seed(seed = seed)
         if initialize:
             # prepare data
-            self.X = np.array(self.data_seq_features+self.gen_seq_features)
+            self.X = np.array(self.data_seq_features+self.gen_seq_features, dtype=object)
             self.Y = np.concatenate([np.zeros(len(self.data_seq_features)), np.ones(len(self.gen_seq_features))])
 
             shuffle = np.random.permutation(len(self.X)) # shuffle
