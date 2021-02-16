@@ -252,6 +252,8 @@ class SoniaLeftposRightpos(Sonia):
             with open(os.path.join(save_dir, 'log.txt'), 'w') as L1_file:
                 L1_file.write('Z ='+str(self.Z)+'\n')
                 L1_file.write('norm_productive ='+str(self.norm_productive)+'\n')
+                L1_file.write('min_energy_clip ='+str(self.min_energy_clip)+'\n')
+                L1_file.write('max_energy_clip ='+str(self.max_energy_clip)+'\n')
                 L1_file.write('likelihood_train,likelihood_test\n')
                 for i in range(len(self.likelihood_train)):
                     L1_file.write(str(self.likelihood_train[i])+','+str(self.likelihood_test[i])+'\n')
