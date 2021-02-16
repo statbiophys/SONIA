@@ -271,9 +271,8 @@ class Sonia(object):
 
         if len(seq_features[0])==0: seq_features=[seq_features]
         length_input=len(self.features)
-        data=np.array(seq_features, dtype=object)
-        data_enc = np.zeros((len(data), length_input), dtype=np.int8)
-        for i in range(len(data_enc)): data_enc[i][data[i]] = 1
+        data_enc = np.zeros((len(seq_features), length_input), dtype=np.int8)
+        for i in range(len(data_enc)): data_enc[i][seq_features[i]] = 1
         return data_enc
 
 
