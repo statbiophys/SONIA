@@ -711,38 +711,6 @@ class Sonia(object):
             if gen_seq_file is None: gen_seq_file = os.path.join(load_dir, 'gen_seqs.tsv')
             if log_file is None: log_file = os.path.join(load_dir, 'log.txt')
 
-
-        self._load_features_and_model(feature_file, model_file, verbose)
-
-        if data_seq_file is None:
-            pass
-        elif os.path.isfile(data_seq_file) and load_seqs:
-            with open(data_seq_file, 'r') as data_seqs_file:
-                self.data_seqs = []
-                self.data_seq_features = []
-                for line in data_seqs_file.read().strip().split('\n')[1:]:
-                    split_line = line.split('\t')
-                    self.data_seqs.append(split_line[0].split(';'))
-                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        elif load_seqs and verbose:
-            print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
-
-
-        if gen_seq_file is None:
-            pass
-        elif os.path.isfile(gen_seq_file) and load_seqs:
-            with open(gen_seq_file, 'r') as gen_seqs_file:
-                self.gen_seqs = []
-                self.gen_seq_features = []
-                for line in gen_seqs_file.read().strip().split('\n')[1:]:
-                    split_line = line.split('\t')
-                    self.gen_seqs.append(split_line[0].split(';'))
-                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
-        elif load_seqs and verbose:
-            print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
-
-        #self.update_model(auto_update_marginals = True) # to check
-
         if log_file is None:
             self.L1_converge_history = []
         elif os.path.isfile(log_file):
@@ -773,6 +741,37 @@ class Sonia(object):
             self.likelihood_train= []
             self.likelihood_test= []
             if verbose: print('Cannot find log.txt  --  no norms and convergence loaded.')
+                
+        self._load_features_and_model(feature_file, model_file, verbose)
+
+        if data_seq_file is None:
+            pass
+        elif os.path.isfile(data_seq_file) and load_seqs:
+            with open(data_seq_file, 'r') as data_seqs_file:
+                self.data_seqs = []
+                self.data_seq_features = []
+                for line in data_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.data_seqs.append(split_line[0].split(';'))
+                    self.data_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+        elif load_seqs and verbose:
+            print('Cannot find data_seqs.tsv  --  no data seqs loaded.')
+
+
+        if gen_seq_file is None:
+            pass
+        elif os.path.isfile(gen_seq_file) and load_seqs:
+            with open(gen_seq_file, 'r') as gen_seqs_file:
+                self.gen_seqs = []
+                self.gen_seq_features = []
+                for line in gen_seqs_file.read().strip().split('\n')[1:]:
+                    split_line = line.split('\t')
+                    self.gen_seqs.append(split_line[0].split(';'))
+                    self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
+        elif load_seqs and verbose:
+            print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
+
+        #self.update_model(auto_update_marginals = True) # to check
 
         return None
 

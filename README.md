@@ -8,7 +8,7 @@ SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence
 
 ![](docs/source/workflow.png)
 ## Version
-Latest released version: 0.0.41
+Latest released version: 0.0.43
 
 ## Installation
 SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
