@@ -265,3 +265,54 @@ class EvaluateModel(object):
             f=pool.map(compute_pgen_expand_novj, zip(seqs,final_models))
             pool.close()
             return np.array(f)
+        
+        
+    def entropy(self,seqs=None,n=int(2e4)):
+        '''Compute Entropy of Model
+
+        Returns
+        -------
+        entropy: float
+            entropy of the model
+
+        '''
+        if seqs is None:
+            if len(self.sonia_model.gen_seq_features)> int(1e4):
+                seq_features= self.sonia_model.gen_seq_features[:n]
+                seqs= self.sonia_model.gen_seqs[:n]
+            else:
+                print('not enough generated sequences')
+                return -1
+        else:
+            seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs] #find seq features
+
+        energies =self.sonia_model.compute_energy(seq_features) # compute energies
+        Q= np.exp(-energies)/self.sonia_model.Z # compute Q
+        pgens=self.compute_all_pgens(seqs)/self.sonia_model.norm_productive # compute pgen
+        pposts=pgens*Q # compute ppost
+        self.entropy=-np.mean(Q*np.log2(pposts))
+        return self.entropy
+    
+    def DklPostGen(self,seqs=None,n=int(1e5)):
+        '''Compute D_KL(P_post|P_gen)
+
+        Returns
+        -------
+        dkl: float
+            D_KL(P_post|P_gen)
+
+        '''
+        if seqs is None:
+            if len(self.sonia_model.gen_seq_features)> int(1e4):
+                seq_features= self.sonia_model.gen_seq_features[:n]
+            else:
+                print('not enough generated sequences')
+                return -1
+        else:
+            seq_features = [self.sonia_model.find_seq_features(seq) for seq in seqs] #find seq features
+
+        energies =self.sonia_model.compute_energy(seq_features) # compute energies
+        Q= np.exp(-energies)/self.sonia_model.Z # compute Q
+        
+        self.dkl=np.mean(Q*np.log2(Q))
+        return self.dkl
