@@ -341,7 +341,7 @@ class Sonia(object):
             marginals = marginals / Z
         return marginals
 
-    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None,validation_split=0.2, monitor=False,verbose=0):
+    def infer_selection(self, epochs = 10, batch_size=5000, initialize = True, seed = None,validation_split=0.2, monitor=False,verbose=0,set_gauge=True):
         """Infer model parameters, i.e. energies for each model feature.
 
         Parameters
@@ -397,7 +397,7 @@ class Sonia(object):
         # set Z    
         self.energies_gen=self.compute_energy(self.gen_seq_features)
         self.Z=np.sum(np.exp(-self.energies_gen))/len(self.energies_gen)
-        self.set_gauge()
+        if set_gauge: self.set_gauge()
         
         self.update_model(auto_update_marginals=True)
 
