@@ -264,8 +264,8 @@ class SoniaLeftposRightpos(Sonia):
                 feature_file.write('Feature,Energy,Marginal_data,Marginal_model,Marginal_gen\n')
                 for i in range(len(self.features)):
                     feature_file.write(';'.join(self.features[i])+','+ str(model_energy_dict[tuple(self.features[i])])+','+str(self.data_marginals[i])+','+str(self.model_marginals[i])+','+str(self.gen_marginals[i])+'\n')
-            #self.model.save(os.path.join(save_dir, 'model.h5'))
-                #save pgen model too.
+            self.model.save(os.path.join(save_dir, 'model.h5'))
+        #save pgen model too.
         try:
             if self.custom_pgen_model is None: main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
             else: main_folder=self.custom_pgen_model

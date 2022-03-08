@@ -244,7 +244,7 @@ class SoniaLengthPos(Sonia):
             with open(os.path.join(save_dir, 'features.tsv'), 'w') as feature_file:
                 feature_file.write('Feature\tEnergy\n')
                 feature_file.write('\n'.join([';'.join(f) + '\t' + str(model_energy_dict[tuple(f)]) for f in self.features]))
-            #self.model.save(os.path.join(save_dir, 'model.h5'))
+            self.model.save(os.path.join(save_dir, 'model.h5'))
 
         return None
 
