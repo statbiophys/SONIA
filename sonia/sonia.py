@@ -141,16 +141,17 @@ class Sonia(object):
                                 'humanIGH': 'human_B_heavy', 'human_B_heavy': 'human_B_heavy', 
                                 'humanIGK': 'human_B_kappa', 'human_B_kappa': 'human_B_kappa', 
                                 'humanIGL': 'human_B_lambda', 'human_B_lambda': 'human_B_lambda', 
-                                'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta'}
+                                'mouseTRB': 'mouse_T_beta', 'mouse_T_beta': 'mouse_T_beta',
+                                'mouseTRA': 'mouse_T_alpha','mouse_T_alpha':'mouse_T_alpha'}
         if chain_type not in default_chain_types.keys():
-            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, humanIGK, humanIGL or mouseTRB.')
+            print('Unrecognized chain_type (not a default OLGA model). Please specify one of the following options: humanTRA, humanTRB, humanIGH, humanIGK, humanIGL, mouseTRB or mouseTRA.')
             return None
         self.chain_type = default_chain_types[chain_type]
         self.vj=vj
         if self.chain_type in ['human_T_alpha','human_B_kappa','human_B_lambda','mouse_T_alpha']: self.vj=True
 
         norms={'human_T_beta':0.2442847269027897,'human_T_alpha':0.2847166577727317,'human_B_heavy': 0.1499265655936305, 
-                'human_B_lambda':0.29489499727399304, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.2727148540013573}
+                'human_B_lambda':0.29489499727399304, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.2727148540013573,'mouse_T_alpha':0.321870924914448}
         self.norm_productive=norms[self.chain_type]
 
         if any([x is not None for x in [load_dir, feature_file, model_file]]):
