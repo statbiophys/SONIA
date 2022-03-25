@@ -11,6 +11,7 @@ import olga.load_model as olga_load_model
 import olga.generation_probability as pgen
 from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals
 import itertools
+
 class EvaluateModel(object):
     """Class used to evaluate sequences with the sonia model: Ppost=Q*Pgen
 
@@ -293,7 +294,7 @@ class EvaluateModel(object):
         self.entropy=-np.mean(Q*np.log2(pposts))
         return self.entropy
     
-    def DklPostGen(self,seqs=None,n=int(1e5)):
+    def dkl_post_gen(self,seqs=None,n=int(1e5)):
         '''Compute D_KL(P_post|P_gen)
 
         Returns

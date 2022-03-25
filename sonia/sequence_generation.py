@@ -6,6 +6,8 @@ import numpy as np
 import os
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
+from sonia.utils import generate_sequence
+import multiprocessing as mp
 
 class SequenceGeneration(object):
 
@@ -37,13 +39,15 @@ class SequenceGeneration(object):
 
     """
 
-    def __init__(self,sonia_model=None, custom_olga_model=None, custom_genomic_data=None):
+    def __init__(self,sonia_model=None, custom_olga_model=None, custom_genomic_data=None,processes=None):
 
         if type(sonia_model)==str or sonia_model is None: 
             print('ERROR: you need to pass a Sonia object')
             return
 
         self.sonia_model=sonia_model # sonia model passed as an argument
+        if processes is None: self.processes = mp.cpu_count()
+        else: self.processes = processes
 
         # define olga sequence_generation model
         if custom_olga_model is not None:
@@ -84,8 +88,8 @@ class SequenceGeneration(object):
                 self.generative_model.load_and_process_igor_model(marginals_file_name)   
                 self.seq_gen_model = seq_gen.SequenceGenerationVJ(self.generative_model, self.genomic_data)
 
-    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
-        """Generates MonteCarlo sequences for gen_seqs using OLGA.
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True,custom_seq_gen_model=None,custom_genomic_data=None):
+        """Generates MonteCarlo sequences for gen_seqs using OLGA in parallel.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
         (pip install olga).
@@ -103,11 +107,22 @@ class SequenceGeneration(object):
 
         """
         
-        #Generate sequences
-        seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for i in range(int(num_seqs))]
-        if nucleotide: seqs= [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]] for seq in seqs_generated]
-        else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
-        return seqs
+        if custom_seq_gen_model is None: final_models = [self.seq_gen_model for i in range(int(num_seqs))] 
+        else: final_models=[custom_seq_gen_model for i in range(int(num_seqs))] 
+        if custom_genomic_data is None: final_genomic_data = [self.genomic_data for i in range(int(num_seqs))] 
+        else: final_genomic_data = [self.genomic_data for i in range(int(num_seqs))] 
+        seeds=np.random.randint(2**32-1,size=num_seqs)
+        
+        pool = mp.Pool(processes=self.processes)
+        seqs=np.array(pool.map(generate_sequence, zip(final_models,final_genomic_data,seeds)))
+        pool.close()
+        if nucleotide: return seqs
+        else: return seqs[:,:-1] 
+
+        #seqs_generated=[self.seq_gen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for i in range(int(num_seqs))]
+        #if nucleotide: seqs= [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]] for seq in seqs_generated]
+        #else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in seqs_generated]
+        #return seqs
     
     def generate_sequences_post(self,num_seqs = 1,upper_bound=10,nucleotide=True):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.

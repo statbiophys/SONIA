@@ -51,6 +51,13 @@ def compute_pgen_expand_novj(x):
     # compute pgen unconditioned on gene usage
     return x[1].compute_aa_CDR3_pgen(x[0][0])
 
+def generate_sequence(x):
+    seq_gen_model=x[0]
+    genomic_data=x[1]
+    np.random.seed(x[2])
+    seq=seq_gen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ')
+    return [seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0],seq[0]]
+
 def partial_joint_marginals(args):
     # compute joint marginals on subset of seqs.
     features = args[0]
