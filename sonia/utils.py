@@ -72,6 +72,9 @@ def partial_joint_marginals(args):
         Z += Q
     return [marginals,Z]
 
+def parallel_function(x):
+    return x[0](x[1])
+
 class computeL1(Callback):
     # compute L1 distance at the end of each epoch of the inference.
 

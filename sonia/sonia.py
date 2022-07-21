@@ -537,7 +537,7 @@ class Sonia(object):
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
 
-    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None, add_error=False,custom_error=None):
+    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None, add_error=False,custom_error=None,processes=None):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -566,8 +566,9 @@ class Sonia(object):
             Features gen_seqs have been projected onto.
 
         """
-        from sonia.utils import add_random_error
+        from sonia.utils import add_random_error,generate_sequence
         from olga.utils import nt2aa
+        import multiprocessing as mp
 
         #Load generative model
         if custom_model_folder is None:
@@ -619,8 +620,19 @@ class Sonia(object):
 
         #Generate sequences
         print('Generate sequences.')
-        if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
-        else: seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
+        if processes is None: processes = mp.cpu_count()
+
+        final_models = [sg_model for i in range(int(num_gen_seqs))] 
+        final_genomic_data = [genomic_data for i in range(int(num_gen_seqs))] 
+        seeds=np.random.randint(2**32-1,size=num_gen_seqs)
+
+        pool = mp.Pool(processes=processes)
+        seqs_=np.array(pool.map(generate_sequence, zip(final_models,final_genomic_data,seeds)))
+        pool.close()
+
+
+        if add_error: seqs = [[nt2aa(add_random_error(seq[-1],self.error_rate)), seq[1], seq[2]] for seq in seqs]
+        else: seqs = list(seqs_[:,:-1])
         if reset_gen_seqs: #reset gen_seqs if needed
             self.gen_seqs = []
         #Add to specified pool(s)
