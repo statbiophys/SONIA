@@ -20,18 +20,22 @@ class SoniaLeftposRightpos(Sonia):
 
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
-                 max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,l1_reg=0.,vj=False):
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,l1_reg=l1_reg,vj=vj,custom_pgen_model=custom_pgen_model)
+                 max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, 
+                 max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,l1_reg=0.,vj=False,processes=None):
+        
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, 
+                        max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,l1_reg=l1_reg,vj=vj,
+                        custom_pgen_model=custom_pgen_model,processes=None, load_dir = load_dir, feature_file = feature_file, 
+                        data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs,)
+
         self.max_depth = max_depth
         self.max_L = max_L
         self.include_indep_genes=include_indep_genes
         self.include_joint_genes=include_joint_genes
-        if any([x is not None for x in [load_dir, feature_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
-        else:
-            self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes, custom_pgen_model = custom_pgen_model)
+        if any([x is not None for x in [load_dir, feature_file]]): 
+            self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes)
 
-    def add_features(self, include_indep_genes = False, include_joint_genes = True, custom_pgen_model=None):
+    def add_features(self, include_indep_genes = False, include_joint_genes = True):
         """Generates a list of feature_lsts for L/R pos model.
 
         Parameters
@@ -277,9 +281,9 @@ class SoniaLeftposRightpos(Sonia):
                 splitted=[l.split(',') for l in all_lines]
                 features = np.array([l[0].split(';') for l in splitted], dtype=object)
                 feature_energies = np.array([float(l[1]) for l in splitted]).reshape((len(features), 1))
-                data_marginals=[float(l[2])  for l in splitted]
-                model_marginals=[float(l[3])  for l in splitted]
-                gen_marginals=[float(l[4])  for l in splitted]
+                data_marginals=np.array([float(l[2])  for l in splitted])
+                model_marginals=np.array([float(l[3])  for l in splitted])
+                gen_marginals=np.array([float(l[4])  for l in splitted])
             self.features = features
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
             self.data_marginals=data_marginals

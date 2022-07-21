@@ -121,7 +121,7 @@ class Sonia(object):
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
-                 l2_reg = 0., l1_reg=0.,min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False,custom_pgen_model=None):
+                 l2_reg = 0., l1_reg=0.,min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False,custom_pgen_model=None,processes=None):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -139,8 +139,7 @@ class Sonia(object):
         self.likelihood_train=[]
         self.likelihood_test=[]
         self.custom_pgen_model=custom_pgen_model
-
-
+        if processes is None: self.processes = mp.cpu_count()
         self.gamma=1.
         self.Z=1.
         default_chain_types = { 'humanTRA': 'human_T_alpha', 'human_T_alpha': 'human_T_alpha', 
@@ -160,20 +159,22 @@ class Sonia(object):
         norms={'human_T_beta':0.2442847269027897,'human_T_alpha':0.2847166577727317,'human_B_heavy': 0.1499265655936305, 
                 'human_B_lambda':0.29489499727399304, 'human_B_kappa':0.29247125650320943, 'mouse_T_beta':0.2727148540013573,'mouse_T_alpha':0.321870924914448}
         self.norm_productive=norms[self.chain_type]
-
-        if any([x is not None for x in [load_dir, feature_file, model_file]]):
-            self.load_model(load_dir = load_dir, feature_file = feature_file, model_file = model_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
-            if len(self.data_seqs) == 0: self.update_model(add_data_seqs = data_seqs)
-            if len(self.gen_seqs) == 0: self.update_model(add_data_seqs = gen_seqs)
-        else:
+        if load_dir is None:
             self.update_model(add_data_seqs = data_seqs, add_gen_seqs = gen_seqs)
             self.update_model_structure(initialize=True)
-            self.L1_converge_history = []
+        else:
+            self.load_model(load_dir = load_dir)
+            if len(self.data_seqs) != 0: self.update_model(add_data_seqs = data_seqs)
+            if len(self.gen_seqs) != 0: self.update_model(add_data_seqs = gen_seqs)
+            
 
         if seed is not None:
             np.random.seed(seed = seed)
 
         self.amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
+
+        self.define_models()
+
 
     def seq_feature_proj(self, feature, seq):
         """Checks if a sequence matches all subfeatures of the feature list
@@ -369,9 +370,6 @@ class Sonia(object):
             Parameters of the model
         model_marginals : array
             Marginals over the generated sequences, reweighted by the model.
-        L1_converge_history : list
-            L1 distance between data_marginals and model_marginals at each
-            iteration.
 
         """
 
@@ -387,20 +385,11 @@ class Sonia(object):
             self.Y=self.Y[shuffle]
 
         
-        if monitor:
-            from sonia.utils import computeL1
-            computeL1_dist = computeL1(self)
-            callbacks = [computeL1_dist]
-        else: callbacks=[]
-        
+        callbacks=[]
         self.learning_history = self.model.fit(self._encode_data(self.X), self.Y, epochs=epochs, batch_size=batch_size,
                                           validation_split=validation_split, verbose=verbose, callbacks=callbacks)
         self.likelihood_train=self.learning_history.history['_likelihood']
         self.likelihood_test=self.learning_history.history['val__likelihood']
-
-        if monitor:
-            self.L1_converge_history = computeL1_dist.L1_history
-            self.model.set_weights(computeL1_dist.weights_cpt)
         
         # set Z    
         self.energies_gen=self.compute_energy(self.gen_seq_features)
@@ -513,9 +502,9 @@ class Sonia(object):
 
         add_data_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs])
         add_gen_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs])
-        is self.data_seqs==[]: self.data_seqs = add_data_seqs
+        if self.data_seqs==[]: self.data_seqs = add_data_seqs
         else: self.data_seqs = np.concatenate([self.data_seqs,add_data_seqs])
-        is self.gen_seqs==[]: self.gen_seqs = add_gen_seqs
+        if self.gen_seqs==[]: self.gen_seqs = add_gen_seqs
         else: self.gen_seqs = np.concatenate([self.gen_seqs,add_gen_seqs])
 
         if len(remove_features) > 0:
@@ -532,19 +521,19 @@ class Sonia(object):
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 
-        if (len(add_data_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
+        if (len(add_data_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
             print('Encode data.')
             self.data_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.data_seqs)])
 
-        if (len(add_data_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_marginals > 0) and len(self.features)>0:
+        if (len(add_data_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_marginals > 0) and len(self.features)>0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
 
-        if (len(add_gen_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
+        if (len(add_gen_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
             print('Encode gen.')
             self.gen_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)])
 
 
-        if (len(add_gen_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_marginals) and len(self.features)>0:
+        if (len(add_gen_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
 
@@ -710,7 +699,8 @@ class Sonia(object):
                             self.likelihood_test.append(float(line.strip().split(',')[1]))
                         except:
                             continue
-
+                self.likelihood_train=np.array(self.likelihood_train)
+                self.likelihood_test=np.array(self.likelihood_test)
         else:
             self.L1_converge_history = []
             self.likelihood_train= []
@@ -745,7 +735,7 @@ class Sonia(object):
                     self.gen_seq_features.append([self.feature_dict[tuple(f.split(','))] for f in split_line[2].split(';') if tuple(f.split(',')) in self.feature_dict])
         elif load_seqs and verbose:
             print('Cannot find gen_seqs.tsv  --  no generated seqs loaded.')
-
+        self.custom_pgen_model=load_dir
         #self.update_model(auto_update_marginals = True) # to check
 
         return None
@@ -1140,4 +1130,3 @@ class Sonia(object):
             Q= np.exp(-energies)/self.Z # compute Q
             self.dkl=np.mean(Q*np.log2(Q))
         return self.dkl
-
