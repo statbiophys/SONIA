@@ -19,9 +19,14 @@ from tensorflow.keras.backend import log as klog
 from tensorflow.keras.backend import exp as kexp
 from tensorflow.keras.backend import clip as kclip
 import olga.load_model as olga_load_model
+import olga.generation_probability as pgen
 import olga.sequence_generation as seq_gen
 from copy import copy
 from tqdm import tqdm
+from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals
+import itertools
+import multiprocessing as mp
+
 #Set input = raw_input for python 2
 try:
     import __builtin__
@@ -116,7 +121,7 @@ class Sonia(object):
 
     def __init__(self, features = [], data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, model_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
-                 l2_reg = 0., l1_reg=0.,min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False):
+                 l2_reg = 0., l1_reg=0.,min_energy_clip = -5, max_energy_clip = 10, seed = None,vj=False,custom_pgen_model=None):
         self.features = np.array(features)
         self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
         self.data_seqs = []
@@ -133,6 +138,8 @@ class Sonia(object):
         self.max_energy_clip = max_energy_clip
         self.likelihood_train=[]
         self.likelihood_test=[]
+        self.custom_pgen_model=custom_pgen_model
+
 
         self.gamma=1.
         self.Z=1.
@@ -504,8 +511,12 @@ class Sonia(object):
 
         """
 
-        self.data_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs] #add_data_seqs
-        self.gen_seqs += [[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs] #add_gen_seqs
+        add_data_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs])
+        add_gen_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs])
+        is self.data_seqs==[]: self.data_seqs = add_data_seqs
+        else: self.data_seqs = np.concatenate([self.data_seqs,add_data_seqs])
+        is self.gen_seqs==[]: self.gen_seqs = add_gen_seqs
+        else: self.gen_seqs = np.concatenate([self.gen_seqs,add_gen_seqs])
 
         if len(remove_features) > 0:
             indices_to_keep = [i for i, feature_lst in enumerate(self.features) if feature_lst not in remove_features and i not in remove_features]
@@ -521,23 +532,23 @@ class Sonia(object):
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
 
-        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
+        if (len(add_data_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
             print('Encode data.')
-            self.data_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.data_seqs)]
+            self.data_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.data_seqs)])
 
-        if (len(add_data_seqs + add_features + remove_features) > 0 or auto_update_marginals > 0) and len(self.features)>0:
+        if (len(add_data_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_marginals > 0) and len(self.features)>0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
 
-        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
+        if (len(add_gen_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
             print('Encode gen.')
-            self.gen_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)]
+            self.gen_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)])
 
 
-        if (len(add_gen_seqs + add_features + remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
+        if (len(add_gen_seqs) + len(add_features) + len(remove_features)) > 0 or auto_update_marginals) and len(self.features)>0:
             self.gen_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
             self.model_marginals = self.compute_marginals(seq_model_features = self.gen_seq_features)
 
-    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, custom_model_folder = None, add_error=False,custom_error=None):
+    def add_generated_seqs(self, num_gen_seqs = 0, reset_gen_seqs = True, add_error=False, custom_error=None):
         """Generates MonteCarlo sequences for gen_seqs using OLGA.
 
         Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -569,31 +580,7 @@ class Sonia(object):
         from sonia.utils import add_random_error
         from olga.utils import nt2aa
 
-        #Load generative model
-        if custom_model_folder is None:
-            try:
-                if self.custom_pgen_model is None: main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
-                else: main_folder=self.custom_pgen_model
-            except:
-                main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
-        else:
-            main_folder = custom_model_folder
-
-        params_file_name = os.path.join(main_folder,'model_params.txt')
-        marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
-        V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
-        J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-
-        if not os.path.isfile(params_file_name) or not os.path.isfile(marginals_file_name):
-            print('Cannot find specified custom generative model files: ' + '\n' + params_file_name + '\n' + marginals_file_name)
-            print('Exiting sequence generation...')
-            return None
-        if not os.path.isfile(V_anchor_pos_file):
-            V_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'V_gene_CDR3_anchors.csv')
-        if not os.path.isfile(J_anchor_pos_file):
-            J_anchor_pos_file = os.path.join(os.path.dirname(olga_load_model.__file__), 'default_models', self.chain_type, 'J_gene_CDR3_anchors.csv')
-
-        with open(params_file_name,'r') as file:
+        with open(self.params_file_name,'r') as file:
             sep=0
             error_rate=''
             lines=file.read().splitlines()
@@ -604,23 +591,10 @@ class Sonia(object):
         if custom_error is None: self.error_rate=float(error_rate)
         else: self.error_rate=custom_error
 
-        if self.vj:
-            genomic_data = olga_load_model.GenomicDataVJ()
-            genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-            generative_model = olga_load_model.GenerativeModelVJ()
-            generative_model.load_and_process_igor_model(marginals_file_name)
-            sg_model = seq_gen.SequenceGenerationVJ(generative_model, genomic_data)
-        else:
-            genomic_data = olga_load_model.GenomicDataVDJ()
-            genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-            generative_model = olga_load_model.GenerativeModelVDJ()
-            generative_model.load_and_process_igor_model(marginals_file_name)
-            sg_model = seq_gen.SequenceGenerationVDJ(generative_model, genomic_data)
-
         #Generate sequences
         print('Generate sequences.')
-        if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
-        else: seqs = [[seq[1], genomic_data.genV[seq[2]][0].split('*')[0], genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [sg_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
+        if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
+        else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
         if reset_gen_seqs: #reset gen_seqs if needed
             self.gen_seqs = []
         #Add to specified pool(s)
@@ -816,3 +790,354 @@ class Sonia(object):
             self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         elif verbose:
             print('Cannot find model file --  no model parameters loaded.')
+
+    def define_models(self):
+        '''
+        load olga models.
+        '''
+        #Load generative model
+        if self.custom_pgen_model is not None:
+            main_folder = self.custom_pgen_model
+        else:
+            main_folder=os.path.join(os.path.dirname(sonia.sonia_leftpos_rightpos.__file__),'default_models',self.chain_type)
+
+        self.params_file_name = os.path.join(main_folder,'model_params.txt')
+        self.arginals_file_name = os.path.join(main_folder,'model_marginals.txt')
+        self.V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
+        self.J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
+        
+        if not self.vj:
+            self.genomic_data = olga_load_model.GenomicDataVDJ()
+            self.genomic_data.load_igor_genomic_data(self.params_file_name, self.V_anchor_pos_file, self.J_anchor_pos_file)
+            self.generative_model = olga_load_model.GenerativeModelVDJ()
+            self.generative_model.load_and_process_igor_model(self.marginals_file_name)
+            self.pgen_model = pgen.GenerationProbabilityVDJ(self.generative_model, self.genomic_data)
+            self.seqgen_model = seq_gen.SequenceGenerationVDJ(self.generative_model, self.genomic_data)
+        else:
+            self.genomic_data = olga_load_model.GenomicDataVJ()
+            self.genomic_data.load_igor_genomic_data(self.params_file_name, self.V_anchor_pos_file, self.J_anchor_pos_file)
+            self.generative_model = olga_load_model.GenerativeModelVJ()
+            self.generative_model.load_and_process_igor_model(self.marginals_file_name)
+            self.pgen_model = pgen.GenerationProbabilityVJ(self.generative_model, self.genomic_data)
+            self.seqgen_model = seq_gen.SequenceGenerationVJ(self.generative_model, self.genomic_data)
+
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
+            """Generates MonteCarlo sequences for gen_seqs using OLGA in parallel.
+
+            Only generates seqs from a V(D)J model. Requires the OLGA package
+            (pip install olga).
+
+            Parameters
+            ----------
+            num_seqs : int or float
+                Number of MonteCarlo sequences to generate and add to the specified
+                sequence pool.
+            
+            Returns
+            --------------
+            seqs : list
+                MonteCarlo sequences drawn from a VDJ recomb model
+
+            """
+            
+            final_models = [self.seqgen_model for i in range(int(num_seqs))] 
+            final_genomic_data = [self.genomic_data for i in range(int(num_seqs))] 
+            seeds=np.random.randint(2**32-1,size=num_seqs)            
+            pool = mp.Pool(processes=self.processes)
+            seqs=np.array(pool.map(generate_sequence, zip(final_models,final_genomic_data,seeds)))
+            pool.close()
+            if nucleotide: return seqs
+            else: return seqs[:,:-1] 
+
+    def generate_sequences_post(self,num_seqs = 1,upper_bound=10,nucleotide=True):
+        """Generates MonteCarlo sequences from Sonia through rejection sampling.
+
+        Parameters
+        ----------
+        num_seqs : int or float
+            Number of MonteCarlo sequences to generate and add to the specified
+            sequence pool.
+        upper_bound: int
+            accept all above the threshold. Relates to the percentage of 
+            sequences that pass selection.
+
+        Returns
+        --------------
+        seqs : list
+            MonteCarlo sequences drawn from a VDJ recomb model that pass selection.
+
+        """
+        if nucleotide:seqs_post=[['a','b','c','d']]
+        else: seqs_post=[['a','b','c']] # initialize
+        while len(seqs_post)<num_seqs+1:
+            # generate sequences from pre
+            seqs=self.generate_sequences_pre(num_seqs = int(1.1*upper_bound*num_seqs),nucleotide=True)
+
+            # compute features and energies 
+            seq_features = [self.find_seq_features(seq) for seq in list(np.array(seqs)[:,:-1])]
+            energies = self.compute_energy(seq_features)
+
+            #do rejection
+            rejection_selection=self.rejection_sampling(upper_bound=upper_bound,energies=energies)
+            if nucleotide: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
+            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,:-1]])
+        return seqs_post[1:num_seqs+1]
+
+    def rejection_sampling(self,upper_bound=10,energies=None):
+
+        ''' Returns acceptance from rejection sampling of a list of seqs.
+        By default uses the generated sequences within the sonia model.
+        
+        Parameters
+        ----------
+        upper_bound : int or float
+            accept all above the threshold. Relates to the percentage of 
+            sequences that pass selection
+
+        Returns
+        -------
+        rejection selection: array of bool
+            acceptance of each sequence.
+        
+        '''
+
+        if energies is None:  energies=self.energies_gen
+        Q=np.exp(-energies)/self.Z
+        random_samples=np.random.uniform(size=len(energies)) # sample from uniform distribution
+
+        return random_samples < Q/float(upper_bound)
+
+    def evaluate_seqs(self,seqs=[]):
+        '''Returns selection factors, pgen and pposts of sequences.
+
+        Parameters
+        ----------
+        seqs: list
+            list of sequences to evaluate
+
+        Returns
+        -------
+        Q: array
+            selection factor Q (of Ppost=Q*Pgen) of the sequences
+
+        pgens: array
+            pgen of the sequences
+
+        pposts: array
+            ppost of the sequences
+        '''
+
+        seq_features = [self.find_seq_features(seq) for seq in seqs] #find seq features
+        energies =self.compute_energy(seq_features) # compute energies
+        Q= np.exp(-energies)/self.Z # compute Q
+        pgens=self.compute_all_pgens(seqs)/self.norm_productive # compute pgen
+        pposts=pgens*Q # compute ppost
+
+        return Q, pgens, pposts
+
+    def evaluate_selection_factors(self,seqs=[]):
+        '''Returns normalised selection factor Q (of Ppost=Q*Pgen) of list of sequences (faster than evaluate_seqs because it does not compute pgen and ppost)
+
+        Parameters
+        ----------
+        seqs: list
+            list of sequences to evaluate
+
+        Returns
+        -------
+        Q: array
+            selection factor Q (of Ppost=Q*Pgen) of the sequences
+
+        '''
+
+        seq_features = [self.find_seq_features(seq) for seq in seqs] #find seq features
+        energies =self.compute_energy(seq_features) # compute energies
+
+        return np.exp(-energies)/self.Z
+
+    def joint_marginals(self, features = None, seq_model_features = None, seqs = None, use_flat_distribution = False):
+        '''Returns joint marginals P(i,j) with i and j features of sonia (l3, aA6, etc..), index of features attribute is preserved.
+           Matrix is upper-triangular.
+
+        Parameters
+        ----------
+        features: list
+            custom feature list 
+        seq_model_features: list
+            encoded sequences
+        seqs: list
+            seqs to encode.
+        use_flat_distribution: bool
+            for data and generated seqs is True, for model is False (weights with Q)
+
+        Returns
+        -------
+        joint_marginals: array
+            matrix (i,j) of joint marginals
+
+        '''
+
+        if seq_model_features is None:  # if model features are not given
+            if seqs is not None:  # if sequences are given, get model features from them
+                seq_model_features = [self.find_seq_features(seq) for seq in seqs]
+            else:   # if no sequences are given, sequences features is empty
+                seq_model_features = []
+
+        if len(seq_model_features) == 0:  # if no model features are given, return empty array
+            return np.array([])
+
+        if features is not None and seqs is not None:  # if a different set of features for the marginals is given
+            seq_compute_features = [self.find_seq_features(seq, features = features) for seq in seqs]
+        else:  # if no features or no sequences are provided, compute marginals using model features
+            seq_compute_features = seq_model_features
+            features = self.features
+        l=len(features)
+        two_points_marginals=np.zeros((l,l)) 
+        n=len(seq_model_features)
+        procs = mp.cpu_count()
+        sizeSegment = int(n/procs)
+        
+        if not use_flat_distribution:
+            energies = self.compute_energy(seq_model_features)
+            Qs= np.exp(-energies)
+        else:
+            Qs=np.ones(len(seq_compute_features))
+            
+        # Create size segments list
+        jobs = []
+        for i in range(0, procs):
+            jobs.append([seq_model_features[i*sizeSegment:(i+1)*sizeSegment],Qs[i*sizeSegment:(i+1)*sizeSegment],np.zeros((l,l))])
+        p=mp.Pool(procs)
+        pool = p.map(partial_joint_marginals, jobs)
+        p.close()
+        Z=np.array(pool)[:,1].sum()
+        marg=np.array(pool)[:,0]
+        for m in marg: two_points_marginals=two_points_marginals+m
+        two_points_marginals= two_points_marginals/Z
+        return two_points_marginals
+    
+    def joint_marginals_independent(self,marginals):
+        '''Returns independent joint marginals P(i,j)=P(i)*P(j) with i and j features of sonia (l3, aA6, etc..), index of features attribute is preserved.
+        Matrix is upper-triangular.
+
+        Parameters
+        ----------
+        marginals: list
+            marginals.
+
+        Returns
+        -------
+        joint_marginals: array
+            matrix (i,j) of joint marginals
+
+        '''
+
+        joint_marginals=np.zeros((len(marginals),len(marginals)))
+        for i,j in itertools.combinations(np.arange(len(marginals)),2):
+            if i>j:
+                joint_marginals[i,j]=marginals[i]*marginals[j]
+            else: 
+                joint_marginals[j,i]=marginals[i]*marginals[j]
+        return joint_marginals
+
+    def compute_joint_marginals(self):
+        '''Computes joint marginals for all.
+
+        Attributes Set
+        -------
+        gen_marginals_two: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        data_marginals_two: array
+            matrix (i,j) of joint marginals for data
+        model_marginals_two: array
+            matrix (i,j) of joint marginals for post-selection distribution
+        gen_marginals_two_independent: array
+            matrix (i,j) of independent joint marginals for pre-selection distribution
+        data_marginals_two_independent: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        model_marginals_two_independent: array
+            matrix (i,j) of joint marginals for pre-selection distribution
+        '''
+
+        self.gen_marginals_two = self.joint_marginals(seq_model_features = self.gen_seq_features, use_flat_distribution = True)
+        self.data_marginals_two = self.joint_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
+        self.model_marginals_two = self.joint_marginals(seq_model_features = self.gen_seq_features)
+        self.gen_marginals_two_independent = self.joint_marginals_independent(self.gen_marginals)
+        self.data_marginals_two_independent = self.joint_marginals_independent(self.data_marginals)
+        self.model_marginals_two_independent = self.joint_marginals_independent(self.model_marginals)
+
+    def compute_all_pgens(self,seqs):
+        '''Compute Pgen of sequences using OLGA in parallel
+
+        Parameters
+        ----------
+        seqs: list
+            list of sequences to evaluate.
+
+        Returns
+        -------
+        pgens: array
+            generation probabilities of the sequences.
+
+        '''
+
+        final_models = [self.pgen_model for i in range(len(seqs))]    # every process needs to access this vector.
+        pool = mp.Pool(processes=self.processes)
+
+        if self.include_genes:
+            f=pool.map(compute_pgen_expand, zip(seqs,final_models))
+            pool.close()
+            return np.array(f)
+        else:
+            f=pool.map(compute_pgen_expand_novj, zip(seqs,final_models))
+            pool.close()
+            return np.array(f)
+        
+        
+    def entropy(self,n=int(2e4)):
+        '''Compute Entropy of Model
+
+        Returns
+        -------
+        entropy: float
+            entropy of the model
+
+        '''
+        if len(self.gen_seq_features)> int(1e4):
+            seq_features= self.gen_seq_features[:n]
+            seqs= self.gen_seqs[:n]
+        else:
+            print('not enough generated sequences')
+            return -1
+        
+        energies =self.compute_energy(seq_features) # compute energies
+        self.gen_Q= np.exp(-energies)/self.Z # compute Q
+        self.gen_pgen=self.compute_all_pgens(seqs)/self.norm_productive # compute pgen
+        self.gen_ppost=self.gen_pgen*self.gen_Q # compute ppost
+        self.entropy=-np.mean(self.gen_Q*np.log2(self.gen_ppost))
+        return self.entropy
+    
+    def dkl_post_gen(self,n=int(1e5)):
+        '''Compute D_KL(P_post|P_gen)
+
+        Returns
+        -------
+        dkl: float
+            D_KL(P_post|P_gen)
+
+        '''
+        try: # energies gen exist
+            Q=np.exp(-self.energies_gen)/self.Z
+            self.dkl=np.mean(Q*np.log2(Q))
+            return self.dkl
+        except:
+            if len(self.gen_seq_features)> int(1e4):
+                seq_features= self.gen_seq_features[:n]
+            else:
+                print('not enough generated sequences')
+                return -1
+            energies =self.compute_energy(seq_features) # compute energies
+            Q= np.exp(-energies)/self.Z # compute Q
+            self.dkl=np.mean(Q*np.log2(Q))
+        return self.dkl
+

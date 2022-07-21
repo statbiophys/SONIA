@@ -21,12 +21,11 @@ class SoniaLeftposRightpos(Sonia):
     def __init__(self, data_seqs = [], gen_seqs = [], chain_type = 'humanTRB',
                  load_dir = None, feature_file = None, data_seq_file = None, gen_seq_file = None, log_file = None, load_seqs = True,
                  max_depth = 25, max_L = 30, include_indep_genes = False, include_joint_genes = True, min_energy_clip = -5, max_energy_clip = 10, seed = None,custom_pgen_model=None,l2_reg=0.,l1_reg=0.,vj=False):
-        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,l1_reg=l1_reg,vj=vj)
+        Sonia.__init__(self, data_seqs=data_seqs, gen_seqs=gen_seqs, chain_type=chain_type, min_energy_clip = min_energy_clip, max_energy_clip = max_energy_clip, seed = seed,l2_reg=l2_reg,l1_reg=l1_reg,vj=vj,custom_pgen_model=custom_pgen_model)
         self.max_depth = max_depth
         self.max_L = max_L
         self.include_indep_genes=include_indep_genes
         self.include_joint_genes=include_joint_genes
-        self.custom_pgen_model=custom_pgen_model
         if any([x is not None for x in [load_dir, feature_file]]):
             self.load_model(load_dir = load_dir, feature_file = feature_file, data_seq_file = data_seq_file, gen_seq_file = gen_seq_file, log_file = log_file, load_seqs = load_seqs)
         else:
@@ -52,25 +51,11 @@ class SoniaLeftposRightpos(Sonia):
             features += [['a' + aa + str(L)] for L in range(self.max_depth)]
             features += [['a' + aa + str(L)] for L in range(-self.max_depth, 0)]
 
-        if include_indep_genes or include_joint_genes:
-            import olga.load_model as olga_load_model
-            if custom_pgen_model is None:
-                main_folder = os.path.join(os.path.dirname(__file__), 'default_models', self.chain_type)
-            else:
-                main_folder = custom_pgen_model
-            params_file_name = os.path.join(main_folder,'model_params.txt')
-            V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
-            J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
-            
-            if self.vj: genomic_data = olga_load_model.GenomicDataVJ()
-            else: genomic_data = olga_load_model.GenomicDataVDJ()
-            genomic_data.load_igor_genomic_data(params_file_name, V_anchor_pos_file, J_anchor_pos_file)
-            
-            if include_indep_genes:
-                features += [[v] for v in set([gene_to_num_str(genV[0],'V') for genV in genomic_data.genV])]
-                features += [[j] for j in set([gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
-            if include_joint_genes:
-                features += [[v, j] for v in set([gene_to_num_str(genV[0],'V') for genV in genomic_data.genV]) for j in set([gene_to_num_str(genJ[0],'J') for genJ in genomic_data.genJ])]
+        if include_indep_genes:
+            features += [[v] for v in set([gene_to_num_str(genV[0],'V') for genV in self.genomic_data.genV])]
+            features += [[j] for j in set([gene_to_num_str(genJ[0],'J') for genJ in self.genomic_data.genJ])]
+        if include_joint_genes:
+            features += [[v, j] for v in set([gene_to_num_str(genV[0],'V') for genV in self.enomic_data.genV]) for j in set([gene_to_num_str(genJ[0],'J') for genJ in self.genomic_data.genJ])]
 
         self.update_model(add_features=features)
 
