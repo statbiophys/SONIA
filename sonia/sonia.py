@@ -20,12 +20,14 @@ from tensorflow.keras.backend import exp as kexp
 from tensorflow.keras.backend import clip as kclip
 import olga.load_model as olga_load_model
 import olga.generation_probability as pgen
-import olga.sequence_generation as seq_gen
+#import olga.sequence_generation as seq_gen
+import olha
 from copy import copy
 from tqdm import tqdm
-from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals
+from sonia.utils import compute_pgen_expand,compute_pgen_expand_novj,partial_joint_marginals,gene_to_num_str
 import itertools
 import multiprocessing as mp
+import sonia
 
 #Set input = raw_input for python 2
 try:
@@ -500,13 +502,6 @@ class Sonia(object):
 
         """
 
-        add_data_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs])
-        add_gen_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs])
-        if self.data_seqs==[]: self.data_seqs = add_data_seqs
-        else: self.data_seqs = np.concatenate([self.data_seqs,add_data_seqs])
-        if self.gen_seqs==[]: self.gen_seqs = add_gen_seqs
-        else: self.gen_seqs = np.concatenate([self.gen_seqs,add_gen_seqs])
-
         if len(remove_features) > 0:
             indices_to_keep = [i for i, feature_lst in enumerate(self.features) if feature_lst not in remove_features and i not in remove_features]
             self.features = self.features[indices_to_keep]
@@ -520,17 +515,27 @@ class Sonia(object):
                 self.features = np.append(self.features, add_features, axis = 0)
             self.update_model_structure(initialize=True)
             self.feature_dict = {tuple(f): i for i, f in enumerate(self.features)}
+        
+        if len(add_data_seqs)>0:
+            add_data_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_data_seqs])
+            if self.data_seqs==[]: self.data_seqs = add_data_seqs
+            else: self.data_seqs = np.concatenate([self.data_seqs,add_data_seqs])
+
+        if len(add_gen_seqs)>0:
+            add_gen_seqs=np.array([[seq,'',''] if type(seq)==str else seq for seq in add_gen_seqs])
+            if self.gen_seqs==[]: self.gen_seqs = add_gen_seqs
+            else: self.gen_seqs = np.concatenate([self.gen_seqs,add_gen_seqs])
 
         if (len(add_data_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.data_seqs)>0:
             print('Encode data.')
-            self.data_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.data_seqs)])
+            self.data_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.data_seqs)]
 
         if (len(add_data_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_marginals > 0) and len(self.features)>0:
             self.data_marginals = self.compute_marginals(seq_model_features = self.data_seq_features, use_flat_distribution = True)
 
         if (len(add_gen_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_seq_features) and len(self.features)>0 and len(self.gen_seqs)>0:
             print('Encode gen.')
-            self.gen_seq_features = np.array([self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)])
+            self.gen_seq_features = [self.find_seq_features(seq) for seq in tqdm(self.gen_seqs)]
 
 
         if (len(add_gen_seqs) + len(add_features) + len(remove_features) > 0 or auto_update_marginals) and len(self.features)>0:
@@ -566,27 +571,8 @@ class Sonia(object):
             Features gen_seqs have been projected onto.
 
         """
-        from sonia.utils import add_random_error
-        from olga.utils import nt2aa
-
-        with open(self.params_file_name,'r') as file:
-            sep=0
-            error_rate=''
-            lines=file.read().splitlines()
-            while len(error_rate)<1:
-                error_rate=lines[-1+sep]
-                sep-=1
-
-        if custom_error is None: self.error_rate=float(error_rate)
-        else: self.error_rate=custom_error
-
-        #Generate sequences
-        print('Generate sequences.')
-        if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
-        else: seqs = [[seq[1], self.genomic_data.genV[seq[2]][0].split('*')[0], self.genomic_data.genJ[seq[3]][0].split('*')[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3(conserved_J_residues='ABCEDFGHIJKLMNOPQRSTUVWXYZ') for _ in tqdm(range(int(num_gen_seqs)))]]
-        if reset_gen_seqs: #reset gen_seqs if needed
-            self.gen_seqs = []
-        #Add to specified pool(s)
+        seqs=self.generate_sequences_pre(num_gen_seqs,nucleotide=False)
+        if reset_gen_seqs: self.gen_seqs = []
         self.update_model(add_gen_seqs = seqs)
 
     def save_model(self, save_dir, attributes_to_save = None,force=True):
@@ -792,7 +778,7 @@ class Sonia(object):
             main_folder=os.path.join(os.path.dirname(sonia.sonia_leftpos_rightpos.__file__),'default_models',self.chain_type)
 
         self.params_file_name = os.path.join(main_folder,'model_params.txt')
-        self.arginals_file_name = os.path.join(main_folder,'model_marginals.txt')
+        self.marginals_file_name = os.path.join(main_folder,'model_marginals.txt')
         self.V_anchor_pos_file = os.path.join(main_folder,'V_gene_CDR3_anchors.csv')
         self.J_anchor_pos_file = os.path.join(main_folder,'J_gene_CDR3_anchors.csv')
         
@@ -802,16 +788,25 @@ class Sonia(object):
             self.generative_model = olga_load_model.GenerativeModelVDJ()
             self.generative_model.load_and_process_igor_model(self.marginals_file_name)
             self.pgen_model = pgen.GenerationProbabilityVDJ(self.generative_model, self.genomic_data)
-            self.seqgen_model = seq_gen.SequenceGenerationVDJ(self.generative_model, self.genomic_data)
+            self.seqgen_model = olha.SequenceGeneration(self.genomic_data,self.generative_model)
         else:
             self.genomic_data = olga_load_model.GenomicDataVJ()
             self.genomic_data.load_igor_genomic_data(self.params_file_name, self.V_anchor_pos_file, self.J_anchor_pos_file)
             self.generative_model = olga_load_model.GenerativeModelVJ()
             self.generative_model.load_and_process_igor_model(self.marginals_file_name)
             self.pgen_model = pgen.GenerationProbabilityVJ(self.generative_model, self.genomic_data)
-            self.seqgen_model = seq_gen.SequenceGenerationVJ(self.generative_model, self.genomic_data)
+            self.seqgen_model = olha.SequenceGeneration(self.genomic_data,self.generative_model)
 
-    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True):
+        with open(self.params_file_name,'r') as file:
+            sep=0
+            error_rate=''
+            lines=file.read().splitlines()
+            while len(error_rate)<1:
+                error_rate=lines[-1+sep]
+                sep-=1
+            self.error_rate=float(error_rate)
+
+    def generate_sequences_pre(self, num_seqs = 1, nucleotide=True,custom_error=None,add_error=False):
             """Generates MonteCarlo sequences for gen_seqs using OLGA in parallel.
 
             Only generates seqs from a V(D)J model. Requires the OLGA package
@@ -829,15 +824,17 @@ class Sonia(object):
                 MonteCarlo sequences drawn from a VDJ recomb model
 
             """
-            
-            final_models = [self.seqgen_model for i in range(int(num_seqs))] 
-            final_genomic_data = [self.genomic_data for i in range(int(num_seqs))] 
-            seeds=np.random.randint(2**32-1,size=num_seqs)            
-            pool = mp.Pool(processes=self.processes)
-            seqs=np.array(pool.map(generate_sequence, zip(final_models,final_genomic_data,seeds)))
-            pool.close()
-            if nucleotide: return seqs
-            else: return seqs[:,:-1] 
+            from sonia.utils import add_random_error
+            from olga.utils import nt2aa
+
+            if custom_error is None: error_rate=self.error_rate
+            else: error_rate=custom_error
+
+            #Generate sequences
+            if add_error: seqs = [[nt2aa(add_random_error(seq[0],self.error_rate)), seq[2].split('*')[0], seq[3].split('*')[0],seq[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3() for _ in range(int(num_seqs))]]
+            else: seqs = [[seq[1],  seq[2].split('*')[0], seq[3].split('*')[0],seq[0]] for seq in [self.seqgen_model.gen_rnd_prod_CDR3() for _ in range(int(num_seqs))]]
+            if nucleotide: return np.array(seqs)
+            else: return np.array(seqs)[:,:-1] 
 
     def generate_sequences_post(self,num_seqs = 1,upper_bound=10,nucleotide=True):
         """Generates MonteCarlo sequences from Sonia through rejection sampling.
@@ -869,8 +866,9 @@ class Sonia(object):
 
             #do rejection
             rejection_selection=self.rejection_sampling(upper_bound=upper_bound,energies=energies)
-            if nucleotide: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection]])
-            else: seqs_post=np.concatenate([seqs_post,np.array(seqs)[rejection_selection,:-1]])
+            if nucleotide: seqs_post=np.concatenate([seqs_post,seqs[rejection_selection]])
+            else: seqs_post=np.concatenate([seqs_post,seqs[rejection_selection,:-1]])
+
         return seqs_post[1:num_seqs+1]
 
     def rejection_sampling(self,upper_bound=10,energies=None):

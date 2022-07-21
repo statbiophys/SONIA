@@ -32,7 +32,9 @@ class SoniaLeftposRightpos(Sonia):
         self.max_L = max_L
         self.include_indep_genes=include_indep_genes
         self.include_joint_genes=include_joint_genes
-        if any([x is not None for x in [load_dir, feature_file]]): 
+        if include_indep_genes or include_joint_genes: self.include_genes=True
+        else: self.include_genes=False
+        if load_dir is None: 
             self.add_features(include_indep_genes = include_indep_genes, include_joint_genes = include_joint_genes)
 
     def add_features(self, include_indep_genes = False, include_joint_genes = True):
@@ -59,7 +61,7 @@ class SoniaLeftposRightpos(Sonia):
             features += [[v] for v in set([gene_to_num_str(genV[0],'V') for genV in self.genomic_data.genV])]
             features += [[j] for j in set([gene_to_num_str(genJ[0],'J') for genJ in self.genomic_data.genJ])]
         if include_joint_genes:
-            features += [[v, j] for v in set([gene_to_num_str(genV[0],'V') for genV in self.enomic_data.genV]) for j in set([gene_to_num_str(genJ[0],'J') for genJ in self.genomic_data.genJ])]
+            features += [[v, j] for v in set([gene_to_num_str(genV[0],'V') for genV in self.genomic_data.genV]) for j in set([gene_to_num_str(genJ[0],'J') for genJ in self.genomic_data.genJ])]
 
         self.update_model(add_features=features)
 

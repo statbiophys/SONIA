@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-data_files_to_include = [('', ['README.md', 'LICENSE'])]
+data_files_to_include = [('', ['README.md', 'LICENSE','MANIFEST.in'])]
 
 setup(name='sonia',
       version='0.1.1',
@@ -25,16 +25,17 @@ setup(name='sonia',
             'Programming Language :: Python :: 3.6',
             ],
       packages=find_packages(),
-      install_requires=['numpy','tensorflow>=2.1.0','matplotlib','olga>=1.2.3','tqdm'],
-      package_data = {
-            'default_models': [],
-            'default_models/human_T_alpha/': ['sonia/default_models/human_T_alpha/*'],
-            'default_models/human_T_beta/': ['sonia/default_models/human_T_beta/*'],
-            'default_models/mouse_T_beta/': ['sonia/default_models/mouse_T_beta/*'],
-            'default_models/human_B_heavy/': ['sonia/default_models/human_B_heavy/*'],
-            'default_models/human_B_kappa/': ['sonia/default_models/human_B_kappa/*'],
-            'default_models/human_B_lambda/': ['sonia/default_models/human_B_lambda/*'],
-            },
+      install_requires=['numpy','tensorflow>=2.1.0','matplotlib','olga>=1.2.3','tqdm','olha'],
+      #package_data = {
+      #      'default_models': [],
+      #      'default_models/human_T_alpha/': ['sonia/default_models/human_T_alpha/*'],
+      #      'default_models/human_T_beta/': ['sonia/default_models/human_T_beta/*'],
+      #      'default_models/mouse_T_beta/': ['sonia/default_models/mouse_T_beta/*'],
+      #      'default_models/mouse_T_alpha/': ['sonia/default_models/mouse_T_alpha/*'],
+      #      'default_models/human_B_heavy/': ['sonia/default_models/human_B_heavy/*'],
+      #      'default_models/human_B_kappa/': ['sonia/default_models/human_B_kappa/*'],
+      #      'default_models/human_B_lambda/': ['sonia/default_models/human_B_lambda/*'],
+      #      },
       data_files = data_files_to_include,
       include_package_data=True,
       entry_points = {'console_scripts': [
