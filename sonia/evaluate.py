@@ -409,7 +409,7 @@ def main():
                         Q=ev.evaluate_selection_factors(t)
                         for i in range(len(Q)):file.write(str(Q[i])+'\n')
                     elif options.pgen:
-                        pgens=ev.compute_all_pgens(t)
+                        pgens=ev.compute_all_pgens(t)/ev.sonia_model.norm_productive
                         for i in range(len(pgens)):file.write(str(pgens[i])+'\n')
 
         else: #print to stdout
@@ -423,7 +423,7 @@ def main():
                     print ('Q')
                     print(Q)
                 elif options.pgen:
-                    pgens=ev.compute_all_pgens(t)
+                    pgens=ev.compute_all_pgens(t)/ev.sonia_model.norm_productive
                     print ('Pgen')
                     print(pgens)
                 else:
