@@ -1,5 +1,7 @@
 # SONIA
 
+This Package is not actively mantained, please refer to the most updated SoNNia package which includes sonia models as well: https://github.com/statbiophys/soNNia
+
 SONIA is a python 3.6/2.7 software developed to infer selection pressures on features of amino acid CDR3 sequences. The inference is based on maximizing the likelihood of observing a selected data sample given a representative pre-selected sample. This method was first used in Elhanati et al (2014) to study thymic selection. For this purpose, the pre-selected sample can be generated internally using the OLGA software package, but SONIA allows it also to be supplied externally, in the same way the data sample is provided.
 
 ![](docs/source/model.png)
