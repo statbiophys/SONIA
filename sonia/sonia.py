@@ -9,6 +9,7 @@ from __future__ import print_function, division,absolute_import
 import numpy as np
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+from tensorflow import (boolean_mask, cast, math, keras, Variable)
 
 from tensorflow.keras.models import Model,load_model
 from tensorflow.keras.layers import Input,Dense,Lambda
@@ -18,6 +19,7 @@ from tensorflow.keras.backend import sum as ksum
 from tensorflow.keras.backend import log as klog
 from tensorflow.keras.backend import exp as kexp
 from tensorflow.keras.backend import clip as kclip
+import tensorflow as tf
 import olga.load_model as olga_load_model
 import olga.sequence_generation as seq_gen
 from copy import copy
@@ -264,7 +266,7 @@ class Sonia(object):
 
         """
         seqs_features_enc=self._encode_data(seqs_features)
-        return self.model.predict(seqs_features_enc)[:, 0]
+        return self.model(seqs_features_enc)[:, 0].numpy()
 
     def _encode_data(self,seq_features):
         """Turns seq_features into expanded numpy array"""
@@ -437,27 +439,32 @@ class Sonia(object):
         self.model.compile(optimizer=self.optimizer, loss=self._loss,metrics=[self._likelihood])
         return True
 
-    def _loss(self, y_true, y_pred):
-        """Loss function for keras training. 
+    def _loss(self,
+              y_true,
+              y_pred
+             ) -> float:
+        """Loss function for keras training.
             We assume a model of the form P(x)=exp(-E(x))P_0(x)/Z.
             We minimize the neg-loglikelihood: <-logP> = log(Z) - <-E>.
             Normalization of P gives Z=<exp(-E)>_{P_0}.
             We fix the gauge by adding the constraint (Z-1)**2 to the likelihood.
         """
-        data= ksum((-y_pred)*(1.-y_true))/ksum(1.-y_true)
-        gen= klog(ksum(kexp(-y_pred)*y_true))-klog(ksum(y_true))
-        reg= kexp(gen)-1.
-        return gen-data+self.gamma*reg*reg
+        y = cast(y_true,dtype='bool')
+        data = math.reduce_mean(boolean_mask(y_pred,math.logical_not(y)))
+        gen = math.reduce_logsumexp(-boolean_mask(y_pred,y))-klog(ksum(y_true))
+        return gen + data + self.gamma * gen * gen
 
-    def _likelihood(self, y_true, y_pred):
-        """Loss function for keras training. 
-            We assume a model of the form P(x)=exp(-E(x))P_0(x)/Z.
-            We minimize the neg-loglikelihood: <-logP> = log(Z) - <-E>.
-            Normalization of P gives Z=<exp(-E)>_{P_0}.z
+    def _likelihood(self,
+                    y_true,
+                    y_pred
+                   ) -> float:
         """
-        data= ksum((-y_pred)*(1.-y_true))/ksum(1.-y_true)
-        gen= klog(ksum(kexp(-y_pred)*y_true))-klog(ksum(y_true))
-        return gen-data
+        This is the "I" loss in the arxiv paper with added regularization
+        """
+        y = cast(y_true,dtype='bool')
+        data = math.reduce_mean(boolean_mask(y_pred,math.logical_not(y)))
+        gen = math.reduce_logsumexp(-boolean_mask(y_pred,y))-klog(ksum(y_true))
+        return gen + data
 
     def update_model(self, add_data_seqs = [], add_gen_seqs = [], add_features = [], remove_features = [], add_constant_features = [], auto_update_marginals = False, auto_update_seq_features = False):
         """Updates the model attributes
