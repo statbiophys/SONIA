@@ -10,16 +10,14 @@ SONIA takes as input TCR CDR3 amino acid sequences, with or without per sequence
 
 ![](docs/source/workflow.png)
 ## Version
-Latest released version: 0.1.2
+Latest released version: 0.2.2
 
 ## Installation
 SONIA is a python 2.7/3.6 software. It is available on PyPI and can be downloaded and installed through pip:
 
  ```pip install sonia```.
 
-SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA). The command line entry points can be installed by using the setup.py script:
-
- ```python setup.py install```.
+SONIA is also available on [GitHub](https://github.com/statbiophys/SONIA).
  
 Sometimes pip fails to install the dependencies correctly. Thus, if you get any error try first to install the dependencies separately:
  ```
@@ -28,6 +26,7 @@ pip install matplotlib
 pip install olga
 pip install sonia 
  ```
+For mac user on new metal devices, make sure to install additional dependencies. Currently, the configuration tensorflow-macos==2.9 and tensorflow-metal==0.5.0 should work.
 
 ## References
 

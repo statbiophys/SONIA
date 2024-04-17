@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sonia"
-version = "0.2.1"
+version = "0.2.2"
 #dynamic = ["version"]
 dependencies = ['numpy','tensorflow>=2.1.0','matplotlib','olga>=1.1.3','tqdm']
 authors = [ {name = "Zachary Sethna"}, {name = "Giulio Isacchini", email = "giulioisac@gmail.com"}]
